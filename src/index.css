@@ -1,0 +1,204 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-primary: "Inter", sans-serif;
+  --font-secondary: "Bungee", sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+}
+
+/* From Uiverse.io by ZacharyCrespin */
+@keyframes square-animation {
+  0% {
+    left: 0;
+    top: 0;
+  }
+
+  10.5% {
+    left: 0;
+    top: 0;
+  }
+
+  12.5% {
+    left: 32px;
+    top: 0;
+  }
+
+  23% {
+    left: 32px;
+    top: 0;
+  }
+
+  25% {
+    left: 64px;
+    top: 0;
+  }
+
+  35.5% {
+    left: 64px;
+    top: 0;
+  }
+
+  37.5% {
+    left: 64px;
+    top: 32px;
+  }
+
+  48% {
+    left: 64px;
+    top: 32px;
+  }
+
+  50% {
+    left: 32px;
+    top: 32px;
+  }
+
+  60.5% {
+    left: 32px;
+    top: 32px;
+  }
+
+  62.5% {
+    left: 32px;
+    top: 64px;
+  }
+
+  73% {
+    left: 32px;
+    top: 64px;
+  }
+
+  75% {
+    left: 0;
+    top: 64px;
+  }
+
+  85.5% {
+    left: 0;
+    top: 64px;
+  }
+
+  87.5% {
+    left: 0;
+    top: 32px;
+  }
+
+  98% {
+    left: 0;
+    top: 32px;
+  }
+
+  100% {
+    left: 0;
+    top: 0;
+  }
+}
+
+.loader {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  transform: rotate(45deg);
+}
+
+.loader-square {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  margin: 2px;
+  border-radius: 0px;
+  background: #211d4c;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  animation: square-animation 10s ease-in-out infinite both;
+}
+
+.loader-square:nth-of-type(0) {
+  animation-delay: 0s;
+}
+
+.loader-square:nth-of-type(1) {
+  animation-delay: -1.4285714286s;
+}
+
+.loader-square:nth-of-type(2) {
+  animation-delay: -2.8571428571s;
+}
+
+.loader-square:nth-of-type(3) {
+  animation-delay: -4.2857142857s;
+}
+
+.loader-square:nth-of-type(4) {
+  animation-delay: -5.7142857143s;
+}
+
+.loader-square:nth-of-type(5) {
+  animation-delay: -7.1428571429s;
+}
+
+.loader-square:nth-of-type(6) {
+  animation-delay: -8.5714285714s;
+}
+
+.loader-square:nth-of-type(7) {
+  animation-delay: -10s;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  background-color: #211d4c;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 10px; /* Added padding for better appearance */
+  position: absolute;
+  z-index: 10;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%); /* Center the tooltip */
+  font-size: 14px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Shadow effect */
+  border: 1px solid #ebebf3;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #211d4c transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.swiper-pagination-bullet-active{
+  background: #0A6925 !important;}
+
+#qr-reader img {
+  margin: 0 auto !important; /* Centers the image horizontally */
+}
