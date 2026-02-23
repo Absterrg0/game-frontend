@@ -2,6 +2,7 @@
   "common": {
     "welcome": "Willkommen",
     "login": "Anmelden",
+    "logout": "Abmelden",
     "signUp": "Registrieren",
     "language": "Sprache"
   },

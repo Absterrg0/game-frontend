@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
 
@@ -20,9 +20,8 @@ const inputClassName =
   "h-10 md:h-12 w-full rounded-lg border-[#C6C4D5] px-4 font-primary text-sm md:text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary";
 
 export default function UserInformation() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const session = Cookies.get("session_key");
   const email = Cookies.get("email");
   const appleId = Cookies.get("appleId");
   const [loading, setLoading] = useState(false);
@@ -46,9 +45,12 @@ export default function UserInformation() {
     appleId: appleId || "",
   });
 
+  // Redirect to home if user came here without signup params (already completed)
   useEffect(() => {
-    if (session) navigate("/");
-  }, [navigate, session]);
+    if (!email && !appleId) {
+      navigate("/");
+    }
+  }, [navigate, email, appleId]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -73,7 +75,7 @@ export default function UserInformation() {
     }
 
     try {
-      const response = await axios.post("/api/auth/complete-signup", {
+      const response = await api.post("/api/auth/complete-signup", {
         ...inputs,
         dateOfBirth: utcISOString,
       });
@@ -82,13 +84,8 @@ export default function UserInformation() {
         !response?.data?.error &&
         response?.data?.code === "SIGNUP_SUCCESSFUL"
       ) {
-        Cookies.set("session_key", response?.data?.token, {
-          expires: 7,
-          path: "/",
-          secure: import.meta.env.PROD,
-          sameSite: import.meta.env.PROD ? "Strict" : "Lax",
-        });
         Cookies.remove("email");
+        Cookies.remove("appleId");
         window.location.href = "/";
       } else {
         window.alert(response?.data?.message);
@@ -107,7 +104,7 @@ export default function UserInformation() {
       return;
     }
     try {
-      const response = await axios.get(`/api/v1/public/clubs`, {
+      const response = await api.get(`/api/v1/public/clubs`, {
         params: { search: query },
       });
       setClubs(response.data.clubs || []);
@@ -129,22 +126,6 @@ export default function UserInformation() {
 
   return (
     <section className="container flex min-h-screen w-full items-center justify-center">
-      <div className="absolute right-4 top-4 flex gap-2">
-        <button
-          type="button"
-          onClick={() => i18n.changeLanguage('en')}
-          className={`rounded px-3 py-1 text-sm ${i18n.language === 'en' ? 'bg-brand-primary text-white' : 'border border-gray-300 hover:bg-gray-100'}`}
-        >
-          EN
-        </button>
-        <button
-          type="button"
-          onClick={() => i18n.changeLanguage('de')}
-          className={`rounded px-3 py-1 text-sm ${i18n.language === 'de' ? 'bg-brand-primary text-white' : 'border border-gray-300 hover:bg-gray-100'}`}
-        >
-          DE
-        </button>
-      </div>
       <form
         onSubmit={onSubmit}
         className="w-full max-w-[580px] rounded-3xl border border-[#EBEBF3] px-6 py-10 shadow-auth-pop-shadow md:px-6 md:py-6 lg:px-14 lg:py-8"

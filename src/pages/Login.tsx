@@ -1,6 +1,5 @@
 import Google from "../components/icons/google";
 import Apple from "../components/icons/apple";
-import Cookies from "js-cookie";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,40 +9,27 @@ import {
   ArrowLeft01Icon,
   GoogleIcon,
 } from "@hugeicons/core-free-icons";
+import { useAuth } from "@/hooks/useAuth";
+import { getBackendUrl } from "@/lib/api";
 
 const Login = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const session = Cookies.get("session_key");
+  const { isAuthenticated, loading } = useAuth();
+
   useEffect(() => {
-    if (session) navigate("/");
-  }, [navigate, session]);
+    if (!loading && isAuthenticated) navigate("/");
+  }, [navigate, isAuthenticated, loading]);
   return (
-    <section className="w-full flex justify-center items-center min-h-screen py-8 container flex-col gap-6">
-      <div className="absolute right-4 top-4 flex gap-2">
-        <button
-          type="button"
-          onClick={() => i18n.changeLanguage('en')}
-          className={`rounded px-3 py-1 text-sm ${i18n.language === 'en' ? 'bg-brand-primary text-white' : 'border border-gray-300 hover:bg-gray-100'}`}
-        >
-          EN
-        </button>
-        <button
-          type="button"
-          onClick={() => i18n.changeLanguage('de')}
-          className={`rounded px-3 py-1 text-sm ${i18n.language === 'de' ? 'bg-brand-primary text-white' : 'border border-gray-300 hover:bg-gray-100'}`}
-        >
-          DE
-        </button>
-      </div>
+    <section className="w-full min-h-screen flex flex-col items-center justify-center gap-6 py-8 px-4 sm:px-6">
       <div className="w-full max-w-[580px] rounded-lg border border-tableBorder px-6 py-10 shadow-table md:px-6 md:py-6 lg:px-14 lg:py-8">
         <h1 className="text-center font-primary text-[22px] font-bold capitalize text-brand-primary md:text-[26px]">
           {t("common.login")}
         </h1>
         <button
           onClick={() => {
-            if (window)
-              window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/google`;
+            const url = getBackendUrl();
+            if (window && url) window.location.href = `${url}/api/auth/google`;
           }}
           className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2"
         >
@@ -52,8 +38,8 @@ const Login = () => {
         </button>
         <button
           onClick={() => {
-            if (window)
-              window.location.href = `${import.meta.env.VITE_BACKEND_URL}/api/auth/apple`;
+            const url = getBackendUrl();
+            if (window && url) window.location.href = `${url}/api/auth/apple`;
           }}
           className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2"
         >
@@ -69,7 +55,7 @@ const Login = () => {
         {t("auth.backToHome")}
       </NavLink>
 
-      <div className="p-6 space-y-6 rounded-lg border border-tableBorder max-w-[580px] mx-auto shadow-table">
+      <div className="w-full max-w-[580px] p-6 space-y-6 rounded-lg border border-tableBorder shadow-table">
         <div>
           <h2 className="font-semibold text-base">
             {t("auth.whatDoesSignInMean")}
