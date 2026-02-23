@@ -39,5 +39,7 @@ export function useAuth() {
     }
   }, []);
 
-  return { user, loading, isAuthenticated: !!user, checkAuth, logout };
+  const isProfileComplete = !!(user?.alias?.trim() && user?.name?.trim());
+
+  return { user, loading, isAuthenticated: !!user, isProfileComplete, checkAuth, logout };
 }

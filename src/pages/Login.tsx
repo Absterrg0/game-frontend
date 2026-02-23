@@ -1,59 +1,38 @@
 import Google from "../components/icons/google";
 import Apple from "../components/icons/apple";
-import { NavLink, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   AppleIcon,
-  ArrowLeft01Icon,
   GoogleIcon,
 } from "@hugeicons/core-free-icons";
-import { useAuth } from "@/hooks/useAuth";
 import { getBackendUrl } from "@/lib/api";
 
 const Login = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { isAuthenticated, loading } = useAuth();
+  const backendUrl = getBackendUrl();
 
-  useEffect(() => {
-    if (!loading && isAuthenticated) navigate("/");
-  }, [navigate, isAuthenticated, loading]);
   return (
-    <section className="w-full min-h-screen flex flex-col items-center justify-center gap-6 py-8 px-4 sm:px-6">
+    <section className="relative w-full min-h-screen flex flex-col items-center justify-center gap-6 py-8 px-4 sm:px-6">
       <div className="w-full max-w-[580px] rounded-lg border border-tableBorder px-6 py-10 shadow-table md:px-6 md:py-6 lg:px-14 lg:py-8">
         <h1 className="text-center font-primary text-[22px] font-bold capitalize text-brand-primary md:text-[26px]">
           {t("common.login")}
         </h1>
-        <button
-          onClick={() => {
-            const url = getBackendUrl();
-            if (window && url) window.location.href = `${url}/api/auth/google`;
-          }}
-          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2"
+        <a
+          href={backendUrl ? `${backendUrl}/api/auth/google` : "#"}
+          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
         >
           <Google className="mr-2 h-[22px] w-[22px]" />
           {t("auth.signInWithGoogle")}
-        </button>
-        <button
-          onClick={() => {
-            const url = getBackendUrl();
-            if (window && url) window.location.href = `${url}/api/auth/apple`;
-          }}
-          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2"
+        </a>
+        <a
+          href={backendUrl ? `${backendUrl}/api/auth/apple` : "#"}
+          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
         >
           <Apple className="mr-2 h-[22px] w-[22px]" />
           {t("auth.signInWithApple")}
-        </button>
+        </a>
       </div>
-      <NavLink
-        to={"/"}
-        className="bg-brand-primary text-white text-xs py-2 px-4 rounded-md flex justify-center items-center gap-1 capitalize"
-      >
-        <HugeiconsIcon icon={ArrowLeft01Icon} size={16} />
-        {t("auth.backToHome")}
-      </NavLink>
 
       <div className="w-full max-w-[580px] p-6 space-y-6 rounded-lg border border-tableBorder shadow-table">
         <div>
@@ -70,6 +49,8 @@ const Login = () => {
             <li>
               <a
                 href="https://support.apple.com/en-us/102571"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:underline"
               >
                 https://support.apple.com/en-us/102571
@@ -78,6 +59,8 @@ const Login = () => {
             <li>
               <a
                 href="https://www.google.com/account/about/sign-in-with-google/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="hover:underline"
               >
                 https://www.google.com/account/about/sign-in-with-google/
@@ -94,6 +77,8 @@ const Login = () => {
             </div>
             <a
               href="https://support.apple.com/en-us/102571"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-brand-primary text-sm hover:underline block mt-1"
             >
               {t("auth.appleSupportLink")}
@@ -110,6 +95,8 @@ const Login = () => {
             </div>
             <a
               href="https://www.google.com/account/about/sign-in-with-google/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-brand-primary text-sm hover:underline block mt-1"
             >
               {t("auth.googleAccountLink")}
