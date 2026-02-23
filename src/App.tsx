@@ -2,8 +2,6 @@ import { Link, Routes, Route } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Login from './pages/Login'
 import UserInformation from './pages/UserInformation'
-import './App.css'
-
 function Home() {
   const { t, i18n } = useTranslation()
   return (
