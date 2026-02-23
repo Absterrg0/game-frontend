@@ -26,8 +26,10 @@ export default function AuthCallback() {
 
     if (signup === "true") {
       // Store email/appleId for signup form (cookies for cross-tab persistence)
-      if (email) Cookies.set("email", email, { path: "/", maxAge: 600 });
-      if (appleId) Cookies.set("appleId", appleId, { path: "/", maxAge: 600 });
+      // js-cookie uses "expires" (in days), not maxAge
+      const tenMinutes = 600 / 86400; // 600 seconds in days
+      if (email) Cookies.set("email", email, { path: "/", expires: tenMinutes });
+      if (appleId) Cookies.set("appleId", appleId, { path: "/", expires: tenMinutes });
       navigate("/information", { replace: true });
       return;
     }
