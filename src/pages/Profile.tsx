@@ -1,6 +1,6 @@
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isValid } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,11 @@ export default function Profile() {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isProfileComplete) return <Navigate to="/information" replace />;
 
-  const displayDate = user?.dateOfBirth
-    ? format(parseISO(String(user.dateOfBirth)), "PPP")
-    : "—";
+  const displayDate = (() => {
+    if (!user?.dateOfBirth) return "—";
+    const parsed = parseISO(String(user.dateOfBirth));
+    return isValid(parsed) ? format(parsed, "PPP") : "—";
+  })();
 
   const displayGender = user?.gender
     ? t(`signup.${user.gender}` as "signup.male" | "signup.female" | "signup.other")

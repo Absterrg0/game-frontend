@@ -1,13 +1,11 @@
 import { useState } from "react";
-import Cookies from "js-cookie";
+import type { ChangeEvent, FormEvent } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { api } from "@/lib/api";
 import { useTranslation } from "react-i18next";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signupFormSchema } from "@/lib/validation";
 import {
   Select,
   SelectContent,
@@ -16,6 +14,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { useCompleteSignup, type CompleteSignupFormData } from "@/hooks/useCompleteSignup";
+import { PENDING_SIGNUP_TOKEN_KEY } from "@/lib/auth";
+import { decodeJwtPayload, type PendingSignupPayload } from "@/lib/jwt";
 
 const inputClassName =
   "h-10 md:h-12 w-full rounded-lg border-[#C6C4D5] px-4 font-primary text-sm md:text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary";
@@ -24,17 +25,31 @@ export default function UserInformation() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated, isProfileComplete, loading: authLoading, checkAuth } = useAuth();
-  const emailFromCookie = Cookies.get("email");
-  const appleId = Cookies.get("appleId");
-  const derivedEmail = user?.email ?? emailFromCookie ?? "";
-  const [loading, setLoading] = useState(false);
+  const pendingToken = sessionStorage.getItem(PENDING_SIGNUP_TOKEN_KEY);
+
+  const { submit, isLoading } = useCompleteSignup({
+    getPendingToken: () => sessionStorage.getItem(PENDING_SIGNUP_TOKEN_KEY),
+    onSuccess: async () => {
+      await checkAuth();
+      navigate("/profile", { replace: true });
+    },
+  });
+
+  let displayEmail = user?.email ?? "";
+  if (!displayEmail && pendingToken) {
+    try {
+      displayEmail = decodeJwtPayload<PendingSignupPayload>(pendingToken).pendingEmail ?? "";
+    } catch {
+      // displayEmail stays ""
+    }
+  }
+
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [inputs, setInputs] = useState({
     alias: "",
     name: "",
     dateOfBirth: "",
     gender: "",
-    appleId: appleId || "",
   });
 
   if (authLoading) {
@@ -45,75 +60,34 @@ export default function UserInformation() {
     );
   }
 
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
   if (isAuthenticated && isProfileComplete) return <Navigate to="/profile" replace />;
-  if (!isAuthenticated && !emailFromCookie && !appleId) return <Navigate to="/login" replace />;
+  if (!isAuthenticated && !pendingToken) return <Navigate to="/login" replace />;
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+    e: ChangeEvent<HTMLSelectElement | HTMLInputElement>
   ) => {
     const { name, value } = e.target;
     setInputs((prev) => ({ ...prev, [name]: value }));
     if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFieldErrors({});
 
-    const result = signupFormSchema.safeParse({ ...inputs, email: derivedEmail });
-    if (!result.success) {
-      const errors: Record<string, string> = {};
-      result.error.flatten().fieldErrors &&
-        Object.entries(result.error.flatten().fieldErrors).forEach(
-          ([key, msgs]) => {
-            if (msgs?.[0]) errors[key] = msgs[0];
-          }
-        );
-      setFieldErrors(errors);
+    const result = await submit(inputs as CompleteSignupFormData);
+
+    if (result.success) {
       return;
     }
 
-    setLoading(true);
-    let utcISOString: string | null = null;
-
-    if (inputs?.dateOfBirth) {
-      const date = parseISO(inputs.dateOfBirth);
-      utcISOString = new Date(
-        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-      ).toISOString();
+    if (result.fieldErrors) {
+      setFieldErrors(result.fieldErrors);
+      return;
     }
 
-    try {
-      const response = await api.post("/api/auth/complete-signup", {
-        ...inputs,
-        email: derivedEmail,
-        dateOfBirth: utcISOString,
-      });
-      if (
-        response.status === 200 &&
-        !response?.data?.error &&
-        response?.data?.code === "SIGNUP_SUCCESSFUL"
-      ) {
-        Cookies.remove("email");
-        Cookies.remove("appleId");
-        await checkAuth();
-        navigate("/profile", { replace: true });
-      } else {
-        window.alert(response?.data?.message);
-      }
-    } catch (error: unknown) {
-      const err = error as { response?: { data?: { message?: string } } };
-      window.alert(err?.response?.data?.message);
-    } finally {
-      setLoading(false);
+    if (result.message) {
+      window.alert(result.message);
     }
   };
 
@@ -141,7 +115,7 @@ export default function UserInformation() {
             spellCheck={false}
             className={inputClassName}
             placeholder={t("signup.enterEmailAddress")}
-            value={derivedEmail}
+            value={displayEmail}
             onChange={handleInputChange}
             aria-invalid={!!fieldErrors.email}
           />
@@ -231,10 +205,10 @@ export default function UserInformation() {
         </Field>
         <Button
           type="submit"
-          disabled={loading}
+          disabled={isLoading}
           className="mt-8 h-11 w-full font-primary bg-brand-secondary text-brand-black hover:bg-brand-secondary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:animate-jerk"
         >
-          {loading ? t("signup.signingUp") : t("signup.submit")}
+          {isLoading ? t("signup.signingUp") : t("signup.submit")}
         </Button>
       </form>
     </section>

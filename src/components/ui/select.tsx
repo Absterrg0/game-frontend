@@ -60,6 +60,10 @@ function SelectContent({
   align = "center",
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  const contentProps =
+    position === "popper"
+      ? { position, align, ...props }
+      : { position, ...props };
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content
@@ -70,9 +74,7 @@ function SelectContent({
             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className
         )}
-        position={position}
-        align={align}
-        {...props}
+        {...contentProps}
       >
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport

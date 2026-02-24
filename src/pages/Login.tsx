@@ -11,6 +11,8 @@ import { getBackendUrl } from "@/lib/api";
 const Login = () => {
   const { t } = useTranslation();
   const backendUrl = getBackendUrl();
+  const googleAuthUrl = backendUrl ? new URL("/api/auth/google", backendUrl).toString() : null;
+  const appleAuthUrl = backendUrl ? new URL("/api/auth/apple", backendUrl).toString() : null;
 
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center gap-6 py-8 px-4 sm:px-6">
@@ -19,14 +21,14 @@ const Login = () => {
           {t("common.login")}
         </h1>
         <a
-          href={backendUrl ? `${backendUrl}/api/auth/google` : "#"}
+          href={googleAuthUrl ?? "#"}
           className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
         >
           <Google className="mr-2 h-[22px] w-[22px]" />
           {t("auth.signInWithGoogle")}
         </a>
         <a
-          href={backendUrl ? `${backendUrl}/api/auth/apple` : "#"}
+          href={appleAuthUrl ?? "#"}
           className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
         >
           <Apple className="mr-2 h-[22px] w-[22px]" />
