@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 
 export interface AuthUser {
@@ -15,7 +15,7 @@ export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = useCallback(async () => {
+  async function checkAuth() {
     try {
       const res = await api.get<{ user: AuthUser }>("/api/auth/me");
       setUser(res.data.user);
@@ -24,20 +24,21 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
+  // Initial auth check on mount — useEffect required; no declarative alternative without a data-fetching library
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, []);
 
-  const logout = useCallback(async () => {
+  async function logout() {
     try {
       await api.post("/api/auth/logout");
       setUser(null);
     } catch {
       setUser(null);
     }
-  }, []);
+  }
 
   const isProfileComplete = !!(user?.alias?.trim() && user?.name?.trim());
 

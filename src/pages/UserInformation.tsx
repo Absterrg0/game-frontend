@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
@@ -26,11 +26,10 @@ export default function UserInformation() {
   const { user, isAuthenticated, isProfileComplete, loading: authLoading, checkAuth } = useAuth();
   const emailFromCookie = Cookies.get("email");
   const appleId = Cookies.get("appleId");
-  const email = user?.email ?? emailFromCookie ?? "";
+  const derivedEmail = user?.email ?? emailFromCookie ?? "";
   const [loading, setLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [inputs, setInputs] = useState({
-    email: email || "",
     alias: "",
     name: "",
     dateOfBirth: "",
@@ -38,21 +37,24 @@ export default function UserInformation() {
     appleId: appleId || "",
   });
 
-  useEffect(() => {
-    setInputs((prev) => ({ ...prev, email: user?.email ?? emailFromCookie ?? prev.email }));
-  }, [user?.email, emailFromCookie]);
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    if (authLoading) return;
-    if (isAuthenticated && isProfileComplete) {
-      navigate("/profile", { replace: true });
-      return;
-    }
-    if (!isAuthenticated && !emailFromCookie && !appleId) {
-      navigate("/login", { replace: true });
-      return;
-    }
-  }, [authLoading, isAuthenticated, isProfileComplete, emailFromCookie, appleId, navigate]);
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
+
+  if (isAuthenticated && isProfileComplete) return <Navigate to="/profile" replace />;
+  if (!isAuthenticated && !emailFromCookie && !appleId) return <Navigate to="/login" replace />;
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -66,7 +68,7 @@ export default function UserInformation() {
     e.preventDefault();
     setFieldErrors({});
 
-    const result = signupFormSchema.safeParse(inputs);
+    const result = signupFormSchema.safeParse({ ...inputs, email: derivedEmail });
     if (!result.success) {
       const errors: Record<string, string> = {};
       result.error.flatten().fieldErrors &&
@@ -92,6 +94,7 @@ export default function UserInformation() {
     try {
       const response = await api.post("/api/auth/complete-signup", {
         ...inputs,
+        email: derivedEmail,
         dateOfBirth: utcISOString,
       });
       if (
@@ -113,14 +116,6 @@ export default function UserInformation() {
       setLoading(false);
     }
   };
-
-  if (authLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
 
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6">
@@ -146,7 +141,7 @@ export default function UserInformation() {
             spellCheck={false}
             className={inputClassName}
             placeholder={t("signup.enterEmailAddress")}
-            value={inputs.email}
+            value={derivedEmail}
             onChange={handleInputChange}
             aria-invalid={!!fieldErrors.email}
           />

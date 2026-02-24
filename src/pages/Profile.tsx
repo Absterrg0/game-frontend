@@ -1,65 +1,21 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
-import { api } from "@/lib/api";
-import { useAuth, type AuthUser } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
 export default function Profile() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated, isProfileComplete, loading: authLoading, logout } = useAuth();
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (!isAuthenticated) {
-      navigate("/login", { replace: true });
-      return;
-    }
-    if (!isProfileComplete) {
-      navigate("/information", { replace: true });
-      return;
-    }
-  }, [authLoading, isAuthenticated, isProfileComplete, navigate]);
-
-  useEffect(() => {
-    if (!isAuthenticated || !isProfileComplete) return;
-
-    const fetchProfile = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await api.get<{ user: AuthUser }>("/api/auth/me");
-        setUser(res.data.user);
-      } catch {
-        setError(t("profile.errorLoading"));
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [isAuthenticated, isProfileComplete, t]);
+  const { user, isAuthenticated, isProfileComplete, loading: authLoading, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
     navigate("/login", { replace: true });
   };
 
-  if (authLoading || (!isAuthenticated || !isProfileComplete)) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <p className="text-muted-foreground">{t("profile.loading")}</p>
@@ -67,15 +23,8 @@ export default function Profile() {
     );
   }
 
-  if (error) {
-    return (
-      <section className="relative w-full min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6">
-        <div className="w-full max-w-[580px] rounded-3xl border border-[#EBEBF3] px-6 py-10 shadow-auth-pop-shadow md:px-6 md:py-6 lg:px-14 lg:py-8">
-          <p className="text-destructive text-center">{error}</p>
-        </div>
-      </section>
-    );
-  }
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isProfileComplete) return <Navigate to="/information" replace />;
 
   const displayDate = user?.dateOfBirth
     ? format(parseISO(String(user.dateOfBirth)), "PPP")

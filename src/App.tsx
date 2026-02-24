@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Suspense } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Login from './pages/Login'
 import UserInformation from './pages/UserInformation'
 import AuthCallback from './pages/AuthCallback'
@@ -7,21 +7,7 @@ import Profile from './pages/Profile'
 import { useAuth } from './hooks/useAuth'
 
 function Home() {
-  const navigate = useNavigate()
   const { isAuthenticated, isProfileComplete, loading } = useAuth()
-
-  useEffect(() => {
-    if (loading) return
-    if (!isAuthenticated) {
-      navigate('/login', { replace: true })
-      return
-    }
-    if (!isProfileComplete) {
-      navigate('/information', { replace: true })
-      return
-    }
-    navigate('/profile', { replace: true })
-  }, [loading, isAuthenticated, isProfileComplete, navigate])
 
   if (loading) {
     return (
@@ -31,18 +17,22 @@ function Home() {
     )
   }
 
-  return null
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (!isProfileComplete) return <Navigate to="/information" replace />
+  return <Navigate to="/profile" replace />
 }
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
-      <Route path="/information" element={<UserInformation />} />
-    </Routes>
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/information" element={<UserInformation />} />
+      </Routes>
+    </Suspense>
   )
 }
 

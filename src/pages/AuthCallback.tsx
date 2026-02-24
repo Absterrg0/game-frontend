@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams, Navigate } from "react-router-dom";
 import Cookies from "js-cookie";
 
 /**
@@ -9,42 +8,23 @@ import Cookies from "js-cookie";
  * - error=true: Auth failed
  */
 export default function AuthCallback() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const success = searchParams.get("success");
+  const signup = searchParams.get("signup");
+  const error = searchParams.get("error");
+  const email = searchParams.get("email");
+  const appleId = searchParams.get("apple_id");
 
-  useEffect(() => {
-    const success = searchParams.get("success");
-    const signup = searchParams.get("signup");
-    const error = searchParams.get("error");
-    const email = searchParams.get("email");
-    const appleId = searchParams.get("apple_id");
+  if (success === "true") return <Navigate to="/" replace />;
 
-    if (success === "true") {
-      navigate("/", { replace: true });
-      return;
-    }
+  if (signup === "true") {
+    const tenMinutes = 600 / 86400;
+    if (email) Cookies.set("email", email, { path: "/", expires: tenMinutes });
+    if (appleId) Cookies.set("appleId", appleId, { path: "/", expires: tenMinutes });
+    return <Navigate to="/information" replace />;
+  }
 
-    if (signup === "true") {
-      // Store email/appleId for signup form (cookies for cross-tab persistence)
-      // js-cookie uses "expires" (in days), not maxAge
-      const tenMinutes = 600 / 86400; // 600 seconds in days
-      if (email) Cookies.set("email", email, { path: "/", expires: tenMinutes });
-      if (appleId) Cookies.set("appleId", appleId, { path: "/", expires: tenMinutes });
-      navigate("/information", { replace: true });
-      return;
-    }
+  if (error) return <Navigate to={"/login?error=" + error} replace />;
 
-    if (error) {
-      navigate("/login?error=" + error, { replace: true });
-      return;
-    }
-
-    navigate("/login", { replace: true });
-  }, [navigate, searchParams]);
-
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <p className="text-muted-foreground">Redirecting...</p>
-    </div>
-  );
+  return <Navigate to="/login" replace />;
 }
