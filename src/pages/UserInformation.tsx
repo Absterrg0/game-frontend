@@ -13,10 +13,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/hooks/useAuth";
-import { useCompleteSignup, type CompleteSignupFormData } from "@/hooks/useCompleteSignup";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCompleteSignup } from "@/hooks/useCompleteSignup";
 import { PENDING_SIGNUP_TOKEN_KEY } from "@/lib/auth";
-import { decodeJwtPayload, type PendingSignupPayload } from "@/lib/jwt";
+import { decodeJwtPayload, pendingSignupPayloadSchema } from "@/lib/jwt";
 
 const inputClassName =
   "h-10 md:h-12 w-full rounded-lg border-[#C6C4D5] px-4 font-primary text-sm md:text-base text-foreground placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-primary";
@@ -38,14 +38,19 @@ export default function UserInformation() {
   let displayEmail = user?.email ?? "";
   if (!displayEmail && pendingToken) {
     try {
-      displayEmail = decodeJwtPayload<PendingSignupPayload>(pendingToken).pendingEmail ?? "";
+      displayEmail = decodeJwtPayload(pendingToken, pendingSignupPayloadSchema).pendingEmail ?? "";
     } catch {
       // displayEmail stays ""
     }
   }
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [inputs, setInputs] = useState({
+  const [inputs, setInputs] = useState<{
+    alias: string;
+    name: string;
+    dateOfBirth: string;
+    gender: "male" | "female" | "other" | "" | undefined;
+  }>({
     alias: "",
     name: "",
     dateOfBirth: "",
@@ -75,7 +80,7 @@ export default function UserInformation() {
     e.preventDefault();
     setFieldErrors({});
 
-    const result = await submit(inputs as CompleteSignupFormData);
+    const result = await submit(inputs);
 
     if (result.success) {
       return;
@@ -108,7 +113,6 @@ export default function UserInformation() {
           <Input
             id="signup-email"
             disabled
-            required
             type="email"
             name="email"
             autoComplete="email"
@@ -116,7 +120,6 @@ export default function UserInformation() {
             className={inputClassName}
             placeholder={t("signup.enterEmailAddress")}
             value={displayEmail}
-            onChange={handleInputChange}
             aria-invalid={!!fieldErrors.email}
           />
           {fieldErrors.email && (
@@ -187,7 +190,10 @@ export default function UserInformation() {
           <Select
             value={inputs.gender || undefined}
             onValueChange={(value) => {
-              setInputs((prev) => ({ ...prev, gender: value }));
+              setInputs((prev) => ({
+                ...prev,
+                gender: value === "male" || value === "female" || value === "other" ? value : "",
+              }));
               if (fieldErrors.gender) setFieldErrors((prev) => ({ ...prev, gender: "" }));
             }}
           >

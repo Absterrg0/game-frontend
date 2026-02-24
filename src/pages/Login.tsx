@@ -20,20 +20,42 @@ const Login = () => {
         <h1 className="text-center font-primary text-[22px] font-bold capitalize text-brand-primary md:text-[26px]">
           {t("common.login")}
         </h1>
-        <a
-          href={googleAuthUrl ?? "#"}
-          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
-        >
-          <Google className="mr-2 h-[22px] w-[22px]" />
-          {t("auth.signInWithGoogle")}
-        </a>
-        <a
-          href={appleAuthUrl ?? "#"}
-          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
-        >
-          <Apple className="mr-2 h-[22px] w-[22px]" />
-          {t("auth.signInWithApple")}
-        </a>
+        {googleAuthUrl ? (
+          <a
+            href={googleAuthUrl}
+            className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
+          >
+            <Google className="mr-2 h-[22px] w-[22px]" />
+            {t("auth.signInWithGoogle")}
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="font-semibold border rounded-lg border-[#C6C4D5] text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
+          >
+            <Google className="mr-2 h-[22px] w-[22px]" />
+            {t("auth.signInWithGoogle")}
+          </button>
+        )}
+        {appleAuthUrl ? (
+          <a
+            href={appleAuthUrl}
+            className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
+          >
+            <Apple className="mr-2 h-[22px] w-[22px]" />
+            {t("auth.signInWithApple")}
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled
+            className="font-semibold border rounded-lg border-[#C6C4D5] text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
+          >
+            <Apple className="mr-2 h-[22px] w-[22px]" />
+            {t("auth.signInWithApple")}
+          </button>
+        )}
       </div>
 
       <div className="w-full max-w-[580px] p-6 space-y-6 rounded-lg border border-tableBorder shadow-table">

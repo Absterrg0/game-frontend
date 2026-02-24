@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { parseISO } from "date-fns";
 import { api } from "@/lib/api";
@@ -29,6 +29,10 @@ export function useCompleteSignup({
 }: UseCompleteSignupOptions) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const onSuccessRef = useRef(onSuccess);
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
 
   const submit = useCallback(
     async (rawData: CompleteSignupFormData): Promise<CompleteSignupResult> => {
@@ -47,12 +51,12 @@ export function useCompleteSignup({
 
       if (!result.success) {
         const fieldErrors: Record<string, string> = {};
-        result.error.flatten().fieldErrors &&
-          Object.entries(result.error.flatten().fieldErrors).forEach(
-            ([key, msgs]) => {
-              if (msgs?.[0]) fieldErrors[key] = msgs[0];
-            }
-          );
+        const flattened = result.error.flatten();
+        if (Object.keys(flattened.fieldErrors).length > 0) {
+          Object.entries(flattened.fieldErrors).forEach(([key, msgs]) => {
+            if (msgs?.[0]) fieldErrors[key] = msgs[0];
+          });
+        }
         return { success: false, fieldErrors };
       }
 
@@ -81,7 +85,7 @@ export function useCompleteSignup({
           response?.data?.code === "SIGNUP_SUCCESSFUL"
         ) {
           sessionStorage.removeItem(PENDING_SIGNUP_TOKEN_KEY);
-          await onSuccess();
+          await onSuccessRef.current();
           return { success: true };
         }
 
@@ -90,12 +94,16 @@ export function useCompleteSignup({
           message: response?.data?.message ?? "Sign up failed.",
         };
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const msg =
-          err?.response?.data?.message ?? "Sign up failed. Please try again.";
+        const err = error as {
+          response?: { data?: { message?: string; code?: string } };
+        };
+        const data = err?.response?.data;
+        const msg = data?.message ?? "Sign up failed. Please try again.";
+        const code = data?.code;
         const isTokenError =
-          typeof msg === "string" &&
-          (msg.includes("expired") || msg.includes("Invalid"));
+          code === "INVALID_TOKEN" ||
+          (typeof msg === "string" &&
+            /token\s*(expired|invalid)|invalid\s*(or\s*)?expired\s*signup\s*token/i.test(msg));
         if (isTokenError) {
           sessionStorage.removeItem(PENDING_SIGNUP_TOKEN_KEY);
           navigate("/login", { replace: true });
@@ -105,7 +113,7 @@ export function useCompleteSignup({
         setIsLoading(false);
       }
     },
-    [getPendingToken, navigate, onSuccess]
+    [getPendingToken, navigate]
   );
 
   return { submit, isLoading };

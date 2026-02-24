@@ -1,7 +1,7 @@
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, parseISO, isValid } from "date-fns";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 

@@ -1,4 +1,5 @@
-import { useSearchParams, Navigate } from "react-router-dom";
+import { useSearchParams, useLocation, Navigate } from "react-router-dom";
+import { useMemo } from "react";
 import { PENDING_SIGNUP_TOKEN_KEY } from "@/lib/auth";
 
 /** Whitelist of safe error codes from backend/auth flow (prevents XSS/open redirect). */
@@ -17,18 +18,27 @@ function isValidJwtFormat(token: string): boolean {
   return parts.length === 3 && parts.every((p) => /^[A-Za-z0-9_-]+$/.test(p));
 }
 
+/** Parses URL fragment (#key=value&...) into a URLSearchParams-like object. */
+function parseHashParams(hash: string): URLSearchParams {
+  const query = hash.startsWith("#") ? hash.slice(1) : hash;
+  return new URLSearchParams(query);
+}
+
 /**
- * Handles OAuth callback from backend. Backend redirects here with query params:
- * - success=true: User logged in, session cookie set by backend
- * - signup=true&pendingToken=...: User needs to complete signup (token is signed JWT)
- * - error=true: Auth failed
+ * Handles OAuth callback from backend. Backend redirects here with:
+ * - Query params: success=true (logged in) or error=... (auth failed)
+ * - Fragment (#): signup=true&pendingToken=... (token in fragment so it's never sent to server)
  */
 export default function AuthCallback() {
   const [searchParams] = useSearchParams();
+  const { hash } = useLocation();
+
+  const hashParams = useMemo(() => parseHashParams(hash), [hash]);
+  const signup = hashParams.get("signup");
+  const pendingToken = hashParams.get("pendingToken");
+
   const success = searchParams.get("success");
-  const signup = searchParams.get("signup");
   const error = sanitizeErrorCode(searchParams.get("error"));
-  const pendingToken = searchParams.get("pendingToken");
 
   if (success === "true") return <Navigate to="/" replace />;
 

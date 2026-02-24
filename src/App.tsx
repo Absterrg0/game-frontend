@@ -4,7 +4,7 @@ import Login from './pages/Login'
 import UserInformation from './pages/UserInformation'
 import AuthCallback from './pages/AuthCallback'
 import Profile from './pages/Profile'
-import { useAuth } from './hooks/useAuth'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 function Home() {
   const { isAuthenticated, isProfileComplete, loading } = useAuth()
@@ -24,16 +24,18 @@ function Home() {
 
 function App() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <Routes>
+    <AuthProvider>
+      <Suspense fallback={<div>Loading...</div>}>
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/information" element={<UserInformation />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Suspense>
+        </Routes>
+      </Suspense>
+    </AuthProvider>
   )
 }
 
