@@ -4,6 +4,13 @@ import { format, parseISO, isValid } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  UserIcon,
+  Mail01Icon,
+  Calendar03Icon,
+  Logout01Icon,
+} from "@hugeicons/core-free-icons";
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -17,8 +24,16 @@ export default function Profile() {
 
   if (authLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <p className="text-muted-foreground">{t("profile.loading")}</p>
+      <div
+        className="flex min-h-screen items-center justify-center animate-in fade-in duration-300"
+        style={{
+          background: "linear-gradient(165deg, oklch(0.99 0.005 260) 0%, oklch(0.97 0.01 260) 50%, oklch(0.98 0.008 260) 100%)",
+        }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+          <p className="text-sm text-muted-foreground">{t("profile.loading")}</p>
+        </div>
       </div>
     );
   }
@@ -40,87 +55,124 @@ export default function Profile() {
     ? t(`profile.userType.${user.userType}` as "profile.userType.user" | "profile.userType.admin")
     : "—";
 
+  const initials = [user?.name, user?.alias]
+    .filter(Boolean)
+    .map((s) => s?.charAt(0) ?? "")
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "?";
+
   return (
-    <section className="relative w-full min-h-screen flex flex-col items-center justify-center py-8 px-4 sm:px-6">
-      <div className="w-full max-w-[580px] rounded-3xl border border-[#EBEBF3] px-6 py-10 shadow-auth-pop-shadow md:px-6 md:py-6 lg:px-14 lg:py-8">
-        <h1 className="text-center font-primary text-[22px] font-bold capitalize text-brand-primary md:text-[26px] text-balance">
-          {t("profile.title")}
-        </h1>
-
-        <div className="mt-8 space-y-6">
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("profile.id")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground font-mono break-all">
-              {user?.id ?? "—"}
-            </p>
-          </Field>
-
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("signup.emailAddress")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground">
-              {user?.email ?? "—"}
-            </p>
-          </Field>
-
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("signup.name")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground">
-              {user?.name ?? "—"}
-            </p>
-          </Field>
-
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("signup.alias")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground">
-              {user?.alias ?? "—"}
-            </p>
-          </Field>
-
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("signup.dateOfBirth")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground">
-              {displayDate}
-            </p>
-          </Field>
-
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("signup.gender")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground">
-              {displayGender}
-            </p>
-          </Field>
-
-          <Field>
-            <FieldLabel className="font-primary text-sm text-brand-primary md:text-base">
-              {t("profile.userType")}
-            </FieldLabel>
-            <p className="text-sm md:text-base text-foreground">
-              {displayUserType}
-            </p>
-          </Field>
+    <section
+      className="relative min-h-screen w-full py-12 px-4 sm:px-6 md:py-16"
+      style={{
+        background: "linear-gradient(165deg, oklch(0.99 0.005 260) 0%, oklch(0.97 0.01 260) 50%, oklch(0.98 0.008 260) 100%)",
+      }}
+    >
+      <div className="mx-auto w-full max-w-[560px] animate-in fade-in slide-in-from-bottom-4 duration-500 fill-mode-both">
+        {/* Avatar & header */}
+        <div className="mb-8 flex flex-col items-center">
+          <div
+            className="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-semibold text-foreground shadow-auth-pop-shadow"
+            style={{
+              background: "linear-gradient(135deg, oklch(0.95 0.02 260), oklch(0.92 0.03 260))",
+              border: "1px solid oklch(0.9 0.02 260)",
+            }}
+          >
+            {initials}
+          </div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+            {t("profile.title")}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {user?.alias ?? user?.name ?? ""}
+          </p>
         </div>
 
-        <Button
-          type="button"
-          onClick={handleLogout}
-          variant="outline"
-          className="mt-8 h-11 w-full font-primary border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-        >
-          {t("common.logout")}
-        </Button>
+        {/* Card */}
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-auth-pop-shadow backdrop-blur-sm">
+          <div className="divide-y divide-border/60 px-6 py-6 sm:px-8 sm:py-7">
+            <ProfileRow
+              icon={UserIcon}
+              label={t("profile.id")}
+              value={user?.id ?? "—"}
+              mono
+            />
+            <ProfileRow
+              icon={Mail01Icon}
+              label={t("signup.emailAddress")}
+              value={user?.email ?? "—"}
+            />
+            <ProfileRow
+              icon={UserIcon}
+              label={t("signup.name")}
+              value={user?.name ?? "—"}
+            />
+            <ProfileRow
+              icon={UserIcon}
+              label={t("signup.alias")}
+              value={user?.alias ?? "—"}
+            />
+            <ProfileRow
+              icon={Calendar03Icon}
+              label={t("signup.dateOfBirth")}
+              value={displayDate}
+            />
+            <ProfileRow
+              icon={UserIcon}
+              label={t("signup.gender")}
+              value={displayGender}
+            />
+            <ProfileRow
+              icon={UserIcon}
+              label={t("profile.userType")}
+              value={displayUserType}
+            />
+          </div>
+
+          <div className="border-t border-border/60 px-6 py-5 sm:px-8">
+            <Button
+              type="button"
+              onClick={handleLogout}
+              variant="outline"
+              className="h-11 w-full gap-2 text-sm text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
+            >
+              <HugeiconsIcon icon={Logout01Icon} size={18} />
+              {t("common.logout")}
+            </Button>
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function ProfileRow({
+  icon,
+  label,
+  value,
+  mono = false,
+}: {
+  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"];
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex gap-4 py-4 first:pt-0 last:pb-0">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground">
+        <HugeiconsIcon icon={icon} size={18} />
+      </div>
+      <Field className="flex-1 gap-1 min-w-0">
+        <FieldLabel className="text-sm text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </FieldLabel>
+        <p
+          className={`text-sm text-sm text-foreground sm:text-base ${mono ? "font-mono break-all text-[13px]" : ""}`}
+        >
+          {value}
+        </p>
+      </Field>
+    </div>
   );
 }

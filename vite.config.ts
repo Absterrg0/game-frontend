@@ -7,6 +7,7 @@ import path from 'path'
 // Note: No proxy for /api - session cookies require requests to go directly to backend
 // so the browser sends the cookie (same-site: backend domain)
 export default defineConfig({
+  envPrefix: ['VITE_', 'REACT_APP_'], // REACT_APP_ for backward compat with CRA .env
   plugins: [
     react({
       babel: {

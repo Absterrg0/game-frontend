@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-tableBorder: oklch(0.91 0.01 260);
+  --shadow-table: 0 2px 12px -2px oklch(0.2 0.02 260 / 10%), 0 4px 24px -4px oklch(0.2 0.02 260 / 6%);
+  --shadow-auth-pop-shadow: 0 4px 24px -4px oklch(0.2 0.02 260 / 12%), 0 8px 48px -8px oklch(0.2 0.02 260 / 8%);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -133,3 +136,4 @@
     @apply bg-background text-foreground;
   }
 }
+
