@@ -8,9 +8,7 @@ COPY . .
 COPY package*.json ./
 
 # Install dependencies
-RUN yarn install 
-
-
+RUN yarn install
 
 # Build the React application
 RUN yarn build
@@ -22,7 +20,7 @@ FROM nginx:latest
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy the build artifacts from the build stage to NGINX web server
-COPY --from=build-stage /app/build/ /usr/share/nginx/html
+COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 
 # We need to make sure not to run the container as a non root user
 # for better security
