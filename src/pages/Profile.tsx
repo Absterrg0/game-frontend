@@ -1,7 +1,8 @@
+import type { ComponentProps } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, parseISO, isValid } from "date-fns";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -18,8 +19,11 @@ export default function Profile() {
   const { user, isAuthenticated, isProfileComplete, loading: authLoading, logout } = useAuth();
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
+    try {
+      await logout();
+    } finally {
+      navigate("/login", { replace: true });
+    }
   };
 
   if (authLoading) {
@@ -47,13 +51,23 @@ export default function Profile() {
     return isValid(parsed) ? format(parsed, "PPP") : "—";
   })();
 
-  const displayGender = user?.gender
-    ? t(`signup.${user.gender}` as "signup.male" | "signup.female" | "signup.other")
-    : "—";
-
-  const displayUserType = user?.userType
-    ? t(`profile.userType.${user.userType}` as "profile.userType.user" | "profile.userType.admin")
-    : "—";
+  const genderKeyMap: Record<string, string> = {
+    male: "signup.male",
+    female: "signup.female",
+    other: "signup.other",
+  };
+  const userTypeKeyMap: Record<string, string> = {
+    user: "profile.userType.user",
+    admin: "profile.userType.admin",
+  };
+  const displayGender =
+    user?.gender && genderKeyMap[user.gender]
+      ? t(genderKeyMap[user.gender])
+      : "—";
+  const displayUserType =
+    user?.userType && userTypeKeyMap[user.userType]
+      ? t(userTypeKeyMap[user.userType])
+      : "—";
 
   const initials = [user?.name, user?.alias]
     .filter(Boolean)
@@ -153,7 +167,7 @@ function ProfileRow({
   value,
   mono = false,
 }: {
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"];
+  icon: ComponentProps<typeof HugeiconsIcon>["icon"];
   label: string;
   value: string;
   mono?: boolean;
@@ -164,11 +178,11 @@ function ProfileRow({
         <HugeiconsIcon icon={icon} size={18} />
       </div>
       <Field className="flex-1 gap-1 min-w-0">
-        <FieldLabel className="text-sm text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <FieldLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {label}
         </FieldLabel>
         <p
-          className={`text-sm text-sm text-foreground sm:text-base ${mono ? "font-mono break-all text-[13px]" : ""}`}
+          className={`text-sm text-foreground sm:text-base ${mono ? "font-mono break-all text-[13px]" : ""}`}
         >
           {value}
         </p>

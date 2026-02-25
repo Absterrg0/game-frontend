@@ -1,10 +1,13 @@
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import Login from './pages/Login'
-import UserInformation from './pages/UserInformation'
-import AuthCallback from './pages/AuthCallback'
-import Profile from './pages/Profile'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { AuthProvider } from './contexts/AuthContext'
+import { useAuth } from './hooks/useAuth'
+import { Toaster } from '@/components/ui/sonner'
+
+const Login = lazy(() => import('./pages/Login'))
+const UserInformation = lazy(() => import('./pages/UserInformation'))
+const AuthCallback = lazy(() => import('./pages/AuthCallback'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 function Home() {
   const { isAuthenticated, isProfileComplete, loading } = useAuth()
@@ -35,6 +38,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      <Toaster />
     </AuthProvider>
   )
 }

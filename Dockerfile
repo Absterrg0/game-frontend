@@ -8,9 +8,7 @@ COPY . .
 COPY package*.json ./
 
 # Install dependencies
-RUN yarn install 
-
-
+RUN yarn install
 
 # Build the React application
 RUN yarn build

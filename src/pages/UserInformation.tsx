@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useCompleteSignup } from "@/hooks/useCompleteSignup";
 import { PENDING_SIGNUP_TOKEN_KEY } from "@/lib/auth";
 import { decodeJwtPayload, pendingSignupPayloadSchema } from "@/lib/jwt";
@@ -24,6 +24,7 @@ import {
   Calendar03Icon,
   ArrowRight01Icon,
 } from "@hugeicons/core-free-icons";
+import { toast } from "sonner";
 
 const inputClassName =
   "h-11 w-full rounded-xl border border-input bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none disabled:opacity-60 md:text-base";
@@ -107,7 +108,7 @@ export default function UserInformation() {
     }
 
     if (result.message) {
-      window.alert(result.message);
+      toast.error(result.message);
     }
   };
 
@@ -124,7 +125,7 @@ export default function UserInformation() {
           <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <HugeiconsIcon icon={UserIcon} size={24} />
           </div>
-          <h1 className="font-semibold text-2xl font-bold tracking-tight text-foreground md:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
             {t("signup.title")}
           </h1>
           <p className="mt-2  text-sm text-muted-foreground">
@@ -243,7 +244,10 @@ export default function UserInformation() {
               </Field>
 
               <Field className="gap-2">
-                <FieldLabel className="flex items-center gap-2  text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <FieldLabel
+                  htmlFor="gender-select-trigger"
+                  className="flex items-center gap-2  text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                >
                   <HugeiconsIcon icon={UserIcon} size={14} />
                   {t("signup.gender")}
                 </FieldLabel>
@@ -257,7 +261,7 @@ export default function UserInformation() {
                     if (fieldErrors.gender) setFieldErrors((prev) => ({ ...prev, gender: "" }));
                   }}
                 >
-                  <SelectTrigger className={`${inputClassName} h-11 justify-between`}>
+                  <SelectTrigger id="gender-select-trigger" className={`${inputClassName} h-11 justify-between`}>
                     <SelectValue placeholder={t("signup.selectGender")} />
                   </SelectTrigger>
                   <SelectContent>

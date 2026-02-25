@@ -1,11 +1,6 @@
-import Google from "../components/icons/google";
-import Apple from "../components/icons/apple";
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-  AppleIcon,
-  GoogleIcon,
-} from "@hugeicons/core-free-icons";
+import { AppleIcon, GoogleIcon } from "@hugeicons/core-free-icons";
 import { getBackendUrl } from "@/lib/api";
 
 const Login = () => {
@@ -25,7 +20,7 @@ const Login = () => {
             href={googleAuthUrl}
             className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
           >
-            <Google className="mr-2 h-[22px] w-[22px]" />
+            <HugeiconsIcon icon={GoogleIcon} size={22} className="mr-2" />
             {t("auth.signInWithGoogle")}
           </a>
         ) : (
@@ -34,7 +29,7 @@ const Login = () => {
             disabled
             className="font-semibold border rounded-lg border-[#C6C4D5] text-brand-primary w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
           >
-            <Google className="mr-2 h-[22px] w-[22px]" />
+            <HugeiconsIcon icon={GoogleIcon} size={22} className="mr-2" />
             {t("auth.signInWithGoogle")}
           </button>
         )}
@@ -43,7 +38,7 @@ const Login = () => {
             href={appleAuthUrl}
             className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
           >
-            <Apple className="mr-2 h-[22px] w-[22px]" />
+            <HugeiconsIcon icon={AppleIcon} size={22} className="mr-2" />
             {t("auth.signInWithApple")}
           </a>
         ) : (
@@ -52,7 +47,7 @@ const Login = () => {
             disabled
             className="font-semibold border rounded-lg border-[#C6C4D5] text-brand-primary w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
           >
-            <Apple className="mr-2 h-[22px] w-[22px]" />
+            <HugeiconsIcon icon={AppleIcon} size={22} className="mr-2" />
             {t("auth.signInWithApple")}
           </button>
         )}
