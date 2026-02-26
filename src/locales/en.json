@@ -1,7 +1,79 @@
-{"common":{"welcome":"Welcome","login":"Log In","logout":"Log out","signUp":"Sign up","language":"Language"},"profile":{"title":"Profile","id":"User ID","userType":"Account type","userType.user":"User","userType.admin":"Administrator","loading":"Loading profile...","errorLoading":"Failed to load profile"},"settings":{"title":"Settings","nav":{"tournaments":"Tournaments","myScore":"My Score","recordScore":"Record Score","settings":"Settings","clubs":"Clubs","sponsors":"Sponsors","about":"About"},"saveChanges":"Save Changes","saveSuccess":"Changes saved successfully","favoriteClubs":"Favorite Clubs","clubsIAdministrate":"Clubs That I Administrate","deleteAccount":"Delete Account","genderOptional":"Gender (Optional)","dateOfBirthOptional":"Date of birth (Optional)","favoriteClubsPlaceholder":"Your favorite clubs will appear here.","adminClubsPlaceholder":"Clubs you administrate will appear here.","deleteAccountPlaceholder":"To delete your account click the delete button. Please remember this action cannot be reversed.",
-"deleteAccountConfirmTitle":"Delete Account?",
-"deleteAccountConfirmDescription":"This will permanently delete your account and all associated data. You will be logged out and will need to sign up again to use the service. This action cannot be undone.",
-"deleteAccountConfirm":"Delete Account",
-"deleteAccountCancel":"Cancel",
-"deleteAccountSuccess":"Your account has been deleted successfully.",
-"deleteAccountError":"Failed to delete account. Please try again."},"auth":{"signInWithGoogle":"Sign in with Google","signInWithApple":"Sign in with Apple","whatDoesSignInMean":"What does sign in with Apple or Google mean?","signInExplanation":"Signing in with Apple or Google still gives you the option to use a different name and email with this app. You share no other information with this app than the email and name you enter this time.","forMoreInfo":"For more information visit:","appleSupport":"Apple Support","appleSupportLink":"Manage your apps with Sign in with Apple - Apple Support","appleSupportDescription":"When you use Sign in with Apple, you can use your Apple Account to sign in to participating apps and websites from developers other than Apple. Learn how to view and manage the apps that you use with Sign in with Apple.","signInWithGoogleTitle":"Sign-in with Google","googleAccountLink":"Third Party Sign in with Google - Google Account","googleAccountDescription":"Third party login allows you to sign in with Google across multiple apps & sites. Stop password tracking & use your Google Account for a simpler sign in."},"signup":{"title":"Sign up","subtitle":"Complete your profile to get started","emailAddress":"Email address","enterEmailAddress":"Enter email address","alias":"Alias","enterAlias":"Enter alias","name":"Name","enterName":"Enter name","dateOfBirth":"Date of birth","selectDateOfBirth":"Select date of birth","gender":"Gender","selectGender":"Select gender","male":"Male","female":"Female","other":"Other","clubs":"Clubs","signingUp":"Signing up","submit":"Sign up"}}
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Log In",
+    "logout": "Log out",
+    "signUp": "Sign up",
+    "language": "Language"
+  },
+  "profile": {
+    "title": "Profile",
+    "id": "User ID",
+    "userType": "Account type",
+    "userType.user": "User",
+    "userType.admin": "Administrator",
+    "loading": "Loading profile...",
+    "errorLoading": "Failed to load profile"
+  },
+  "settings": {
+    "title": "Settings",
+    "nav": {
+      "tournaments": "Tournaments",
+      "myScore": "My Score",
+      "recordScore": "Record Score",
+      "settings": "Settings",
+      "clubs": "Clubs",
+      "sponsors": "Sponsors",
+      "about": "About"
+    },
+    "saveChanges": "Save Changes",
+    "saveSuccess": "Changes saved successfully",
+    "favoriteClubs": "Favorites",
+    "clubsIAdministrate": "My Clubs",
+    "deleteAccount": "Account",
+    "genderOptional": "Gender (Optional)",
+    "dateOfBirthOptional": "Date of birth (Optional)",
+    "favoriteClubsPlaceholder": "Your favorite clubs will appear here.",
+    "adminClubsPlaceholder": "Clubs you administrate will appear here.",
+    "deleteAccountPlaceholder": "To delete your account click the delete button. Please remember this action cannot be reversed.",
+    "deleteAccountConfirmTitle": "Delete Account?",
+    "deleteAccountConfirmDescription": "This will permanently delete your account and all associated data. You will be logged out and will need to sign up again to use the service. This action cannot be undone.",
+    "deleteAccountConfirm": "Delete Account",
+    "deleteAccountCancel": "Cancel",
+    "deleteAccountSuccess": "Your account has been deleted successfully.",
+    "deleteAccountError": "Failed to delete account. Please try again."
+  },
+  "auth": {
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithApple": "Sign in with Apple",
+    "whatDoesSignInMean": "What does sign in with Apple or Google mean?",
+    "signInExplanation": "Signing in with Apple or Google still gives you the option to use a different name and email with this app. You share no other information with this app than the email and name you enter this time.",
+    "forMoreInfo": "For more information visit:",
+    "appleSupport": "Apple Support",
+    "appleSupportLink": "Manage your apps with Sign in with Apple - Apple Support",
+    "appleSupportDescription": "When you use Sign in with Apple, you can use your Apple Account to sign in to participating apps and websites from developers other than Apple. Learn how to view and manage the apps that you use with Sign in with Apple.",
+    "signInWithGoogleTitle": "Sign-in with Google",
+    "googleAccountLink": "Third Party Sign in with Google - Google Account",
+    "googleAccountDescription": "Third party login allows you to sign in with Google across multiple apps & sites. Stop password tracking & use your Google Account for a simpler sign in."
+  },
+  "signup": {
+    "title": "Sign up",
+    "subtitle": "Complete your profile to get started",
+    "emailAddress": "Email address",
+    "enterEmailAddress": "Enter email address",
+    "alias": "Alias",
+    "enterAlias": "Enter alias",
+    "name": "Name",
+    "enterName": "Enter name",
+    "dateOfBirth": "Date of birth",
+    "selectDateOfBirth": "Select date of birth",
+    "gender": "Gender",
+    "selectGender": "Select gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "clubs": "Clubs",
+    "signingUp": "Signing up",
+    "submit": "Sign up"
+  }
+}

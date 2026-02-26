@@ -120,7 +120,7 @@ export function AppNavbar() {
         aria-label={t("common.language")}
       >
         {(i18n.language === "en" ? "ENG" : "DEU")}
-        <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
+     
       </button>
 
       {isAuthenticated ? (
@@ -128,10 +128,10 @@ export function AppNavbar() {
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-[#facc15] text-[#1a1a1a] hover:bg-[#e6b800] transition-colors"
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 rounded-md font-medium text-sm bg-[#facc15] text-[#1a1a1a] hover:bg-[#e6b800] transition-colors max-w-[140px] sm:max-w-none"
             >
-              {user?.alias?.trim() || user?.name?.trim() || t("profile.title")}
-              <HugeiconsIcon icon={ArrowDown01Icon} size={16} />
+              <span className="truncate">{user?.alias?.trim() || user?.name?.trim() || t("profile.title")}</span>
+              <HugeiconsIcon icon={ArrowDown01Icon} size={16} className="shrink-0" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -151,7 +151,7 @@ export function AppNavbar() {
       ) : (
         <Link
           to="/login"
-          className="flex items-center gap-2 px-4 py-2 rounded-md font-medium text-sm bg-[#facc15] text-[#1a1a1a] hover:bg-[#e6b800] transition-colors"
+          className="flex items-center gap-2 px-3 py-2 sm:px-4 rounded-md font-medium text-sm bg-[#facc15] text-[#1a1a1a] hover:bg-[#e6b800] transition-colors shrink-0"
         >
           <HugeiconsIcon icon={LockIcon} size={18} />
           {t("common.login")}
@@ -162,18 +162,18 @@ export function AppNavbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 flex w-full items-center gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4 md:px-8"
+      className="sticky top-0 z-50 flex w-full min-w-0 items-center gap-4 px-4 py-3 sm:gap-6 sm:px-6 sm:py-4 lg:px-8"
       style={{ backgroundColor: "#067429" }}
     >
       {/* Mobile: page title on left */}
-      <div className="flex min-w-0 flex-1 items-center md:flex-none md:flex-1">
-        <span className="truncate text-base font-semibold text-white md:sr-only">
+      <div className="flex min-w-0 flex-1 items-center lg:flex-none lg:flex-1">
+        <span className="truncate text-base font-semibold text-white lg:sr-only">
           {pageTitle}
         </span>
       </div>
 
-      {/* Desktop: centered nav */}
-      <nav className="hidden flex-1 items-center justify-center gap-1 md:flex">
+      {/* Desktop: centered nav (hidden below lg) */}
+      <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
         <NavLinks location={location} t={t} />
       </nav>
 
@@ -184,7 +184,7 @@ export function AppNavbar() {
           <SheetTrigger asChild>
             <button
               type="button"
-              className="flex items-center justify-center p-2 text-white rounded-md hover:bg-white/10 transition-colors md:hidden"
+              className="flex items-center justify-center p-2 text-white rounded-md hover:bg-white/10 transition-colors lg:hidden"
               aria-label="Open menu"
             >
               <Menu className="size-6" aria-hidden />

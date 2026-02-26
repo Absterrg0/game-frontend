@@ -1,9 +1,7 @@
-import type { ComponentProps } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, parseISO, isValid } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
-import { Field, FieldLabel } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -12,8 +10,9 @@ import {
   Calendar03Icon,
   Logout01Icon,
 } from "@hugeicons/core-free-icons";
+import { ProfileRow } from "@/components/profile-page/profile-row";
 
-export default function Profile() {
+export default function ProfilePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated, isProfileComplete, loading: authLoading, logout } = useAuth();
@@ -161,32 +160,4 @@ export default function Profile() {
   );
 }
 
-function ProfileRow({
-  icon,
-  label,
-  value,
-  mono = false,
-}: {
-  icon: ComponentProps<typeof HugeiconsIcon>["icon"];
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="flex gap-4 py-4 first:pt-0 last:pb-0">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted/60 text-muted-foreground">
-        <HugeiconsIcon icon={icon} size={18} />
-      </div>
-      <Field className="flex-1 gap-1 min-w-0">
-        <FieldLabel className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </FieldLabel>
-        <p
-          className={`text-sm text-foreground sm:text-base ${mono ? "font-mono break-all text-[13px]" : ""}`}
-        >
-          {value}
-        </p>
-      </Field>
-    </div>
-  );
-}
+

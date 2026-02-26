@@ -9,7 +9,6 @@ const Login = lazy(() => import('./pages/Login'))
 const UserInformation = lazy(() => import('./pages/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/AuthCallback'))
 const Settings = lazy(() => import('./pages/Settings'))
-const SettingsPreview = lazy(() => import('./pages/SettingsPreview'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
 
 function Home() {
@@ -39,9 +38,6 @@ function App() {
           <Route element={<MainLayout />}>
             <Route path="/information" element={<UserInformation />} />
             <Route path="/profile" element={<Settings />} />
-            {import.meta.env.DEV && (
-              <Route path="/settings-preview" element={<SettingsPreview />} />
-            )}
             <Route path="/tournaments" element={<PlaceholderPage />} />
             <Route path="/my-score" element={<PlaceholderPage />} />
             <Route path="/record-score" element={<PlaceholderPage />} />
