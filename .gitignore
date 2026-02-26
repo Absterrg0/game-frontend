@@ -16,6 +16,8 @@ build
 .env.*.local
 *.local
 
+AGENTS.md
+
 # Logs
 logs
 *.log

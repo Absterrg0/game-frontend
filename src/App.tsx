@@ -3,11 +3,14 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { useAuth } from './hooks/useAuth'
 import { Toaster } from '@/components/ui/sonner'
+import { MainLayout } from '@/layouts/MainLayout'
 
 const Login = lazy(() => import('./pages/Login'))
 const UserInformation = lazy(() => import('./pages/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/AuthCallback'))
-const Profile = lazy(() => import('./pages/Profile'))
+const Settings = lazy(() => import('./pages/Settings'))
+const SettingsPreview = lazy(() => import('./pages/SettingsPreview'))
+const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
 
 function Home() {
   const { isAuthenticated, isProfileComplete, loading } = useAuth()
@@ -30,12 +33,23 @@ function App() {
     <AuthProvider>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route path="/information" element={<UserInformation />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route element={<MainLayout />}>
+            <Route path="/information" element={<UserInformation />} />
+            <Route path="/profile" element={<Settings />} />
+            {import.meta.env.DEV && (
+              <Route path="/settings-preview" element={<SettingsPreview />} />
+            )}
+            <Route path="/tournaments" element={<PlaceholderPage />} />
+            <Route path="/my-score" element={<PlaceholderPage />} />
+            <Route path="/record-score" element={<PlaceholderPage />} />
+            <Route path="/clubs" element={<PlaceholderPage />} />
+            <Route path="/sponsors" element={<PlaceholderPage />} />
+            <Route path="/about" element={<PlaceholderPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
       <Toaster />
