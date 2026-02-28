@@ -8,7 +8,7 @@ import { MainLayout } from '@/layouts/MainLayout'
 const Login = lazy(() => import('./pages/Login'))
 const UserInformation = lazy(() => import('./pages/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/AuthCallback'))
-const Settings = lazy(() => import('./pages/Settings'))
+const Settings = lazy(() => import('./pages/settings-page'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
 
 function Home() {
