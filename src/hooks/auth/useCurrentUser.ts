@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { queryKeys } from "@/lib/queryKeys";
+import { api } from "@/lib/api/client";
+import { queryKeys } from "@/lib/api/queryKeys";
+import type { Role } from "@/constants/roles";
 
 export interface AuthUser {
   id: string;
@@ -10,6 +11,8 @@ export interface AuthUser {
   dateOfBirth?: string | null;
   gender?: string | null;
   userType?: string;
+  /** RBAC role: player, organiser, club_admin, super_admin */
+  role?: Role;
 }
 
 async function fetchCurrentUser() {

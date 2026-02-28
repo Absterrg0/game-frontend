@@ -1,7 +1,7 @@
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format, parseISO, isValid } from "date-fns";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -10,7 +10,7 @@ import {
   Calendar03Icon,
   Logout01Icon,
 } from "@hugeicons/core-free-icons";
-import { ProfileRow } from "@/components/profile-page/profile-row";
+import { ProfileRow } from "@/components/profile";
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -159,5 +159,3 @@ export default function ProfilePage() {
     </section>
   );
 }
-
-

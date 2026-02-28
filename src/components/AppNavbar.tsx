@@ -15,7 +15,9 @@ import {
   LockIcon,
   Logout01Icon,
 } from "@hugeicons/core-free-icons";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/auth";
+import { RoleGuard } from "@/components/auth";
+import { ROLES } from "@/constants/roles";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -141,6 +143,14 @@ export function AppNavbar() {
                 {t("settings.nav.settings")}
               </Link>
             </DropdownMenuItem>
+            <RoleGuard requireRoleOrAbove={ROLES.SUPER_ADMIN}>
+              <DropdownMenuItem asChild>
+                <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
+                  <HugeiconsIcon icon={Award01Icon} size={18} />
+                  Admin
+                </Link>
+              </DropdownMenuItem>
+            </RoleGuard>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onClick={handleLogout} className="cursor-pointer">
               <HugeiconsIcon icon={Logout01Icon} size={18} />

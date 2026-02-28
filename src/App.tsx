@@ -1,15 +1,19 @@
 import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider } from './contexts/AuthContext'
-import { useAuth } from './hooks/useAuth'
+import { AuthProvider } from './contexts/auth'
+import { useAuth } from './hooks/auth'
 import { Toaster } from '@/components/ui/sonner'
 import { MainLayout } from '@/layouts/MainLayout'
+import { ProtectedRoute } from '@/components/auth'
+import { ROLES } from './constants/roles'
 
-const Login = lazy(() => import('./pages/Login'))
-const UserInformation = lazy(() => import('./pages/UserInformation'))
-const AuthCallback = lazy(() => import('./pages/AuthCallback'))
-const Settings = lazy(() => import('./pages/settings-page'))
+const Login = lazy(() => import('./pages/auth/Login'))
+const UserInformation = lazy(() => import('./pages/user/UserInformation'))
+const AuthCallback = lazy(() => import('./pages/auth/AuthCallback'))
+const SettingsPage = lazy(() => import('./pages/profile/SettingsPage'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
+const AdminPage = lazy(() => import('./pages/admin/AdminPage'))
+
 
 function Home() {
   const { isAuthenticated, isProfileComplete, loading } = useAuth()
@@ -34,16 +38,19 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route element={<MainLayout />}>
             <Route path="/information" element={<UserInformation />} />
-            <Route path="/profile" element={<Settings />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route element={ <ProtectedRoute>
+      <MainLayout />
+    </ProtectedRoute>}>
+            <Route path="/profile" element={<SettingsPage />} />
             <Route path="/tournaments" element={<PlaceholderPage />} />
             <Route path="/my-score" element={<PlaceholderPage />} />
             <Route path="/record-score" element={<PlaceholderPage />} />
             <Route path="/clubs" element={<PlaceholderPage />} />
             <Route path="/sponsors" element={<PlaceholderPage />} />
             <Route path="/about" element={<PlaceholderPage />} />
+            <Route path="/admin" element={ <ProtectedRoute requireRoleOrAbove={ROLES.SUPER_ADMIN}> <AdminPage /> </ProtectedRoute>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

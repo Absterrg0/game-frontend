@@ -1,0 +1,80 @@
+import { Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { useCurrentUser } from "@/hooks/auth";
+import { SettingsForm, DeleteAccountSection } from "@/components/settings";
+
+export default function SettingsPage() {
+  const { t } = useTranslation();
+  const { user, isLoading: userLoading, isAuthenticated, isProfileComplete, dataUpdatedAt } =
+    useCurrentUser();
+
+  if (userLoading) {
+    return (
+      <div className="flex flex-1 items-center justify-center py-8">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isProfileComplete) return <Navigate to="/information" replace />;
+
+  return (
+    <div className="py-6 sm:py-8 px-4 sm:px-6 bg-gray-50 min-h-0">
+      <div className="mx-auto w-full max-w-3xl min-w-0">
+        <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
+          <Tabs defaultValue="settings" className="w-full">
+            <div className="border-b border-[#e5e7eb] px-4 sm:px-6 pt-4 pb-4">
+              <TabsList className="h-auto w-full grid grid-cols-2 sm:flex sm:flex-wrap justify-start gap-2 rounded-md bg-transparent p-0">
+                <TabsTrigger
+                  value="settings"
+                  className="flex-none rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:bg-[#f3f4f6] data-[state=active]:text-foreground data-[state=inactive]:bg-transparent"
+                >
+                  {t("settings.title")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="favorite-clubs"
+                  className="flex-none rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:bg-[#f3f4f6] data-[state=active]:text-foreground data-[state=inactive]:bg-transparent"
+                >
+                  {t("settings.favoriteClubs")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="admin-clubs"
+                  className="flex-none rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:bg-[#f3f4f6] data-[state=active]:text-foreground data-[state=inactive]:bg-transparent"
+                >
+                  {t("settings.clubsIAdministrate")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="delete-account"
+                  className="flex-none rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors data-[state=active]:bg-[#f3f4f6] data-[state=active]:text-foreground data-[state=inactive]:bg-transparent"
+                >
+                  {t("settings.deleteAccount")}
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            <TabsContent value="settings" className="mt-0 p-4 sm:p-6">
+              <SettingsForm
+                key={`${user!.id}-${dataUpdatedAt ?? 0}`}
+                user={user!}
+              />
+            </TabsContent>
+
+            <TabsContent value="favorite-clubs" className="mt-0 p-4 sm:p-6">
+              <p className="text-muted-foreground">{t("settings.favoriteClubsPlaceholder")}</p>
+            </TabsContent>
+
+            <TabsContent value="admin-clubs" className="mt-0 p-4 sm:p-6">
+              <p className="text-muted-foreground">{t("settings.adminClubsPlaceholder")}</p>
+            </TabsContent>
+
+            <TabsContent value="delete-account" className="mt-0 p-4 sm:p-6">
+              <DeleteAccountSection />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
+  );
+}

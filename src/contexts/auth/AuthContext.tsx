@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
+import type { Role } from "@/constants/roles";
 
 export interface AuthUser {
   id: string;
@@ -9,6 +10,8 @@ export interface AuthUser {
   dateOfBirth?: string | null;
   gender?: string | null;
   userType?: string;
+  /** RBAC role: player, organiser, club_admin, super_admin */
+  role?: Role;
 }
 
 interface AuthContextValue {
