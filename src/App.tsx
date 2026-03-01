@@ -12,6 +12,7 @@ const UserInformation = lazy(() => import('./pages/user/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/auth/AuthCallback'))
 const SettingsPage = lazy(() => import('./pages/profile/SettingsPage'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
+const ManageClubPage = lazy(() => import('./pages/clubs/ManageClubPage'))
 const AboutPage = lazy(() => import('./pages/about/AboutPage'))
 const AdminPage = lazy(() => import('./pages/admin/AdminPage'))
 
@@ -50,7 +51,7 @@ function App() {
             <Route path="/tournaments" element={<PlaceholderPage />} />
             <Route path="/my-score" element={<PlaceholderPage />} />
             <Route path="/record-score" element={<PlaceholderPage />} />
-            <Route path="/clubs" element={<PlaceholderPage />} />
+            <Route path="/clubs" element={<ManageClubPage />} />
             <Route path="/sponsors" element={<PlaceholderPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/admin" element={ <ProtectedRoute requireRoleOrAbove={ROLES.SUPER_ADMIN}> <AdminPage /> </ProtectedRoute>} />

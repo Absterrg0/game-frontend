@@ -16,5 +16,6 @@ export const queryKeys = {
   club: {
     all: ["club"] as const,
     detail: (id: string) => [...queryKeys.club.all, "detail", id] as const,
+    staff: (id: string) => [...queryKeys.club.all, "staff", id] as const,
   },
 } as const;

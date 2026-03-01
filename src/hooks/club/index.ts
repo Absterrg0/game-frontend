@@ -7,6 +7,12 @@ export {
 } from "./useFavoriteClubs";
 export { useAdminClubs } from "./useAdminClubs";
 export {
+  useClubStaff,
+  type ClubStaffMember,
+  type ClubStaffRole,
+} from "./useClubStaff";
+export { useAddClubStaff, type AddStaffRole } from "./useAddClubStaff";
+export {
   useCreateClub,
   useUpdateClub,
   useClubById,
