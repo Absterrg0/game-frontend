@@ -33,6 +33,8 @@ function Home() {
 
 function App() {
   return (
+    <div className='w-screen h-screen bg-gray-50'>
+
     <AuthProvider>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
@@ -57,6 +59,7 @@ function App() {
       </Suspense>
       <Toaster />
     </AuthProvider>
+    </div>
   )
 }
 

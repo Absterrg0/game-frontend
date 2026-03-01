@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useCurrentUser } from "@/hooks/auth";
-import { SettingsForm, DeleteAccountSection } from "@/components/settings";
+import { SettingsForm, DeleteAccountSection, FavoriteClubsSection, AdminClubsSection } from "@/components/settings";
 
 export default function SettingsPage() {
   const { t } = useTranslation();
@@ -21,7 +21,7 @@ export default function SettingsPage() {
   if (!isProfileComplete) return <Navigate to="/information" replace />;
 
   return (
-    <div className="py-6 sm:py-8 px-4 sm:px-6 bg-gray-50 min-h-0">
+    <div className="py-6 sm:py-8 px-4 sm:px-6 bg-gray-50 h-max">
       <div className="mx-auto w-full max-w-3xl min-w-0">
         <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
           <Tabs defaultValue="settings" className="w-full">
@@ -62,11 +62,11 @@ export default function SettingsPage() {
             </TabsContent>
 
             <TabsContent value="favorite-clubs" className="mt-0 p-4 sm:p-6">
-              <p className="text-muted-foreground">{t("settings.favoriteClubsPlaceholder")}</p>
+              <FavoriteClubsSection />
             </TabsContent>
 
             <TabsContent value="admin-clubs" className="mt-0 p-4 sm:p-6">
-              <p className="text-muted-foreground">{t("settings.adminClubsPlaceholder")}</p>
+              <AdminClubsSection />
             </TabsContent>
 
             <TabsContent value="delete-account" className="mt-0 p-4 sm:p-6">

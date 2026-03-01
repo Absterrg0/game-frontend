@@ -59,7 +59,7 @@ export function DeleteAccountSection() {
           {isLoading ? (
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
           ) : (
-            t("settings.deleteAccount")
+            t("settings.deleteAccountConfirm")
           )}
         </Button>
       </div>
