@@ -12,6 +12,7 @@ const UserInformation = lazy(() => import('./pages/user/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/auth/AuthCallback'))
 const SettingsPage = lazy(() => import('./pages/profile/SettingsPage'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
+const AboutPage = lazy(() => import('./pages/about/AboutPage'))
 const AdminPage = lazy(() => import('./pages/admin/AdminPage'))
 
 
@@ -33,7 +34,7 @@ function Home() {
 
 function App() {
   return (
-    <div className='w-screen h-screen bg-gray-50'>
+    <div className='w-screen h-screen bg-gray-50 overflow-x-hidden'>
 
     <AuthProvider>
       <Suspense fallback={<div>Loading...</div>}>
@@ -51,7 +52,7 @@ function App() {
             <Route path="/record-score" element={<PlaceholderPage />} />
             <Route path="/clubs" element={<PlaceholderPage />} />
             <Route path="/sponsors" element={<PlaceholderPage />} />
-            <Route path="/about" element={<PlaceholderPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/admin" element={ <ProtectedRoute requireRoleOrAbove={ROLES.SUPER_ADMIN}> <AdminPage /> </ProtectedRoute>} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
