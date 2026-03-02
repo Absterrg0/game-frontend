@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { GripVertical, MoreVertical } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { DragDropVerticalIcon, MoreVerticalIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 
 
@@ -38,7 +39,7 @@ export function StaffRow({
           className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
           aria-label={t("manageClub.dragUser")}
         >
-          <GripVertical className="h-4 w-4" />
+          <HugeiconsIcon icon={DragDropVerticalIcon} size={16} />
         </button>
         <StaffAvatar name={member.name} alias={member.alias} />
         <div className="min-w-0 flex-1">
@@ -65,7 +66,7 @@ export function StaffRow({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-              <MoreVertical className="h-4 w-4" aria-hidden />
+              <HugeiconsIcon icon={MoreVerticalIcon} size={16} aria-hidden />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">

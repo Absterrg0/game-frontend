@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Menu } from "lucide-react";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
+  Menu01Icon,
   Award01Icon,
   BarChartIcon,
   ClipboardIcon,
@@ -50,7 +50,7 @@ const pathToTitleKey: Record<string, string> = {
   "/my-score": "settings.nav.myScore",
   "/record-score": "settings.nav.recordScore",
   "/clubs": "manageClub.title",
-  "/sponsors": "settings.nav.sponsors",
+  "/sponsors": "sponsors.title",
   "/about": "settings.nav.about",
   "/information": "signup.title",
 };
@@ -197,7 +197,7 @@ export function AppNavbar() {
               className="flex items-center justify-center p-2 text-white rounded-md hover:bg-white/10 transition-colors lg:hidden"
               aria-label="Open menu"
             >
-              <Menu className="size-6" aria-hidden />
+              <HugeiconsIcon icon={Menu01Icon} size={24} aria-hidden />
             </button>
           </SheetTrigger>
           <SheetContent

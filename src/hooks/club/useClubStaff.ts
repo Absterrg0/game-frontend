@@ -13,8 +13,20 @@ export interface ClubStaffMember {
   roleLabel: string;
 }
 
+export type ClubPlan = "free" | "premium";
+export type ClubSubscriptionStatus =
+  | "renewal_needed"
+  | "subscribed"
+
+export interface ClubSubscription {
+  plan: ClubPlan;
+  expiresAt: string | null;
+  subscriptionStatus: ClubSubscriptionStatus;
+}
+
 interface ClubStaffResponse {
   staff: ClubStaffMember[];
+  subscription: ClubSubscription;
 }
 
 async function fetchClubStaff(clubId: string): Promise<ClubStaffResponse> {

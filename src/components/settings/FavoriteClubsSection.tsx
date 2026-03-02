@@ -1,6 +1,12 @@
 import { useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, Trash2, Home, Info } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  Search01Icon,
+  Delete01Icon,
+  Home01Icon,
+  InformationCircleIcon,
+} from "@hugeicons/core-free-icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -106,7 +112,7 @@ export function FavoriteClubsSection() {
                 className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-muted-foreground hover:bg-[#f3f4f6] hover:text-foreground transition-colors"
                 aria-label={t("settings.favoriteClubsInfoAria")}
               >
-                <Info className="h-4 w-4" />
+                <HugeiconsIcon icon={InformationCircleIcon} size={16} />
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-72" align="end">
@@ -119,8 +125,10 @@ export function FavoriteClubsSection() {
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative flex-1 min-w-[200px]">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            <HugeiconsIcon
+              icon={Search01Icon}
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
               aria-hidden
             />
             <Input
@@ -211,11 +219,13 @@ export function FavoriteClubsSection() {
                     name: club.name,
                   })}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <HugeiconsIcon icon={Delete01Icon} size={16} />
                 </button>
                 {isHome && (
-                  <Home
-                    className="h-4 w-4 text-[#166534]"
+                  <HugeiconsIcon
+                    icon={Home01Icon}
+                    size={16}
+                    className="text-[#166534]"
                     aria-label={t("settings.favoriteClubsHomeAria")}
                   />
                 )}

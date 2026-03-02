@@ -10,6 +10,9 @@ export {
   useClubStaff,
   type ClubStaffMember,
   type ClubStaffRole,
+  type ClubSubscription,
+  type ClubPlan,
+  type ClubSubscriptionStatus,
 } from "./useClubStaff";
 export { useAddClubStaff, type AddStaffRole } from "./useAddClubStaff";
 export {

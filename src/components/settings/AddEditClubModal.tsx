@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Trash2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete01Icon } from "@hugeicons/core-free-icons";
 import {
   Dialog,
   DialogContent,
@@ -328,7 +329,7 @@ export function AddEditClubModal({
                       onClick={() => handleRemoveCourt(index)}
                       aria-label={t("settings.adminClubsDeleteCourtAria")}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <HugeiconsIcon icon={Delete01Icon} size={16} />
                     </Button>
                   </div>
                 ))}

@@ -1,14 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, Crown, Info, ChevronLeft } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
+  PlusSignIcon,
+  CrownIcon,
+  InformationCircleIcon,
+  ArrowLeft01Icon,
+  SparklesIcon,
+} from "@hugeicons/core-free-icons";
 import { useAdminClubs, useClubStaff } from "@/hooks/club";
 import { useAuth, useHasRoleOrAbove } from "@/hooks/auth";
 import { ROLES } from "@/constants/roles";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { StaffRow } from "@/components/clubs/StaffRow";
 import { AddAdminOrganiserModal } from "@/components/clubs/AddAdminOrganiserModal";
+import { RequestSubscriptionRenewalModal } from "@/components/clubs/RequestSubscriptionRenewalModal";
+
+/** Show banner when status is renewal_needed or when expires within 7 days */
+function shouldShowSubscriptionBanner(
+  subscription: { plan: string; expiresAt: string | null; subscriptionStatus: string } | undefined
+): boolean {
+  if (!subscription) return false;
+  if (subscription.subscriptionStatus === "renewal_needed") return true;
+  if (!subscription.expiresAt) return false;
+  const expiresAt = new Date(subscription.expiresAt);
+  const now = new Date();
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  return expiresAt <= sevenDaysFromNow;
+}
 
 export default function ManageClubPage() {
   const { t } = useTranslation();
@@ -18,22 +40,22 @@ export default function ManageClubPage() {
 
   const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [renewModalOpen, setRenewModalOpen] = useState(false);
   /** On mobile: 'clubs' = show club list, 'staff' = show staff list. Desktop always shows both. */
   const [mobileView, setMobileView] = useState<"clubs" | "staff">("clubs");
 
   const clubs = adminClubsData?.clubs ?? [];
-  const selectedClub = clubs.find((c) => c.id === selectedClubId) ?? clubs[0] ?? null;
+  const selectedClub = clubs.find((c) => c.id === selectedClubId) ?? null;
   const effectiveClubId = selectedClub?.id ?? selectedClubId;
-
-  useEffect(() => {
-    if (clubs.length > 0 && !selectedClubId) {
-      setSelectedClubId(clubs[0].id);
-    }
-  }, [clubs, selectedClubId]);
 
   const { data: staffData, isLoading: staffLoading } = useClubStaff(effectiveClubId);
   const staff = staffData?.staff ?? [];
   const existingStaffIds = staff.map((s) => s.id);
+  const showSubscriptionBanner = shouldShowSubscriptionBanner(staffData?.subscription);
+  const showUpgradeBanner =
+    staffData?.subscription?.plan === "free" && !showSubscriptionBanner;
+  const canAddStaff =
+    staffData != null && staffData.subscription?.plan !== "free";
 
   if (loading) {
     return (
@@ -104,7 +126,7 @@ export default function ManageClubPage() {
         )}
 
         <div className="mt-6 flex gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/30">
-          <Info className="h-5 w-5 shrink-0 text-blue-600 dark:text-blue-400" />
+          <HugeiconsIcon icon={InformationCircleIcon} size={20} className="shrink-0 text-blue-600 dark:text-blue-400" />
           <div className="text-sm">
             <p className="font-medium text-foreground">{t("manageClub.adminManagement")}</p>
             <ul className="mt-1 list-disc space-y-0.5 pl-4 text-muted-foreground">
@@ -137,14 +159,14 @@ export default function ManageClubPage() {
               className="mb-4 -ml-2 lg:hidden"
               onClick={() => setMobileView("clubs")}
             >
-              <ChevronLeft className="mr-1 h-4 w-4" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} className="mr-1" />
               {t("manageClub.backToClubs")}
             </Button>
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
                   {selectedClub?.name}
-                  <Crown className="h-5 w-5 text-[#067429]" aria-hidden />
+                  <HugeiconsIcon icon={CrownIcon} size={20} className="text-[#067429]" aria-hidden />
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {t("manageClub.manageAdminsSubtitle")}
@@ -153,8 +175,10 @@ export default function ManageClubPage() {
               <Button
                 className="shrink-0 bg-[#067429] hover:bg-[#056023]"
                 onClick={() => setAddModalOpen(true)}
+                disabled={!canAddStaff}
+                title={!canAddStaff ? t("manageClub.addMemberDisabledHint") : undefined}
               >
-                <Plus className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
                 {t("manageClub.addMember")}
               </Button>
             </div>
@@ -170,8 +194,10 @@ export default function ManageClubPage() {
                   variant="outline"
                   className="mt-4"
                   onClick={() => setAddModalOpen(true)}
+                  disabled={!canAddStaff}
+                  title={!canAddStaff ? t("manageClub.addMemberDisabledHint") : undefined}
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
                   {t("manageClub.addMember")}
                 </Button>
               </div>
@@ -189,6 +215,45 @@ export default function ManageClubPage() {
                 ))}
               </div>
             )}
+
+            {showSubscriptionBanner && (
+              <div className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <HugeiconsIcon icon={InformationCircleIcon} size={20} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm text-foreground">
+                    {t("manageClub.subscriptionBannerText")}
+                  </p>
+                </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0 bg-gray-800 text-white hover:bg-gray-700"
+                  onClick={() => setRenewModalOpen(true)}
+                >
+                  {t("manageClub.renewNow")}
+                </Button>
+              </div>
+            )}
+
+            {showUpgradeBanner && (
+              <div className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-[#067429]/30 bg-[#067429]/5 px-4 py-3 dark:border-[#067429]/40 dark:bg-[#067429]/10">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <HugeiconsIcon icon={SparklesIcon} size={20} className="shrink-0 text-[#067429] dark:text-[#0d9e3d]" />
+                  <p className="text-sm text-muted-foreground">
+                    {t("manageClub.upgradeBannerBenefits")}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  className="shrink-0 bg-[#067429] hover:bg-[#056023]"
+                  onClick={() => {
+                    // TODO: Navigate to upgrade / contact flow
+                  }}
+                >
+                  {t("manageClub.upgradeToPremium")}
+                </Button>
+              </div>
+            )}
           </>
         )}
         </main>
@@ -199,6 +264,15 @@ export default function ManageClubPage() {
         onOpenChange={setAddModalOpen}
         clubId={effectiveClubId ?? ""}
         existingStaffIds={existingStaffIds}
+      />
+
+      <RequestSubscriptionRenewalModal
+        open={renewModalOpen}
+        onOpenChange={setRenewModalOpen}
+        onConfirm={() => {
+          // TODO: Call API to submit renewal request
+          toast.success(t("manageClub.renewRequestSent"));
+        }}
       />
     </div>
   );

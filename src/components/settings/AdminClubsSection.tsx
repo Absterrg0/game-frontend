@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Pencil, Plus } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PencilIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { useAdminClubs } from "@/hooks/club";
 import { useHasRoleOrAbove } from "@/hooks/auth/useRBAC";
@@ -53,7 +54,7 @@ export function AdminClubsSection() {
             onClick={handleAddClub}
             className="h-10 shrink-0 rounded-lg bg-[#facc15] px-4 font-medium text-black hover:bg-[#e6b800]"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
             {t("settings.adminClubsAddButton")}
           </Button>
         </div>
@@ -93,7 +94,7 @@ export function AdminClubsSection() {
                   onClick={() => handleEditClub(club.id)}
                   aria-label={t("settings.adminClubsEditAria", { name: club.name })}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <HugeiconsIcon icon={PencilIcon} size={16} />
                 </Button>
               </div>
             ))}

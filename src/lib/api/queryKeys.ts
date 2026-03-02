@@ -17,5 +17,6 @@ export const queryKeys = {
     all: ["club"] as const,
     detail: (id: string) => [...queryKeys.club.all, "detail", id] as const,
     staff: (id: string) => [...queryKeys.club.all, "staff", id] as const,
+    sponsors: (id: string) => [...queryKeys.club.all, "sponsors", id] as const,
   },
 } as const;
