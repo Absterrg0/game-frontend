@@ -12,7 +12,7 @@ import { toast } from "sonner";
 export function AdminClubsSection() {
   const { t } = useTranslation();
   const hasAccess = useHasRoleOrAbove(ROLES.CLUB_ADMIN);
-  const { data, isLoading } = useAdminClubs(hasAccess);
+  const { data, isLoading, error } = useAdminClubs(hasAccess);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editClubId, setEditClubId] = useState<string | null>(null);
@@ -66,6 +66,10 @@ export function AdminClubsSection() {
         ) : !hasAccess ? (
           <p className="text-sm text-muted-foreground">
             {t("settings.adminClubsPlaceholder")}
+          </p>
+        ) : error ? (
+          <p className="text-sm text-destructive" role="alert">
+            {t("settings.adminClubsLoadError")}
           </p>
         ) : clubs.length === 0 ? (
           <p className="text-sm text-muted-foreground">

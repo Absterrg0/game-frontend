@@ -1,20 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api/client";
 import { queryKeys } from "@/lib/api/queryKeys";
-import type { Role } from "@/constants/roles";
-
-export interface AuthUser {
-  id: string;
-  email: string;
-  name?: string | null;
-  alias?: string | null;
-  dateOfBirth?: string | null;
-  gender?: string | null;
-  userType?: string;
-  /** RBAC role: player, organiser, club_admin, super_admin */
-  role?: Role;
-}
-
+import { type AuthUser } from "@/contexts/auth/AuthContext";
 async function fetchCurrentUser() {
   const res = await api.get<{ user: AuthUser }>("/api/auth/me");
   return res.data.user;

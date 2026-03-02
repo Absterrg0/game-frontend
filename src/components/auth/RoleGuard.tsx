@@ -34,5 +34,5 @@ export function RoleGuard({
     return hasAccess ? <>{children}</> : <>{fallback}</>;
   }
 
-  return <>{fallback}</>;
+  return <>{children}</>;
 }

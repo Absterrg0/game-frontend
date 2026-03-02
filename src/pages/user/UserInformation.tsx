@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -100,7 +100,7 @@ export default function UserInformation() {
     if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFieldErrors({});
 
@@ -240,11 +240,13 @@ export default function UserInformation() {
                     {t("signup.dateOfBirth")}
                   </FieldLabel>
                   <Popover>
-                    <PopoverTrigger asChild>
+                    <PopoverTrigger type="button" asChild>
                       <Button
                         id="signup-dob"
                         variant="outline"
                         className={`${inputClassName} justify-start text-left font-normal`}
+                        aria-invalid={!!fieldErrors.dateOfBirth}
+                        aria-describedby={fieldErrors.dateOfBirth ? "signup-dob-error" : undefined}
                       >
                         <HugeiconsIcon icon={Calendar03Icon} size={18} className="mr-2 shrink-0" />
                         {inputs.dateOfBirth ? (
@@ -260,9 +262,10 @@ export default function UserInformation() {
                       <Calendar
                         mode="single"
                         selected={inputs.dateOfBirth}
-                        onSelect={(date) =>
-                          setInputs((prev) => ({ ...prev, dateOfBirth: date }))
-                        }
+                        onSelect={(date) => {
+                          setInputs((prev) => ({ ...prev, dateOfBirth: date }));
+                          if (fieldErrors.dateOfBirth) setFieldErrors((prev) => ({ ...prev, dateOfBirth: "" }));
+                        }}
                         disabled={(date) =>
                           date > new Date() || date < new Date("1900-01-01")
                         }
@@ -271,6 +274,11 @@ export default function UserInformation() {
                       />
                     </PopoverContent>
                   </Popover>
+                  {fieldErrors.dateOfBirth ? (
+                    <span id="signup-dob-error" className="text-sm text-destructive" aria-live="polite">
+                      {fieldErrors.dateOfBirth}
+                    </span>
+                  ) : null}
                 </Field>
 
                 <Field className="gap-2">
@@ -294,6 +302,8 @@ export default function UserInformation() {
                     <SelectTrigger
                       id="gender-select-trigger"
                       className={`${inputClassName} h-11 justify-between`}
+                      aria-invalid={!!fieldErrors.gender}
+                      aria-describedby={fieldErrors.gender ? "gender-error" : undefined}
                     >
                       <SelectValue placeholder={t("signup.selectGender")} />
                     </SelectTrigger>
@@ -303,6 +313,11 @@ export default function UserInformation() {
                       <SelectItem value="other">{t("signup.other")}</SelectItem>
                     </SelectContent>
                   </Select>
+                  {fieldErrors.gender ? (
+                    <span id="gender-error" className="text-sm text-destructive" aria-live="polite">
+                      {fieldErrors.gender}
+                    </span>
+                  ) : null}
                 </Field>
               </div>
             </div>

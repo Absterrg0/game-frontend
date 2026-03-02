@@ -63,8 +63,8 @@ export function AddEditSponsorModal({
 
     const payload = {
       name: trimmedName,
-      logoUrl: logoUrl.trim() || null,
-      link: link.trim() || null,
+      logoUrl: logoUrl.trim(),
+      link: link.trim(),
     };
 
     try {

@@ -45,12 +45,7 @@ export default function AboutPage() {
                     <Trans
                       i18nKey="about.howToUseItem6"
                       components={{
-                        link: (
-                          <a
-                            href="#contact"
-                            className="text-blue-600 hover:underline"
-                          />
-                        ),
+                        link: <a href="#contact" className="text-blue-600 hover:underline" aria-label={t("about.contactUs")} />
                       }}
                     />
                   ) : (

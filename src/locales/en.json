@@ -52,6 +52,7 @@
     "dateOfBirthOptional": "Date of birth (Optional)",
     "favoriteClubsPlaceholder": "Your favorite clubs will appear here.",
     "adminClubsPlaceholder": "Clubs you administrate will appear here.",
+    "adminClubsLoadError": "Failed to load clubs. Please try again later.",
     "adminClubsTitle": "My Clubs",
     "adminClubsAddButton": "Add Club",
     "adminClubsCourts": "Courts",

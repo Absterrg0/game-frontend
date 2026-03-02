@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { PencilEdit01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
+import { getSafeLink } from "@/lib/url";
 import type { ClubSponsor } from "@/hooks/sponsor";
 
 interface SponsorRowProps {
@@ -14,6 +15,7 @@ interface SponsorRowProps {
 
 export function SponsorRow({ sponsor, canManage, onEdit, onRemove }: SponsorRowProps) {
   const { t } = useTranslation();
+  const safeLink = getSafeLink(sponsor.link);
 
   return (
     <tr className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors">
@@ -48,14 +50,14 @@ export function SponsorRow({ sponsor, canManage, onEdit, onRemove }: SponsorRowP
         )}
       </td>
       <td className="px-4 py-3 align-middle">
-        {sponsor.link ? (
+        {safeLink ? (
           <a
-            href={sponsor.link}
+            href={safeLink}
             target="_blank"
             rel="noopener noreferrer"
             className="text-primary hover:underline truncate max-w-[200px] inline-block"
           >
-            {sponsor.link}
+            {safeLink}
           </a>
         ) : (
           <span className="text-muted-foreground">—</span>

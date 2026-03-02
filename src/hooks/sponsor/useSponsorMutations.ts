@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
-
+import { requireClubId } from "./helpers";
 export interface CreateSponsorInput {
   name: string;
   logoUrl?: string | null;
@@ -10,8 +10,8 @@ export interface CreateSponsorInput {
 
 export interface UpdateSponsorInput {
   name?: string;
-  logoUrl?: string | null;
-  link?: string | null;
+  logoUrl?: string;
+  link?: string;
   status?: "active" | "paused";
 }
 
@@ -40,7 +40,7 @@ export function useCreateSponsor(clubId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CreateSponsorInput) =>
-      createSponsor(clubId!, input),
+      createSponsor(requireClubId(clubId), input),
     onSuccess: () => {
       if (clubId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });
@@ -58,7 +58,7 @@ export function useUpdateSponsor(clubId: string | null) {
     }: {
       sponsorId: string;
       input: UpdateSponsorInput;
-    }) => updateSponsor(clubId!, sponsorId, input),
+    }) => updateSponsor(requireClubId(clubId), sponsorId, input),
     onSuccess: () => {
       if (clubId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });
@@ -70,7 +70,7 @@ export function useUpdateSponsor(clubId: string | null) {
 export function useDeleteSponsor(clubId: string | null) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (sponsorId: string) => deleteSponsor(clubId!, sponsorId),
+    mutationFn: (sponsorId: string) => deleteSponsor(requireClubId(clubId), sponsorId),
     onSuccess: () => {
       if (clubId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });

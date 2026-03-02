@@ -12,6 +12,8 @@ export const queryKeys = {
     profile: (id?: string) => [...queryKeys.user.all, "profile", id] as const,
     favoriteClubs: () => [...queryKeys.user.all, "favorite-clubs"] as const,
     adminClubs: () => [...queryKeys.user.all, "admin-clubs"] as const,
+    search: (query: string) =>
+      [...queryKeys.user.all, "search", query] as const,
   },
   club: {
     all: ["club"] as const,

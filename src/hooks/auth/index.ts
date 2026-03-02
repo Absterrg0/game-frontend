@@ -1,5 +1,5 @@
 export { useAuth } from "./useAuth";
-export { useCurrentUser, type AuthUser } from "./useCurrentUser";
+export { useCurrentUser} from "./useCurrentUser";
 export {
   useCompleteSignup,
   type CompleteSignupFormData,

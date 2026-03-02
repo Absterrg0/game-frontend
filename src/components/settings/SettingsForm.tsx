@@ -18,7 +18,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { useAuth, type AuthUser } from "@/hooks/auth";
+import { useAuth } from "@/hooks/auth";
+import { type AuthUser } from "@/contexts/auth/AuthContext";
 import { useUpdateProfile } from "@/hooks/user";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { HugeiconsIcon } from "@hugeicons/react";

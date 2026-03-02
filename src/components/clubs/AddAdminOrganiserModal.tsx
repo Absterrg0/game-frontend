@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSearchUsers } from "@/hooks/user";
+import { useSearchUsers, isUserSearchQueryValid } from "@/hooks/user";
 import { useAddClubStaff, type AddStaffRole } from "@/hooks/club";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -42,7 +42,7 @@ export function AddAdminOrganiserModal({
 
   const { data: searchData, isLoading: searchLoading } = useSearchUsers(
     searchQuery,
-    open && searchQuery.trim().length >= 2
+    open && isUserSearchQueryValid(searchQuery)
   );
   const addStaff = useAddClubStaff();
 
@@ -105,12 +105,15 @@ export function AddAdminOrganiserModal({
                 type="text"
                 placeholder={t("manageClub.searchUserPlaceholder")}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSelectedUserId(null);
+                }}
                 className="pl-9"
                 autoComplete="off"
               />
             </div>
-            {searchQuery.trim().length >= 2 && (
+            {isUserSearchQueryValid(searchQuery) && (
               <div className="mt-2 max-h-40 overflow-y-auto rounded-md border border-border bg-muted/30">
                 {searchLoading ? (
                   <div className="flex items-center justify-center py-4">

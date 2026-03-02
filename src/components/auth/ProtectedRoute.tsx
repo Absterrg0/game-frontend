@@ -39,15 +39,13 @@ export function ProtectedRoute({
     return <Navigate to={redirectTo} state={{ from: location }} replace />;
   }
 
-  if (requireRoleOrAbove) {
-    const hasAccess = hasRoleOrAbove(user?.role, requireRoleOrAbove);
+  if (requireExactRoles && requireExactRoles.length > 0) {
+    const hasAccess = hasAnyRole(user?.role, requireExactRoles);
     if (!hasAccess) {
       return <Navigate to="/" replace />;
     }
-  }
-
-  if (requireExactRoles && requireExactRoles.length > 0) {
-    const hasAccess = hasAnyRole(user?.role, requireExactRoles);
+  } else if (requireRoleOrAbove) {
+    const hasAccess = hasRoleOrAbove(user?.role, requireRoleOrAbove);
     if (!hasAccess) {
       return <Navigate to="/" replace />;
     }

@@ -190,14 +190,14 @@ export default function SponsorsPage() {
                   <Button
                     className="shrink-0 bg-[#067429] hover:bg-[#056023]"
                     onClick={handleAddSponsor}
-                    disabled={!canManageSponsors}
+                    disabled={sponsorsLoading || canManageSponsors !== true}
                   >
                     <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
                     {t("sponsors.newSponsor")}
                   </Button>
                 </div>
 
-                {!canManageSponsors && (
+                {!sponsorsLoading && canManageSponsors === false && (
                   <div className="mx-6 mb-4 flex items-center gap-3 rounded-lg border border-[#067429]/30 bg-[#067429]/5 px-4 py-3 dark:border-[#067429]/40 dark:bg-[#067429]/10">
                     <HugeiconsIcon
                       icon={SparklesIcon}
