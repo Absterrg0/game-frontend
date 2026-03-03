@@ -92,6 +92,7 @@ export default function AboutPage() {
               {t("about.otherInformation")}
             </h2>
             <div className="flex flex-wrap gap-3">
+              {/* TODO: replace /profile with actual route when Contact/Invite pages are added */}
               <Button
                 asChild
                 className="bg-[#facc15] text-[#1a1a1a] hover:bg-[#e6b800] rounded-md"

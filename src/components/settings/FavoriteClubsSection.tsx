@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -21,6 +21,7 @@ import {
   useRemoveFavoriteClub,
   useSetHomeClub,
 } from "@/hooks/club";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
 export function FavoriteClubsSection() {
@@ -39,61 +40,48 @@ export function FavoriteClubsSection() {
   const removeFavorite = useRemoveFavoriteClub();
   const setHomeClub = useSetHomeClub();
 
-  const handleAddFavorite = useCallback(
-    async (clubId: string) => {
-      const alreadyAdded = favoriteClubs.some((c) => c.id === clubId);
-      if (alreadyAdded) {
-        toast.error(t("settings.favoriteClubsAlreadyAdded"));
-        return;
-      }
-      try {
-        await addFavorite.mutateAsync(clubId);
-        toast.success(t("settings.favoriteClubsAddSuccess"));
-        setSearchInput("");
-        setDropdownOpen(false);
-      } catch (err: unknown) {
-        const axiosErr = err as { response?: { data?: { message?: string } } };
-        toast.error(
-          axiosErr?.response?.data?.message ?? t("settings.favoriteClubsAddError")
-        );
-      }
-    },
-    [addFavorite, favoriteClubs, t]
-  );
+  async function handleAddFavorite(clubId: string) {
+    const alreadyAdded = favoriteClubs.some((c) => c.id === clubId);
+    if (alreadyAdded) {
+      toast.error(t("settings.favoriteClubsAlreadyAdded"));
+      return;
+    }
+    try {
+      await addFavorite.mutateAsync(clubId);
+      toast.success(t("settings.favoriteClubsAddSuccess"));
+      setSearchInput("");
+      setDropdownOpen(false);
+    } catch (err: unknown) {
+      toast.error(
+        getErrorMessage(err) ?? t("settings.favoriteClubsAddError")
+      );
+    }
+  }
 
-  const handleRemoveFavorite = useCallback(
-    async (clubId: string, e: React.MouseEvent) => {
-      e.stopPropagation();
-      try {
-        await removeFavorite.mutateAsync(clubId);
-        toast.success(t("settings.favoriteClubsRemoveSuccess"));
-      } catch (err: unknown) {
-        const axiosErr = err as { response?: { data?: { message?: string } } };
-        toast.error(
-          axiosErr?.response?.data?.message ??
-            t("settings.favoriteClubsRemoveError")
-        );
-      }
-    },
-    [removeFavorite, t]
-  );
+  
+  async function handleRemoveFavorite(clubId: string, e: React.MouseEvent) {
+    e.stopPropagation();
+    try {
+      await removeFavorite.mutateAsync(clubId);
+      toast.success(t("settings.favoriteClubsRemoveSuccess"));
+    } catch (err: unknown) {
+      toast.error(
+        getErrorMessage(err) ?? t("settings.favoriteClubsRemoveError")
+      );
+    }
+  }
 
-  const handleSetHomeClub = useCallback(
-    async (clubId: string) => {
-      if (clubId === homeClubId) return;
-      try {
-        await setHomeClub.mutateAsync(clubId);
-        toast.success(t("settings.favoriteClubsHomeSetSuccess"));
-      } catch (err: unknown) {
-        const axiosErr = err as { response?: { data?: { message?: string } } };
-        toast.error(
-          axiosErr?.response?.data?.message ??
-            t("settings.favoriteClubsHomeSetError")
-        );
-      }
-    },
-    [homeClubId, setHomeClub, t]
-  );
+  async function handleSetHomeClub(clubId: string) {
+    if (clubId === homeClubId) return;
+    try {
+      await setHomeClub.mutateAsync(clubId);
+      toast.success(t("settings.favoriteClubsHomeSetSuccess"));
+    } catch (err: unknown) {
+      toast.error(
+        getErrorMessage(err) ?? t("settings.favoriteClubsHomeSetError")
+      );
+    }
+  }
 
   const filteredResults = searchResults.filter(
     (c) => !favoriteClubs.some((f) => f.id === c.id)

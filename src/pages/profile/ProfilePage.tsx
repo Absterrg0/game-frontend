@@ -138,7 +138,7 @@ export default function ProfilePage() {
             />
             <ProfileRow
               icon={UserIcon}
-              label={t("profile.userType")}
+              label={t("profile.userType.label")}
               value={displayUserType}
             />
           </div>

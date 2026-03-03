@@ -165,9 +165,10 @@ export default function UserInformation() {
                   placeholder={t("signup.enterEmailAddress")}
                   value={displayEmail}
                   aria-invalid={!!fieldErrors.email}
+                  aria-describedby={fieldErrors.email ? "signup-email-error" : undefined}
                 />
                 {fieldErrors.email ? (
-                  <p className="text-sm text-destructive" aria-live="polite">
+                  <p id="signup-email-error" className="text-sm text-destructive" aria-live="polite">
                     {fieldErrors.email}
                   </p>
                 ) : null}
@@ -194,9 +195,10 @@ export default function UserInformation() {
                     value={inputs.alias}
                     onChange={handleInputChange}
                     aria-invalid={!!fieldErrors.alias}
+                    aria-describedby={fieldErrors.alias ? "signup-alias-error" : undefined}
                   />
                   {fieldErrors.alias ? (
-                    <p className="text-sm text-destructive" aria-live="polite">
+                    <p id="signup-alias-error" className="text-sm text-destructive" aria-live="polite">
                       {fieldErrors.alias}
                     </p>
                   ) : null}
@@ -221,9 +223,10 @@ export default function UserInformation() {
                     value={inputs.name}
                     onChange={handleInputChange}
                     aria-invalid={!!fieldErrors.name}
+                    aria-describedby={fieldErrors.name ? "signup-name-error" : undefined}
                   />
                   {fieldErrors.name ? (
-                    <p className="text-sm text-destructive" aria-live="polite">
+                    <p id="signup-name-error" className="text-sm text-destructive" aria-live="polite">
                       {fieldErrors.name}
                     </p>
                   ) : null}

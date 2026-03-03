@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Search01Icon } from "@hugeicons/core-free-icons";
@@ -49,15 +49,16 @@ export function AddAdminOrganiserModal({
   const users = searchData?.users ?? [];
   const filteredUsers = users.filter((u) => !existingStaffIds.includes(u.id));
 
-  const resetForm = useCallback(() => {
+  const resetForm = () => {
     setSearchQuery("");
     setSelectedUserId(null);
     setRole("admin");
-  }, []);
+  };
 
-  useEffect(() => {
-    if (!open) resetForm();
-  }, [open, resetForm]);
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) resetForm();
+    onOpenChange(nextOpen);
+  };
 
   const handleAdd = async () => {
     if (!selectedUserId) {
@@ -72,7 +73,7 @@ export function AddAdminOrganiserModal({
           ? t("manageClub.addAdminSuccess")
           : t("manageClub.addOrganiserSuccess")
       );
-      onOpenChange(false);
+      handleOpenChange(false);
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err
@@ -84,7 +85,7 @@ export function AddAdminOrganiserModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{t("manageClub.addModalTitle")}</DialogTitle>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
@@ -30,6 +30,7 @@ import {
 
 export default function SponsorsPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const hasAccess = useHasRoleOrAbove(ROLES.CLUB_ADMIN);
   const { isAuthenticated, isProfileComplete, loading } = useAuth();
   const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(hasAccess);
@@ -49,7 +50,9 @@ export default function SponsorsPage() {
   const deleteSponsor = useDeleteSponsor(effectiveClubId);
 
   const sponsors = sponsorsData?.sponsors ?? [];
-  const canManageSponsors = sponsorsData?.subscription?.canManageSponsors ?? false;
+  const canManageSponsors = sponsorsData?.subscription?.canManageSponsors;
+  const showPremiumBanner =
+    !sponsorsLoading && canManageSponsors === false;
 
   const handleAddSponsor = () => {
     setEditSponsor(null);
@@ -65,7 +68,8 @@ export default function SponsorsPage() {
     setRemoveSponsor(sponsor);
   };
 
-  const confirmRemove = async () => {
+  const confirmRemove = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!removeSponsor || !effectiveClubId) return;
     try {
       await deleteSponsor.mutateAsync(removeSponsor.id);
@@ -197,7 +201,7 @@ export default function SponsorsPage() {
                   </Button>
                 </div>
 
-                {!sponsorsLoading && canManageSponsors === false && (
+                {showPremiumBanner && (
                   <div className="mx-6 mb-4 flex items-center gap-3 rounded-lg border border-[#067429]/30 bg-[#067429]/5 px-4 py-3 dark:border-[#067429]/40 dark:bg-[#067429]/10">
                     <HugeiconsIcon
                       icon={SparklesIcon}
@@ -210,9 +214,7 @@ export default function SponsorsPage() {
                     <Button
                       size="sm"
                       className="shrink-0 bg-[#067429] hover:bg-[#056023]"
-                      onClick={() => {
-                        // TODO: Navigate to upgrade flow
-                      }}
+                      onClick={() => navigate("/upgrade")}
                     >
                       {t("manageClub.upgradeToPremium")}
                     </Button>
@@ -261,7 +263,7 @@ export default function SponsorsPage() {
                           <SponsorRow
                             key={sponsor.id}
                             sponsor={sponsor}
-                            canManage={canManageSponsors}
+                            canManage={canManageSponsors === true}
                             onEdit={handleEditSponsor}
                             onRemove={handleRemoveSponsor}
                           />
@@ -281,7 +283,7 @@ export default function SponsorsPage() {
         onOpenChange={setAddEditModalOpen}
         clubId={effectiveClubId ?? ""}
         editSponsor={editSponsor}
-        canManage={canManageSponsors}
+        canManage={canManageSponsors === true}
       />
 
       <AlertDialog
@@ -301,7 +303,7 @@ export default function SponsorsPage() {
             <AlertDialogCancel>{t("sponsors.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               variant="destructive"
-              onClick={confirmRemove}
+              onClick={(e) => confirmRemove(e)}
               disabled={deleteSponsor.isPending}
             >
               {deleteSponsor.isPending ? t("common.loading") : t("sponsors.remove")}

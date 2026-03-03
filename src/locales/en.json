@@ -10,9 +10,11 @@
   "profile": {
     "title": "Profile",
     "id": "User ID",
-    "userType": "Account type",
-    "userType.user": "User",
-    "userType.admin": "Administrator",
+    "userType": {
+      "label": "Account type",
+      "user": "User",
+      "admin": "Administrator"
+    },
     "loading": "Loading profile...",
     "errorLoading": "Failed to load profile"
   },

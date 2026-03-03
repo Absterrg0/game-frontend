@@ -9,7 +9,10 @@ export const queryKeys = {
   },
   user: {
     all: ["user"] as const,
-    profile: (id?: string) => [...queryKeys.user.all, "profile", id] as const,
+    profile: (id?: string) =>
+      id != null
+        ? ([...queryKeys.user.all, "profile", id] as const)
+        : ([...queryKeys.user.all, "profile"] as const),
     favoriteClubs: () => [...queryKeys.user.all, "favorite-clubs"] as const,
     adminClubs: () => [...queryKeys.user.all, "admin-clubs"] as const,
     search: (query: string) =>

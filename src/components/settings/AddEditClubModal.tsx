@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Delete01Icon } from "@hugeicons/core-free-icons";
@@ -96,101 +96,87 @@ export function AddEditClubModal({
     }
   }, [open, isEdit, clubData]);
 
-  const handleAddCourt = useCallback(() => {
+  const handleAddCourt = () => {
     setCourts((prev) => [...prev, emptyCourt()]);
-  }, []);
+  };
 
-  const handleRemoveCourt = useCallback((index: number) => {
+  const handleRemoveCourt = (index: number) => {
     setCourts((prev) => {
       const next = prev.filter((_, i) => i !== index);
       return next.length === 0 ? [emptyCourt()] : next;
     });
-  }, []);
+  };
 
-  const handleCourtChange = useCallback(
-    (index: number, field: keyof CourtInput, value: string) => {
-      setCourts((prev) =>
-        prev.map((c, i) =>
-          i === index ? { ...c, [field]: value } : c
-        )
-      );
-    },
-    []
-  );
+  const handleCourtChange = (
+    index: number,
+    field: keyof CourtInput,
+    value: string
+  ) => {
+    setCourts((prev) =>
+      prev.map((c, i) =>
+        i === index ? { ...c, [field]: value } : c
+      )
+    );
+  };
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!name.trim()) {
-        toast.error(t("settings.adminClubsClubNamePlaceholder"));
-        return;
-      }
-      if (!address.trim()) {
-        toast.error(t("settings.adminClubsAddressPlaceholder"));
-        return;
-      }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      toast.error(t("settings.adminClubsClubNamePlaceholder"));
+      return;
+    }
+    if (!address.trim()) {
+      toast.error(t("settings.adminClubsAddressPlaceholder"));
+      return;
+    }
 
-      const courtsPayload = courts
-        .filter((c) => c.name.trim())
-        .map((c) => ({
-          id: c.id,
-          name: c.name.trim(),
-          type: c.type,
-          placement: c.placement,
-        }));
+    const courtsPayload = courts
+      .filter((c) => c.name.trim())
+      .map((c) => ({
+        id: c.id,
+        name: c.name.trim(),
+        type: c.type,
+        placement: c.placement,
+      }));
 
-      try {
-        if (isEdit && editClubId) {
-          await updateClub.mutateAsync({
-            clubId: editClubId,
-            data: {
-              name: name.trim(),
-              website: website.trim() || null,
-              bookingSystemUrl: bookingSystemUrl.trim() || null,
-              address: address.trim(),
-              courts: courtsPayload.length > 0 ? courtsPayload : [],
-            },
-          });
-          toast.success(t("settings.adminClubsUpdateSuccess"));
-        } else {
-          await createClub.mutateAsync({
+    try {
+      if (isEdit && editClubId) {
+        await updateClub.mutateAsync({
+          clubId: editClubId,
+          data: {
             name: name.trim(),
             website: website.trim() || null,
             bookingSystemUrl: bookingSystemUrl.trim() || null,
             address: address.trim(),
-            courts: courtsPayload,
-          });
-          toast.success(t("settings.adminClubsCreateSuccess"));
-        }
-        onOpenChange(false);
-      } catch (err: unknown) {
-        const axiosErr = err as { response?: { data?: { message?: string } } };
-        toast.error(
-          axiosErr?.response?.data?.message ??
-            (isEdit
-              ? t("settings.adminClubsUpdateError")
-              : t("settings.adminClubsCreateError"))
-        );
+            courts: courtsPayload.length > 0 ? courtsPayload : [],
+          },
+        });
+        toast.success(t("settings.adminClubsUpdateSuccess"));
+      } else {
+        await createClub.mutateAsync({
+          name: name.trim(),
+          website: website.trim() || null,
+          bookingSystemUrl: bookingSystemUrl.trim() || null,
+          address: address.trim(),
+          courts: courtsPayload,
+        });
+        toast.success(t("settings.adminClubsCreateSuccess"));
       }
-    },
-    [
-      name,
-      address,
-      website,
-      bookingSystemUrl,
-      courts,
-      isEdit,
-      editClubId,
-      createClub,
-      updateClub,
-      onOpenChange,
-      t,
-    ]
-  );
+      onOpenChange(false);
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      toast.error(
+        axiosErr?.response?.data?.message ??
+          (isEdit
+            ? t("settings.adminClubsUpdateError")
+            : t("settings.adminClubsCreateError"))
+      );
+    }
+  };
 
-  const handleCancel = useCallback(() => {
+  const handleCancel = () => {
     onOpenChange(false);
-  }, [onOpenChange]);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

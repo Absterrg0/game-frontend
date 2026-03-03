@@ -24,13 +24,14 @@ export function RoleGuard({
 }: RoleGuardProps) {
   const { user } = useAuth();
 
-  if (requireRoleOrAbove) {
-    const hasAccess = hasRoleOrAbove(user?.role, requireRoleOrAbove);
+  // If both are provided, requireExactRoles takes precedence so exact-role checks are never silently bypassed.
+  if (requireExactRoles && requireExactRoles.length > 0) {
+    const hasAccess = hasAnyRole(user?.role, requireExactRoles);
     return hasAccess ? <>{children}</> : <>{fallback}</>;
   }
 
-  if (requireExactRoles && requireExactRoles.length > 0) {
-    const hasAccess = hasAnyRole(user?.role, requireExactRoles);
+  if (requireRoleOrAbove) {
+    const hasAccess = hasRoleOrAbove(user?.role, requireRoleOrAbove);
     return hasAccess ? <>{children}</> : <>{fallback}</>;
   }
 

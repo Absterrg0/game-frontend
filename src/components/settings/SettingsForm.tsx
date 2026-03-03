@@ -194,6 +194,7 @@ export function SettingsForm({ user }: { user: AuthUser }) {
                 <PopoverTrigger asChild>
                   <Button
                     id="settings-dob"
+                    type="button"
                     variant="outline"
                     className={`${inputClassName} justify-start text-left font-normal`}
                   >

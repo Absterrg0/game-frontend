@@ -10,9 +10,11 @@
   "profile": {
     "title": "Profil",
     "id": "Benutzer-ID",
-    "userType": "Kontotyp",
-    "userType.user": "Benutzer",
-    "userType.admin": "Administrator",
+    "userType": {
+      "label": "Kontotyp",
+      "user": "Benutzer",
+      "admin": "Administrator"
+    },
     "loading": "Profil wird geladen...",
     "errorLoading": "Profil konnte nicht geladen werden"
   },
@@ -51,6 +53,11 @@
     "genderOptional": "Geschlecht (Optional)",
     "dateOfBirthOptional": "Geburtsdatum (Optional)",
     "favoriteClubsPlaceholder": "Ihre Lieblingsvereine werden hier angezeigt.",
+    "adminClubsTitle": "Meine Vereine",
+    "adminClubsAddButton": "Verein hinzufügen",
+    "adminClubsCourts": "Plätze",
+    "adminClubsEditAria": "{{name}} bearbeiten",
+    "adminClubsUpgradeRoleToast": "Bitte upgraden Sie Ihre Rolle, um Vereine hinzuzufügen oder zu verwalten.",
     "adminClubsPlaceholder": "Vereine, die Sie verwalten, werden hier angezeigt.",
     "adminClubsLoadError": "Vereine konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
     "deleteAccountPlaceholder": "Zum Löschen Ihres Kontos klicken Sie auf die Löschen-Schaltfläche. Bitte beachten Sie, dass diese Aktion nicht rückgängig gemacht werden kann.",
