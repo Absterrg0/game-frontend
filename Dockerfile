@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy the rest of the application files to the working directory
 COPY . .
 # Copy package.json and package-lock.json to the working directory
-COPY package.json yarn.lock ./
+COPY package*.json ./
 
 # Install dependencies
 RUN yarn install
@@ -19,7 +19,7 @@ FROM nginx:latest
 # Copy the NGINX configuration file
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Copy the build artifacts from the build stage to NGINX web server (Vite outputs to dist/)
+# Copy the build artifacts from the build stage to NGINX web server
 COPY --from=build-stage /app/dist/ /usr/share/nginx/html
 
 # We need to make sure not to run the container as a non root user
