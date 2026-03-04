@@ -81,7 +81,7 @@ export default function UserInformation() {
   if (authLoading) {
     return (
       <div
-        className="flex min-h-screen items-center justify-center animate-in fade-in duration-300"
+        className="flex min-h-0 flex-1 items-center justify-center animate-in fade-in duration-300"
         style={{
           background: "linear-gradient(165deg, oklch(0.99 0.005 260) 0%, oklch(0.97 0.01 260) 50%, oklch(0.98 0.008 260) 100%)",
         }}
@@ -138,7 +138,7 @@ export default function UserInformation() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-6 sm:py-8 px-4 sm:px-6 bg-gray-50">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center py-6 sm:py-8 px-4 sm:px-6 bg-gray-50">
       <div className="mx-auto w-full max-w-3xl min-w-0">
         <div className="overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-sm">
           <div className="border-b border-[#e5e7eb] px-4 sm:px-6 pt-4 pb-4 flex items-center justify-between gap-3">
