@@ -268,10 +268,11 @@ export function AddEditClubModal({
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="grid gap-2">
-              <Label className="text-xs font-medium uppercase text-muted-foreground">
+              <Label htmlFor="club-name" className="text-xs font-medium uppercase text-muted-foreground">
                 {t("settings.adminClubsClubName")} <span className="text-destructive">*</span>
               </Label>
               <Input
+                id="club-name"
                 placeholder={t("settings.adminClubsClubNamePlaceholder")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -280,10 +281,11 @@ export function AddEditClubModal({
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs font-medium uppercase text-muted-foreground">
+              <Label htmlFor="club-website" className="text-xs font-medium uppercase text-muted-foreground">
                 {t("settings.adminClubsWebsite")} <span className="text-muted-foreground/70">(optional)</span>
               </Label>
               <Input
+                id="club-website"
                 placeholder={t("settings.adminClubsWebsitePlaceholder")}
                 value={website}
                 onChange={(e) => setWebsite(e.target.value)}
@@ -292,10 +294,11 @@ export function AddEditClubModal({
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs font-medium uppercase text-muted-foreground">
+              <Label htmlFor="club-booking-url" className="text-xs font-medium uppercase text-muted-foreground">
                 {t("settings.adminClubsBookingUrl")} <span className="text-muted-foreground/70">(optional)</span>
               </Label>
               <Input
+                id="club-booking-url"
                 placeholder={t("settings.adminClubsBookingUrlPlaceholder")}
                 value={bookingSystemUrl}
                 onChange={(e) => setBookingSystemUrl(e.target.value)}
@@ -304,10 +307,11 @@ export function AddEditClubModal({
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs font-medium uppercase text-muted-foreground">
+              <Label htmlFor="club-address" className="text-xs font-medium uppercase text-muted-foreground">
                 {t("settings.adminClubsAddress")} <span className="text-destructive">*</span>
               </Label>
               <Input
+                id="club-address"
                 placeholder={t("settings.adminClubsAddressPlaceholder")}
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}

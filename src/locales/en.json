@@ -176,6 +176,7 @@
     "addAdminSuccess": "Admin added successfully.",
     "addOrganiserSuccess": "Organiser added successfully.",
     "addStaffError": "Failed to add staff member.",
+    "userNoLongerEligible": "This user is no longer eligible to be added.",
     "noUsersFound": "No users found.",
     "backToClubs": "Back to clubs",
     "subscriptionBannerText": "Your premium access has expired and needs to be renewed. Until then your sponsors pages are disabled.",

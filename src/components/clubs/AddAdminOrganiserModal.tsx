@@ -65,6 +65,13 @@ export function AddAdminOrganiserModal({
       toast.error(t("manageClub.selectUserFirst"));
       return;
     }
+    if (
+      existingStaffIds.includes(selectedUserId) ||
+      !filteredUsers.some((u) => u.id === selectedUserId)
+    ) {
+      toast.error(t("manageClub.userNoLongerEligible"));
+      return;
+    }
 
     try {
       await addStaff.mutateAsync({ clubId, userId: selectedUserId, role });
@@ -183,7 +190,12 @@ export function AddAdminOrganiserModal({
           <Button
             className="w-full bg-[#067429] hover:bg-[#056023]"
             onClick={handleAdd}
-            disabled={!selectedUserId || addStaff.isPending}
+            disabled={
+              !selectedUserId ||
+              addStaff.isPending ||
+              existingStaffIds.includes(selectedUserId) ||
+              !filteredUsers.some((u) => u.id === selectedUserId)
+            }
           >
             {addStaff.isPending
               ? t("common.loading")

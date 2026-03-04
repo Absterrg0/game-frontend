@@ -175,6 +175,7 @@
     "addAdminSuccess": "Admin erfolgreich hinzugefügt.",
     "addOrganiserSuccess": "Organisator erfolgreich hinzugefügt.",
     "addStaffError": "Mitarbeiter konnte nicht hinzugefügt werden.",
+    "userNoLongerEligible": "Dieser Benutzer kann nicht mehr hinzugefügt werden.",
     "noUsersFound": "Keine Benutzer gefunden.",
     "backToClubs": "Zurück zu Vereinen",
     "subscriptionBannerText": "Ihr Premium-Zugang ist abgelaufen und muss erneuert werden. Bis dahin sind Ihre Sponsoren-Seiten deaktiviert.",
