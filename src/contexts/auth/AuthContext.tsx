@@ -1,5 +1,6 @@
-import { createContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import type { Role } from "@/constants/roles";
 
 export interface AuthUser {
   id: string;
@@ -9,6 +10,8 @@ export interface AuthUser {
   dateOfBirth?: string | null;
   gender?: string | null;
   userType?: string;
+  /** RBAC role: player, organiser, club_admin, super_admin */
+  role?: Role;
 }
 
 interface AuthContextValue {
@@ -26,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = useCallback(async () => {
+  async function checkAuth() {
     try {
       const res = await api.get<{ user: AuthUser }>("/api/auth/me");
       setUser(res.data.user);
@@ -35,20 +38,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }
 
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+    // No dependencies needed, safe due to React Compiler
+  }, []);
 
-  const logout = useCallback(async () => {
+  async function logout() {
     try {
       await api.post("/api/auth/logout");
       setUser(null);
     } catch {
       setUser(null);
     }
-  }, []);
+  }
 
   const isProfileComplete = !!(user?.alias?.trim() && user?.name?.trim());
 

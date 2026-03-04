@@ -7,11 +7,9 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// https://vite.dev/config/
-// Note: No proxy for /api - session cookies require requests to go directly to backend
-// so the browser sends the cookie (same-site: backend domain)
 export default defineConfig({
-  envPrefix: ['VITE_', 'REACT_APP_'], // REACT_APP_ for backward compat with CRA .env
+  envPrefix: ['VITE_', 'REACT_APP_'],
+
   plugins: [
     react({
       babel: {
@@ -20,9 +18,61 @@ export default defineConfig({
     }),
     tailwindcss(),
   ],
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+
+  build: {
+    target: 'esnext',
+    sourcemap: false,
+    minify: 'esbuild',
+
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+
+          // Order matters: more specific matches first (react-router before react)
+          if (id.includes('react-router')) return 'router'
+          // React core + small shared deps → framework (merged with vendor to avoid circular chunk)
+          if (
+            id.includes('react-dom') ||
+            id.includes('scheduler') ||
+            id.includes('/react/') ||
+            id.includes('use-sync-external-store') ||
+            id.includes('object-assign')
+          ) {
+            return 'framework'
+          }
+
+          if (id.includes('@tanstack')) return 'query'
+          if (id.includes('@radix-ui')) return 'radix'
+          if (id.includes('i18next') || id.includes('react-i18next')) return 'i18n'
+
+          // Icons - often large; split for better caching
+          if (id.includes('lucide-react')) return 'icons-lucide'
+          if (id.includes('@hugeicons')) return 'icons-hugeicons'
+
+          // Date utilities - used in SettingsForm (lazy page)
+          if (id.includes('date-fns')) return 'date-fns'
+          if (id.includes('react-day-picker')) return 'day-picker'
+
+          // Toast/notifications
+          if (id.includes('sonner')) return 'sonner'
+
+          // Utilities
+          if (id.includes('axios')) return 'axios'
+          if (id.includes('zod')) return 'zod'
+
+          // Catch-all: merge with framework to avoid vendor↔react circular chunk
+          return 'framework'
+        },
+      },
+    },
+
+    chunkSizeWarningLimit: 500,
   },
 })
