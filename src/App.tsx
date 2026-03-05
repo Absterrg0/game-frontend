@@ -43,7 +43,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-            <Route path="/information" element={<UserInformation />} />
+          <Route path="/information" element={<MainLayout />}>
+            <Route index element={<UserInformation />} />
+          </Route>
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route element={ <ProtectedRoute>
       <MainLayout />
