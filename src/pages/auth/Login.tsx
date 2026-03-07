@@ -1,45 +1,32 @@
 import { useTranslation } from "react-i18next";
-import { useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { FcGoogle } from "react-icons/fc";
 import { SiApple } from "react-icons/si";
-import AppleFlowDetails from "@/components/auth/AppleFlowDetails";
-import { getBackendUrl } from "@/lib/api";
-import { decodeAppleFlowTrace, readStoredAppleFlowTrace } from "@/lib/auth";
-
-function decodeApplePayload(base64: string | null): Record<string, unknown> | null {
-  if (!base64 || typeof base64 !== "string") return null;
-  try {
-    let b64 = base64.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = b64.length % 4;
-    if (pad) b64 += "=".repeat(4 - pad);
-    const json = atob(b64);
-    return JSON.parse(json) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-}
+import { authClient } from "@/lib/auth-client";
 
 const Login = () => {
   const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const errorMessage = searchParams.get("errorMessage");
-  const applePayload = decodeApplePayload(searchParams.get("applePayload"));
-  const shouldShowStoredTrace =
-    !!searchParams.get("error") ||
-    !!searchParams.get("applePayload") ||
-    !!searchParams.get("appleFlow");
-  const appleFlowTrace = useMemo(
-    () =>
-      decodeAppleFlowTrace(searchParams.get("appleFlow")) ??
-      (shouldShowStoredTrace ? readStoredAppleFlowTrace() : null),
-    [searchParams, shouldShowStoredTrace]
-  );
-  const backendUrl = getBackendUrl();
-  const googleAuthUrl = backendUrl ? new URL("/api/auth/google", backendUrl).toString() : null;
-  const appleAuthUrl = backendUrl ? new URL("/api/auth/apple", backendUrl).toString() : null;
+  const navigate = useNavigate();
+  const [pendingProvider, setPendingProvider] = useState<"google" | "apple" | null>(null);
+
+  async function startSocialSignIn(provider: "google" | "apple") {
+    const callbackURL = new URL("/auth/callback", window.location.origin).toString();
+    setPendingProvider(provider);
+
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL,
+        newUserCallbackURL: callbackURL,
+        errorCallbackURL: callbackURL,
+      });
+    } catch {
+      setPendingProvider(null);
+    }
+  }
 
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center gap-6 py-8 px-4 sm:px-6">
@@ -47,51 +34,31 @@ const Login = () => {
         <h1 className="text-center font-primary text-[22px] font-bold capitalize text-brand-primary md:text-[26px]">
           {t("common.login")}
         </h1>
-        <AppleFlowDetails
-          trace={appleFlowTrace}
-          errorMessage={errorMessage}
-          applePayload={applePayload}
-          title="Apple sign-in diagnostics"
-          description="If Apple sign-in failed, the most recent callback trace is shown here."
-        />
-        {googleAuthUrl ? (
-          <a
-            href={googleAuthUrl}
-            className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-[#333333] bg-white w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
-          >
-            <FcGoogle size={22} className="mr-2 shrink-0" />
-            {t("auth.signInWithGoogle")}
-          </a>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="font-semibold border rounded-lg border-[#C6C4D5] text-[#333333] bg-white w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
-          >
-            <FcGoogle size={22} className="mr-2 shrink-0" />
-            {t("auth.signInWithGoogle")}
-          </button>
-        )}
-        {appleAuthUrl ? (
-          <a
-            href={appleAuthUrl}
-            className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-[#333333] bg-white w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
-          >
-            <SiApple size={22} className="mr-2 shrink-0 text-[#000000]" />
-            {t("auth.signInWithApple")}
-          </a>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="font-semibold border rounded-lg border-[#C6C4D5] text-[#333333] bg-white w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
-          >
-            <SiApple size={22} className="mr-2 shrink-0 text-[#000000]" />
-            {t("auth.signInWithApple")}
-          </button>
-        )}
         <button
           type="button"
+          onClick={() => void startSocialSignIn("google")}
+          disabled={pendingProvider !== null}
+          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-[#333333] bg-white w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <FcGoogle size={22} className="mr-2 shrink-0" />
+          {pendingProvider === "google"
+            ? t("common.loading", { defaultValue: "Redirecting..." })
+            : t("auth.signInWithGoogle")}
+        </button>
+        <button
+          type="button"
+          onClick={() => void startSocialSignIn("apple")}
+          disabled={pendingProvider !== null}
+          className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-[#333333] bg-white w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <SiApple size={22} className="mr-2 shrink-0 text-[#000000]" />
+          {pendingProvider === "apple"
+            ? t("common.loading", { defaultValue: "Redirecting..." })
+            : t("auth.signInWithApple")}
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/", { replace: true })}
           className="font-semibold rounded-lg bg-brand-primary text-white mt-8 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 self-center px-8 hover:bg-brand-primary-hover active:animate-jerk"
         >
           <HugeiconsIcon icon={ArrowLeft01Icon} size={22} className="mr-2" />

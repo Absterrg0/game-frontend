@@ -20,13 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth, useCompleteSignup } from "@/hooks/auth";
-import {
-  PENDING_SIGNUP_TOKEN_KEY,
-  readStoredAppleFlowTrace,
-  decodeJwtPayload,
-  pendingSignupPayloadSchema,
-} from "@/lib/auth";
-import AppleFlowDetails from "@/components/auth/AppleFlowDetails";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Mail01Icon,
@@ -43,21 +36,9 @@ export default function UserInformation() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthenticated, isProfileComplete, loading: authLoading, checkAuth } = useAuth();
-  const pendingToken = sessionStorage.getItem(PENDING_SIGNUP_TOKEN_KEY);
-  const appleFlowTrace = readStoredAppleFlowTrace();
-
-  let displayEmail = user?.email ?? "";
-  if (pendingToken) {
-    try {
-      const payload = decodeJwtPayload(pendingToken, pendingSignupPayloadSchema);
-      displayEmail = payload.pendingEmail ?? displayEmail;
-    } catch {
-      // displayEmail stays as is
-    }
-  }
+  const displayEmail = user?.email ?? "";
 
   const { submit, isLoading } = useCompleteSignup({
-    getPendingToken: () => sessionStorage.getItem(PENDING_SIGNUP_TOKEN_KEY),
     onSuccess: async () => {
       await checkAuth();
       navigate("/profile", { replace: true });
@@ -94,7 +75,7 @@ export default function UserInformation() {
   }
 
   if (isAuthenticated && isProfileComplete) return <Navigate to="/profile" replace />;
-  if (!isAuthenticated && !pendingToken) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   const handleInputChange = (
     e: ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -147,16 +128,6 @@ export default function UserInformation() {
               <HugeiconsIcon icon={UserIcon} size={20} />
             </div>
           </div>
-
-          {appleFlowTrace ? (
-            <div className="border-b border-[#e5e7eb] px-4 py-4 sm:px-6">
-              <AppleFlowDetails
-                trace={appleFlowTrace}
-                title="Apple sign-in status"
-                description="Apple authentication already succeeded. The trace below explains how you arrived at the profile-completion step."
-              />
-            </div>
-          ) : null}
 
           <form onSubmit={onSubmit} className="space-y-0">
             <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">

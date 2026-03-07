@@ -2,15 +2,12 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { parseISO } from "date-fns";
 import { api } from "@/lib/api";
-import { PENDING_SIGNUP_TOKEN_KEY } from "@/lib/auth";
 import { signupFormSchema, type SignupFormValues } from "@/lib/validation";
 
-/** Form data without pendingToken (injected from sessionStorage). */
-export type CompleteSignupFormData = Omit<SignupFormValues, "pendingToken">;
+export type CompleteSignupFormData = SignupFormValues;
 
 interface UseCompleteSignupOptions {
   onSuccess: () => void | Promise<void>;
-  getPendingToken: () => string | null;
 }
 
 interface CompleteSignupResult {
@@ -25,7 +22,6 @@ interface CompleteSignupResult {
  */
 export function useCompleteSignup({
   onSuccess,
-  getPendingToken,
 }: UseCompleteSignupOptions) {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
@@ -37,18 +33,7 @@ export function useCompleteSignup({
   async function submit(
     rawData: CompleteSignupFormData
   ): Promise<CompleteSignupResult> {
-    const pendingToken = getPendingToken();
-    if (!pendingToken) {
-      return {
-        success: false,
-        message: "Session expired. Please sign in again.",
-      };
-    }
-
-    const result = signupFormSchema.safeParse({
-      ...rawData,
-      pendingToken,
-    });
+    const result = signupFormSchema.safeParse(rawData);
 
     if (!result.success) {
       const fieldErrors: Record<string, string> = {};
@@ -72,8 +57,7 @@ export function useCompleteSignup({
 
     setIsLoading(true);
     try {
-      const response = await api.post("/api/auth/complete-signup", {
-        pendingToken: parsed.pendingToken,
+      const response = await api.post("/api/session/complete-signup", {
         alias: parsed.alias,
         name: parsed.name,
         dateOfBirth,
@@ -85,7 +69,6 @@ export function useCompleteSignup({
         !response?.data?.error &&
         response?.data?.code === "SIGNUP_SUCCESSFUL"
       ) {
-        sessionStorage.removeItem(PENDING_SIGNUP_TOKEN_KEY);
         await onSuccessRef.current();
         return { success: true };
       }
@@ -101,12 +84,10 @@ export function useCompleteSignup({
       const data = err?.response?.data;
       const msg = data?.message ?? "Sign up failed. Please try again.";
       const code = data?.code;
-      const isTokenError =
-        code === "INVALID_TOKEN" ||
-        (typeof msg === "string" &&
-          /token\s*(expired|invalid)|invalid\s*(or\s*)?expired\s*signup\s*token/i.test(msg));
-      if (isTokenError) {
-        sessionStorage.removeItem(PENDING_SIGNUP_TOKEN_KEY);
+      const isSessionError =
+        code === "INVALID_SESSION" ||
+        (typeof msg === "string" && /session\s*(expired|invalid)|login again/i.test(msg));
+      if (isSessionError) {
         navigate("/login", { replace: true });
       }
       if (code === "EMAIL_ALREADY_EXISTS") {

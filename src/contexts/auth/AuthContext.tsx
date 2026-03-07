@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { api } from "@/lib/api";
+import { authClient } from "@/lib/auth-client";
 import type { Role } from "@/constants/roles";
 
 export interface AuthUser {
@@ -30,8 +31,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   async function checkAuth() {
+    setLoading(true);
     try {
-      const res = await api.get<{ user: AuthUser }>("/api/auth/me");
+      const session = await authClient.getSession();
+      if (!session.data) {
+        setUser(null);
+        return;
+      }
+
+      const res = await api.get<{ user: AuthUser }>("/api/session/me");
       setUser(res.data.user);
     } catch {
       setUser(null);
@@ -47,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function logout() {
     try {
-      await api.post("/api/auth/logout");
+      await authClient.signOut();
       setUser(null);
     } catch {
       setUser(null);
