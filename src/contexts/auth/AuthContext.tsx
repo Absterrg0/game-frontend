@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useCallback } from "react";
+import { createContext, useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import type { Role } from "@/constants/roles";
 
@@ -19,7 +19,7 @@ interface AuthContextValue {
   loading: boolean;
   isAuthenticated: boolean;
   isProfileComplete: boolean;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => Promise<AuthUser | null>;
   logout: () => Promise<void>;
 }
 
@@ -29,12 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
+  const checkAuth = async (): Promise<AuthUser | null> => {
     try {
       const res = await api.get<{ user: AuthUser }>("/api/auth/me");
-      setUser(res.data.user);
+      const u = res.data.user;
+      setUser(u);
+      return u;
     } catch {
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/auth";
 import { PENDING_SIGNUP_TOKEN_KEY } from "@/lib/auth";
@@ -51,7 +51,7 @@ export default function AuthCallback() {
   const { checkAuth } = useAuth();
 
   // Read from query params (primary) and hash (legacy) - fragments can be lost in redirect chains
-  const hashParams = useMemo(() => parseHashParams(hash), [hash]);
+  const hashParams = parseHashParams(hash);
   const signup =
     searchParams.get("signup") ?? hashParams.get("signup");
   const pendingToken =
@@ -65,7 +65,15 @@ export default function AuthCallback() {
 
   useEffect(() => {
     if (success === "true") {
-      checkAuth().then(() => navigate("/", { replace: true }));
+      checkAuth().then((user) => {
+        if (!user) {
+          navigate("/login", { replace: true });
+          return;
+        }
+        // Navigate directly to final destination to avoid extra redirect via Home
+        const dest = user.alias?.trim() && user.name?.trim() ? "/profile" : "/information";
+        navigate(dest, { replace: true });
+      });
       return;
     }
 
