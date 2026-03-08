@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import type { Role } from "@/constants/roles";
 
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function checkAuth() {
+  const checkAuth = async () => {
     try {
       const res = await api.get<{ user: AuthUser }>("/api/auth/me");
       setUser(res.data.user);
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     checkAuth();
