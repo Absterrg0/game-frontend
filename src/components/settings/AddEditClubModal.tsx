@@ -46,11 +46,22 @@ interface AddEditClubModalProps {
   editClubId: string | null;
 }
 
-const emptyCourt = (): CourtInput => ({
-  name: "",
+/** First court defaults: name "1", concrete, outdoor */
+const firstCourt = (): CourtInput => ({
+  name: "1",
   type: "concrete",
   placement: "outdoor",
 });
+
+/** New court with last court's type/placement, name = next index (1, 2, 3, ...) */
+const courtWithDefaultsFrom = (existingCourts: CourtInput[]): CourtInput => {
+  const last = existingCourts[existingCourts.length - 1];
+  return {
+    name: String(existingCourts.length + 1),
+    type: last?.type ?? "concrete",
+    placement: last?.placement ?? "outdoor",
+  };
+};
 
 export function AddEditClubModal({
   open,
@@ -65,7 +76,7 @@ export function AddEditClubModal({
   const [bookingSystemUrl, setBookingSystemUrl] = useState("");
   const [address, setAddress] = useState("");
   const [coordinates, setCoordinates] = useState<[number, number] | null>(null);
-  const [courts, setCourts] = useState<CourtInput[]>([emptyCourt()]);
+  const [courts, setCourts] = useState<CourtInput[]>([firstCourt()]);
 
   const { data: clubData, isLoading: loadingClub } = useClubById(editClubId);
   const createClub = useCreateClub();
@@ -89,7 +100,7 @@ export function AddEditClubModal({
               type: c.type as CourtType,
               placement: c.placement as CourtPlacement,
             }))
-          : [emptyCourt()]
+          : [firstCourt()]
       );
     } else if (open && !isEdit) {
       setName("");
@@ -97,18 +108,18 @@ export function AddEditClubModal({
       setBookingSystemUrl("");
       setAddress("");
       setCoordinates(null);
-      setCourts([emptyCourt()]);
+      setCourts([firstCourt()]);
     }
   }, [open, isEdit, clubData]);
 
   const handleAddCourt = () => {
-    setCourts((prev) => [...prev, emptyCourt()]);
+    setCourts((prev) => [...prev, courtWithDefaultsFrom(prev)]);
   };
 
   const handleRemoveCourt = (index: number) => {
     setCourts((prev) => {
       const next = prev.filter((_, i) => i !== index);
-      return next.length === 0 ? [emptyCourt()] : next;
+      return next.length === 0 ? [firstCourt()] : next;
     });
   };
 
@@ -185,6 +196,20 @@ export function AddEditClubModal({
         type: c.type,
         placement: c.placement,
       }));
+
+    const courtKey = (c: { name: string; type: string; placement: string }) =>
+      `${c.name}|${c.type}|${c.placement}`;
+    const seen = new Set<string>();
+    const hasDuplicate = courtsPayload.some((c) => {
+      const key = courtKey(c);
+      if (seen.has(key)) return true;
+      seen.add(key);
+      return false;
+    });
+    if (hasDuplicate) {
+      toast.error(t("settings.adminClubsDuplicateCourtError"));
+      return;
+    }
 
     try {
       if (isEdit && editClubId) {
