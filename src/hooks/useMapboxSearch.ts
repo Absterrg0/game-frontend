@@ -65,11 +65,12 @@ export function useMapboxSearch(searchQuery: string) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lastQueryRef = useRef<string>("");
+  const requestIdRef = useRef(0);
 
   const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN as string | undefined;
 
   const performSearch = useCallback(
-    async (query: string) => {
+    async (query: string, requestId: number) => {
       if (!accessToken) {
         setError("Mapbox token not configured");
         setResults([]);
@@ -90,16 +91,18 @@ export function useMapboxSearch(searchQuery: string) {
 
       try {
         const features = await searchMapbox(trimmed, accessToken);
-        if (lastQueryRef.current === trimmed) {
-          setResults(features);
+        if (requestId !== requestIdRef.current) {
+          return;
         }
+        setResults(features);
       } catch (err) {
-        if (lastQueryRef.current === trimmed) {
-          setError(err instanceof Error ? err.message : "Search failed");
-          setResults([]);
+        if (requestId !== requestIdRef.current) {
+          return;
         }
+        setError(err instanceof Error ? err.message : "Search failed");
+        setResults([]);
       } finally {
-        if (lastQueryRef.current === trimmed) {
+        if (requestId === requestIdRef.current) {
           setIsLoading(false);
         }
       }
@@ -109,6 +112,9 @@ export function useMapboxSearch(searchQuery: string) {
 
   useEffect(() => {
     const trimmed = searchQuery.trim();
+    requestIdRef.current += 1;
+    const currentRequestId = requestIdRef.current;
+
     if (!trimmed) {
       setResults([]);
       setIsLoading(false);
@@ -117,7 +123,7 @@ export function useMapboxSearch(searchQuery: string) {
     }
 
     const timer = setTimeout(() => {
-      performSearch(searchQuery);
+      performSearch(searchQuery, currentRequestId);
     }, DEBOUNCE_MS);
 
     return () => clearTimeout(timer);

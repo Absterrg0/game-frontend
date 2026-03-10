@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { useMapboxSearch, type MapboxFeature } from "@/hooks/useMapboxSearch";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,10 @@ export function LocationSearchInput({
   const listRef = useRef<HTMLUListElement>(null);
 
   const { results, isLoading, error, hasToken } = useMapboxSearch(value);
+
+  useEffect(() => {
+    setHighlightedIndex(-1);
+  }, [results]);
 
   const showDropdown =
     isFocused &&
@@ -110,7 +114,7 @@ export function LocationSearchInput({
           {isLoading && (
             <li
               className="px-3 py-2 text-sm text-muted-foreground"
-              role="option"
+         
             >
               {searchingLabel}
             </li>
@@ -118,7 +122,6 @@ export function LocationSearchInput({
           {error && !isLoading && (
             <li
               className="px-3 py-2 text-sm text-destructive"
-              role="option"
             >
               {error}
             </li>

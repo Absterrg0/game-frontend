@@ -29,6 +29,7 @@ import {
   type CourtPlacement,
 } from "@/hooks/club";
 import { toast } from "sonner";
+import {type  MapboxFeature } from "@/hooks/useMapboxSearch";
 
 const COURT_TYPES: CourtType[] = [
   "concrete",
@@ -135,39 +136,17 @@ export function AddEditClubModal({
     );
   };
 
-  const handleLocationSelect = (feature: { fullAddress: string; placeName: string; coordinates: [number, number] }) => {
+  const handleLocationSelect = (feature: MapboxFeature) => {
     setAddress(feature.fullAddress || feature.placeName);
     setCoordinates(feature.coordinates);
   };
 
   const handleAddressChange = (value: string) => {
     setAddress(value);
+    // Clear coordinates when the user manually edits the address;
+    // they must select a Mapbox suggestion again to set valid coordinates.
     setCoordinates(null);
   };
-
-  async function geocodeAddress(addr: string): Promise<[number, number] | null> {
-    const params = new URLSearchParams({
-      q: addr,
-      format: "json",
-      limit: "1",
-    });
-    const res = await fetch(
-      `https://nominatim.openstreetmap.org/search?${params}`,
-      {
-        headers: {
-          "User-Agent": "TB10-Game-App/1.0 (club-location)",
-        },
-      }
-    );
-    const data = await res.json();
-    if (!Array.isArray(data) || data.length === 0) return null;
-    const { lat, lon } = data[0];
-    if (lat == null || lon == null) return null;
-    const lonNum = parseFloat(String(lon));
-    const latNum = parseFloat(String(lat));
-    if (Number.isNaN(lonNum) || Number.isNaN(latNum)) return null;
-    return [lonNum, latNum];
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -179,14 +158,13 @@ export function AddEditClubModal({
       toast.error(t("settings.adminClubsAddressPlaceholder"));
       return;
     }
-    let coords = coordinates;
-    if (!coords) {
-      coords = await geocodeAddress(address.trim());
-      if (!coords) {
-        toast.error(t("settings.adminClubsLookupError"));
-        return;
-      }
+    if (!coordinates) {
+      // Require that the user selects an address from the Mapbox suggestions
+      // so we always have valid coordinates from Mapbox.
+      toast.error(t("settings.adminClubsLookupError"));
+      return;
     }
+    const coords = coordinates;
 
     const courtsPayload = courts
       .filter((c) => c.name.trim())
