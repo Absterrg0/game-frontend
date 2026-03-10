@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useCurrentUser } from "@/hooks/auth";
 import { SettingsForm, DeleteAccountSection, FavoriteClubsSection, AdminClubsSection } from "@/components/settings";
+import InlineLoader from "@/components/shared/InlineLoader";
 
 const VALID_TABS = ["settings", "favorite-clubs", "admin-clubs", "delete-account"] as const;
 
@@ -24,7 +25,7 @@ export default function SettingsPage() {
   if (userLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+        <InlineLoader />
       </div>
     );
   }

@@ -973,6 +973,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@lottiefiles/dotlottie-react@npm:^0.18.4":
+  version: 0.18.4
+  resolution: "@lottiefiles/dotlottie-react@npm:0.18.4"
+  dependencies:
+    "@lottiefiles/dotlottie-web": "npm:0.66.0"
+  peerDependencies:
+    react: ^17 || ^18 || ^19
+  checksum: 10c0/7f82eb97af4caff03f67f41be5fe420847221c7043bcd452aa5ddbd2d2993ea5e58847cb5304879152a619e94b8de3349db3d608e1efc92ae5018d3cae54ae06
+  languageName: node
+  linkType: hard
+
+"@lottiefiles/dotlottie-web@npm:0.66.0":
+  version: 0.66.0
+  resolution: "@lottiefiles/dotlottie-web@npm:0.66.0"
+  checksum: 10c0/8752cc9a1979a304bf660f5ed3c92d8d48166d10cf54d2e5e8d176495bb74e32e322e8eb34530c6e387d84be60921a197706317e8126e898f958eb4d87fa6dea
+  languageName: node
+  linkType: hard
+
 "@modelcontextprotocol/sdk@npm:^1.26.0":
   version: 1.27.1
   resolution: "@modelcontextprotocol/sdk@npm:1.27.1"
@@ -3194,6 +3212,7 @@ __metadata:
     "@fontsource-variable/syne": "npm:^5.2.7"
     "@hugeicons/core-free-icons": "npm:^3.1.1"
     "@hugeicons/react": "npm:^1.1.5"
+    "@lottiefiles/dotlottie-react": "npm:^0.18.4"
     "@tailwindcss/vite": "npm:^4.2.0"
     "@tanstack/react-query": "npm:^5.90.21"
     "@types/node": "npm:^22.0.0"

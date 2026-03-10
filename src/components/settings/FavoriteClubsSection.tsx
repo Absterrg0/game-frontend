@@ -23,6 +23,7 @@ import {
 } from "@/hooks/club";
 import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
+import InlineLoader from "@/components/shared/InlineLoader";
 
 export function FavoriteClubsSection() {
   const { t } = useTranslation();
@@ -168,7 +169,7 @@ export function FavoriteClubsSection() {
             className="h-11 px-5 rounded-lg font-medium shrink-0 bg-brand-accent text-black hover:bg-brand-accent-hover"
           >
             {addFavorite.isPending ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              <InlineLoader size="sm" />
             ) : (
               t("settings.favoriteClubsAddButton")
             )}

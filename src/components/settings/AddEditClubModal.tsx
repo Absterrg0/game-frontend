@@ -30,6 +30,7 @@ import {
 } from "@/hooks/club";
 import { toast } from "sonner";
 import {type  MapboxFeature } from "@/hooks/useMapboxSearch";
+import InlineLoader from "@/components/shared/InlineLoader";
 
 const COURT_TYPES: CourtType[] = [
   "concrete",
@@ -257,7 +258,7 @@ export function AddEditClubModal({
 
         {isEdit && loadingClub ? (
           <div className="flex items-center justify-center py-8">
-            <span  className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" />
+            <InlineLoader />
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -416,7 +417,7 @@ export function AddEditClubModal({
                 className="bg-brand-primary text-white hover:bg-brand-primary-hover"
               >
                 {isPending ? (
-                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  <InlineLoader size="sm" />
                 ) : (
                   t("settings.adminClubsSave")
                 )}
