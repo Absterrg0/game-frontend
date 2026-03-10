@@ -30,6 +30,7 @@ export default function InlineLoader({
         src="/tennis-ball.json"
         loop
         autoplay
+        mode="bounce"
         useFrameInterpolation
         renderConfig={{ devicePixelRatio: 1, autoResize: true }}
         className="w-full h-full"

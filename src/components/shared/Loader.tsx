@@ -16,6 +16,7 @@ export default function Loader({ className }: { className?: string }) {
         src="/tennis-ball.json"
         loop
         autoplay
+        mode="bounce"
         className="w-full h-full"
       />
       <p className="font-secondary text-2xl text-brand-black/60 -mt-28">
