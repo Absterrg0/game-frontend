@@ -24,4 +24,10 @@ export const queryKeys = {
     staff: (id: string) => [...queryKeys.club.all, "staff", id] as const,
     sponsors: (id: string) => [...queryKeys.club.all, "sponsors", id] as const,
   },
+  tournament: {
+    all: ["tournament"] as const,
+    list: (filters?: { status?: string; clubId?: string; page?: number; limit?: number; q?: string }) =>
+      [...queryKeys.tournament.all, "list", filters ?? {}] as const,
+    detail: (id: string) => [...queryKeys.tournament.all, "detail", id] as const,
+  },
 } as const;

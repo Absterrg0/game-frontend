@@ -1,0 +1,112 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/api/queryKeys";
+
+export interface CreateTournamentInput {
+  club: string;
+  name: string;
+  status: "draft" | "active";
+  sponsorId?: string | null;
+  logo?: string | null;
+  date?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  playMode?: string;
+  tournamentMode?: string;
+  memberFee?: number;
+  externalFee?: number;
+  minMember?: number;
+  maxMember?: number;
+  playTime?: string | null;
+  pauseTime?: string | null;
+  courts?: string[];
+  foodInfo?: string | null;
+  descriptionInfo?: string | null;
+  numberOfRounds?: number;
+  roundTimings?: { startDate?: string; endDate?: string }[];
+}
+
+export interface UpdateTournamentInput {
+  club?: string;
+  name?: string;
+  sponsorId?: string | null;
+  logo?: string | null;
+  date?: string | null;
+  startTime?: string | null;
+  endTime?: string | null;
+  playMode?: string;
+  tournamentMode?: string;
+  memberFee?: number;
+  externalFee?: number;
+  minMember?: number;
+  maxMember?: number;
+  playTime?: string | null;
+  pauseTime?: string | null;
+  courts?: string[];
+  foodInfo?: string | null;
+  descriptionInfo?: string | null;
+  numberOfRounds?: number;
+  roundTimings?: { startDate?: string; endDate?: string }[];
+}
+
+interface CreateTournamentResponse {
+  message: string;
+  tournament: { id: string; name: string; club: string; status: string; date?: string; createdAt?: string };
+}
+
+interface UpdateTournamentResponse {
+  message: string;
+  tournament: { id: string; name: string; club: string; status: string; date?: string; updatedAt?: string };
+}
+
+interface PublishTournamentResponse {
+  message: string;
+  tournament: { id: string; name: string; club: string; status: string };
+}
+
+async function createTournament(data: CreateTournamentInput): Promise<CreateTournamentResponse> {
+  const res = await api.post<CreateTournamentResponse>("/api/tournaments", data);
+  return res.data;
+}
+
+async function updateTournament(id: string, data: UpdateTournamentInput): Promise<UpdateTournamentResponse> {
+  const res = await api.patch<UpdateTournamentResponse>(`/api/tournaments/${id}`, data);
+  return res.data;
+}
+
+async function publishTournament(id: string, data: UpdateTournamentInput): Promise<PublishTournamentResponse> {
+  const res = await api.post<PublishTournamentResponse>(`/api/tournaments/${id}/publish`, data);
+  return res.data;
+}
+
+export function useCreateTournament() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createTournament,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.all });
+    },
+  });
+}
+
+export function useUpdateTournament() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateTournamentInput }) => updateTournament(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) });
+    },
+  });
+}
+
+export function usePublishTournament() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateTournamentInput }) => publishTournament(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) });
+    },
+  });
+}

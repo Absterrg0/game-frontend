@@ -13,6 +13,7 @@ const UserInformation = lazy(() => import('./pages/user/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/auth/AuthCallback'))
 const SettingsPage = lazy(() => import('./pages/profile/SettingsPage'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
+const TournamentListPage = lazy(() => import('./pages/tournaments/TournamentListPage'))
 const ManageClubPage = lazy(() => import('./pages/clubs/ManageClubPage'))
 const SponsorsPage = lazy(() => import('./pages/sponsors/SponsorsPage'))
 const AboutPage = lazy(() => import('./pages/about/AboutPage'))
@@ -48,7 +49,8 @@ function App() {
       <MainLayout />
     </ProtectedRoute>}>
             <Route path="/profile" element={<SettingsPage />} />
-            <Route path="/tournaments" element={<PlaceholderPage />} />
+            <Route path="/tournaments" element={<TournamentListPage />} />
+            <Route path="/tournaments/:id" element={<PlaceholderPage />} />
             <Route path="/my-score" element={<PlaceholderPage />} />
             <Route path="/record-score" element={<PlaceholderPage />} />
             <Route path="/clubs" element={<ManageClubPage />} />
