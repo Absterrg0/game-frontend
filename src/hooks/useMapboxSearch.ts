@@ -64,7 +64,6 @@ export function useMapboxSearch(searchQuery: string) {
   const [results, setResults] = useState<MapboxFeature[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const lastQueryRef = useRef<string>("");
   const requestIdRef = useRef(0);
 
   const accessToken = import.meta.env.REACT_APP_MAPBOX_API_KEY as string | undefined;
@@ -85,7 +84,7 @@ export function useMapboxSearch(searchQuery: string) {
         return;
       }
 
-      lastQueryRef.current = trimmed;
+ 
       setIsLoading(true);
       setError(null);
 
