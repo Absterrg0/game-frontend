@@ -288,7 +288,18 @@
     "draftSaved": "Entwurf erfolgreich gespeichert.",
     "published": "Turnier erfolgreich veröffentlicht.",
     "saveError": "Entwurf konnte nicht gespeichert werden.",
-    "publishError": "Turnier konnte nicht veröffentlicht werden."
+    "publishError": "Turnier konnte nicht veröffentlicht werden.",
+    "noResultsYet": "Noch keine Ergebnisse.",
+    "noMyResults": "Sie sind nicht in den Ergebnissen dieses Turniers.",
+    "allResults": "Alle Ergebnisse",
+    "resultsPosition": "Position",
+    "resultsPlayers": "Spieler",
+    "resultsWins": "Siege",
+    "resultsTotalScoreAdvantage": "Gesamtpunktvorteil",
+    "noSponsorForTournament": "Kein Sponsor für dieses Turnier ausgewählt.",
+    "clubSponsors": "Vereinssponsoren",
+    "noClubSponsors": "Dieser Verein hat noch keine Sponsoren.",
+    "viewSponsorDetails": "Details anzeigen"
   },
   "about": {
     "title": "Über uns",

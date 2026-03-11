@@ -2,12 +2,20 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
 
+export interface ClubSponsorSummary {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  link: string | null;
+}
+
 export interface TournamentDetail {
   id: string;
   name: string;
   logo: string | null;
-  club: unknown;
-  sponsorId: string | null;
+  club: { id: string; name: string } | null;
+  sponsor: { id: string; name: string; logoUrl: string | null; link: string | null } | null;
+  clubSponsors: ClubSponsorSummary[];
   date: string | null;
   startTime: string | null;
   endTime: string | null;
@@ -19,15 +27,17 @@ export interface TournamentDetail {
   maxMember: number;
   playTime: string | null;
   pauseTime: string | null;
-  courts: unknown[];
+  courts: { id: string; name: string; type: string | null; placement: string | null }[];
   foodInfo: string;
   descriptionInfo: string;
   numberOfRounds: number;
-  roundTimings: { startDate?: string; endDate?: string }[];
+  roundTimings: { startDate: string | null; endDate: string | null }[];
   status: "active" | "draft" | "inactive";
-  participants: unknown[];
-  createdAt?: string;
-  updatedAt?: string;
+  participants: { id: string; name: string | null; alias: string | null }[];
+  progress: { spotsFilled: number; spotsTotal: number; percentage: number };
+  permissions: { canEdit: boolean; canJoin: boolean; isParticipant: boolean };
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 interface TournamentDetailResponse {

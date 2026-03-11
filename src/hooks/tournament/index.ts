@@ -4,6 +4,7 @@ export {
   useCreateTournament,
   useUpdateTournament,
   usePublishTournament,
+  useJoinTournament,
   type CreateTournamentInput,
   type UpdateTournamentInput,
 } from "./useTournamentMutations";

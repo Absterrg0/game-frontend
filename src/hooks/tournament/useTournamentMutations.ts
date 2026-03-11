@@ -64,6 +64,11 @@ interface PublishTournamentResponse {
   tournament: { id: string; name: string; club: string; status: string };
 }
 
+interface JoinTournamentResponse {
+  message: string;
+  tournament: { id: string; spotsFilled: number; spotsTotal: number; isParticipant: boolean };
+}
+
 async function createTournament(data: CreateTournamentInput): Promise<CreateTournamentResponse> {
   const res = await api.post<CreateTournamentResponse>("/api/tournaments", data);
   return res.data;
@@ -76,6 +81,11 @@ async function updateTournament(id: string, data: UpdateTournamentInput): Promis
 
 async function publishTournament(id: string, data: UpdateTournamentInput): Promise<PublishTournamentResponse> {
   const res = await api.post<PublishTournamentResponse>(`/api/tournaments/${id}/publish`, data);
+  return res.data;
+}
+
+async function joinTournament(id: string): Promise<JoinTournamentResponse> {
+  const res = await api.post<JoinTournamentResponse>(`/api/tournaments/${id}/join`);
   return res.data;
 }
 
@@ -107,6 +117,17 @@ export function usePublishTournament() {
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) });
+    },
+  });
+}
+
+export function useJoinTournament() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string }) => joinTournament(id),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.all });
     },
   });
 }
