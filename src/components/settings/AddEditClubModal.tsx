@@ -113,24 +113,17 @@ export function AddEditClubModal({
       setCoordinates(coords ? [coords[0], coords[1]] : null);
       setCourts(
         clubData.courts.length > 0
-          ? (() => {
-              const placementCounters: Record<CourtPlacement, number> = {
-                indoor: 0,
-                outdoor: 0,
-              };
-              return clubData.courts.map(
-                (c: { id: string; name: string; type: string; placement: string }) => {
-                  const placement = (c.placement === "indoor" ? "indoor" : "outdoor") as CourtPlacement;
-                  placementCounters[placement] += 1;
-                  return {
-                    id: c.id,
-                    name: String(placementCounters[placement]),
-                    type: c.type as CourtType,
-                    placement,
-                  };
-                }
-              );
-            })()
+          ? clubData.courts.map(
+              (c: { id: string; name: string; type: string; placement: string }) => {
+                const placement = (c.placement === "indoor" ? "indoor" : "outdoor") as CourtPlacement;
+                return {
+                  id: c.id,
+                  name: c.name ?? "",
+                  type: c.type as CourtType,
+                  placement,
+                };
+              }
+            )
           : []
       );
     } else if (open && !isEdit) {
@@ -197,18 +190,13 @@ export function AddEditClubModal({
     }
     const coords = coordinates;
 
-    const placementCounters: Record<CourtPlacement, number> = {
-      indoor: 0,
-      outdoor: 0,
-    };
     const courtsPayload = courts
       .filter((c) => c.name.trim())
       .map((c) => {
-        const placement: CourtPlacement = c.placement === "indoor" ? "indoor" : "outdoor";
-        placementCounters[placement] += 1;
+        const placement = c.placement;
         return {
           id: c.id,
-          name: String(placementCounters[placement]),
+          name: c.name.trim(),
           type: c.type,
           placement,
         };
