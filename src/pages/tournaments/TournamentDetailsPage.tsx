@@ -1,9 +1,11 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Share2, Trophy } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Upload01Icon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import InlineLoader from "@/components/shared/InlineLoader";
-import { useTournamentById, useJoinTournament } from "@/hooks/tournament";
+import { useTournamentById, useJoinTournament, usePublishTournament } from "@/hooks/tournament";
 import { useAuth } from "@/hooks/auth";
 import { TournamentDetailsTabs } from "@/components/tournaments/details-tabs/TournamentDetailsTabs";
 import { toast } from "sonner";
@@ -13,6 +15,7 @@ export default function TournamentDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const joinTournament = useJoinTournament();
+  const publishTournament = usePublishTournament();
 
   const { data, isLoading, isError, error } = useTournamentById(id ?? null, Boolean(id));
 
@@ -61,6 +64,46 @@ export default function TournamentDetailsPage() {
     }
   };
 
+  const onPublish = async () => {
+    try {
+      await publishTournament.mutateAsync({
+        id: tournament.id,
+        data: {
+          club: tournament.club?.id ?? "",
+          name: tournament.name,
+          sponsorId: tournament.sponsor?.id ?? null,
+          logo: tournament.logo,
+          date: tournament.date,
+          startTime: tournament.startTime,
+          endTime: tournament.endTime,
+          playMode: tournament.playMode,
+          tournamentMode: tournament.tournamentMode,
+          memberFee: tournament.memberFee,
+          externalFee: tournament.externalFee,
+          minMember: tournament.minMember,
+          maxMember: tournament.maxMember,
+          playTime: tournament.playTime,
+          pauseTime: tournament.pauseTime,
+          courts: tournament.courts?.map((c) => c.id) ?? [],
+          foodInfo: tournament.foodInfo ?? "",
+          descriptionInfo: tournament.descriptionInfo ?? "",
+          numberOfRounds: tournament.numberOfRounds,
+          roundTimings: tournament.roundTimings?.map((r) => ({
+            startDate: r.startDate ?? undefined,
+            endDate: r.endDate ?? undefined,
+          })),
+        },
+      });
+      toast.success(t("tournaments.published"));
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+          : null;
+      toast.error(msg ?? t("tournaments.publishError"));
+    }
+  };
+
   const onShare = async () => {
     const shareData = {
       title: tournament.name,
@@ -89,10 +132,24 @@ export default function TournamentDetailsPage() {
         <Button asChild variant="ghost" size="sm" className="px-1 text-muted-foreground">
           <Link to="/tournaments">{t("tournaments.backToList")}</Link>
         </Button>
-        <Button variant="ghost" size="sm" onClick={onShare}>
-          <Share2 className="size-4" />
-          {t("tournaments.share")}
-        </Button>
+        <div className="flex items-center gap-2">
+          {tournament.status === "draft" && tournament.permissions.canEdit && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onPublish}
+              disabled={publishTournament.isPending}
+              className="bg-brand-primary hover:bg-brand-primary-hover"
+            >
+              <HugeiconsIcon icon={Upload01Icon} size={16} className="mr-1" />
+              {t("tournaments.publish")}
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" onClick={onShare}>
+            <Share2 className="size-4" />
+            {t("tournaments.share")}
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-xl bg-white p-4 sm:p-6">
@@ -101,8 +158,17 @@ export default function TournamentDetailsPage() {
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#ece7dd]">
               <Trophy className="size-6 text-[#8d867b]" />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-[#111827] sm:text-[2.125rem]">{tournament.name}</h1>
+            <div className="flex flex-col gap-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-3xl font-bold leading-tight tracking-tight text-[#111827] sm:text-[2.125rem]">
+                  {tournament.name}
+                </h1>
+                {tournament.status === "draft" && (
+                  <span className="inline-flex items-center rounded-full bg-amber-100 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-amber-800">
+                    {t("tournaments.statusDraft")}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 

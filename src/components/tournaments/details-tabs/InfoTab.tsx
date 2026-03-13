@@ -15,7 +15,7 @@ import {
 import type { TournamentDetail } from "@/hooks/tournament";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { EditTournamentInfoModal } from "./EditTournamentInfoModal";
+import { CreateTournamentModal } from "@/components/tournaments/CreateTournamentModal";
 
 interface InfoTabProps {
   tournament: TournamentDetail;
@@ -233,10 +233,11 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
         </aside>
       </div>
 
-      <EditTournamentInfoModal
+      <CreateTournamentModal
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
-        tournament={tournament}
+        mode="edit"
+        tournamentId={tournament.id}
       />
     </TabsContent>
   );

@@ -7,7 +7,7 @@ export {
   useRemoveFavoriteClub,
   useSetHomeClub,
 } from "./useFavoriteClubs";
-export { useAdminClubs } from "./useAdminClubs";
+export { useAdminClubs, useAdminClubsSuspense } from "./useAdminClubs";
 export {
   useClubStaff,
   type ClubStaffMember,

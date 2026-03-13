@@ -1,7 +1,14 @@
-import { useState } from "react";
+import {  useState } from "react";
 import { useTranslation } from "react-i18next";
 import { isValid, parseISO } from "date-fns";
-import { useAdminClubs, useClubSponsors, useCreateTournament } from "@/hooks";
+import {
+  useAdminClubs,
+  useClubSponsors,
+  useCreateTournament,
+  usePublishTournament,
+  useTournamentById,
+  useUpdateTournament,
+} from "@/hooks";
 import type { CreateTournamentInput } from "@/hooks/tournament";
 import { BasicInfoTab } from "@/components/tournaments/create-modal/BasicInfoTab";
 import { DetailsTab } from "@/components/tournaments/create-modal/DetailsTab";
@@ -41,26 +48,89 @@ const emptyForm: CreateTournamentInput = {
 interface CreateTournamentModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: "create" | "edit";
+  tournamentId?: string | null;
 }
 
-export function CreateTournamentModal({ open, onOpenChange }: CreateTournamentModalProps) {
+export function CreateTournamentModal({
+  open,
+  onOpenChange,
+  mode = "create",
+  tournamentId = null,
+}: CreateTournamentModalProps) {
   const { t } = useTranslation();
   const { data: adminClubsData } = useAdminClubs();
   const clubs = adminClubsData?.clubs ?? [];
+  const isEditMode = mode === "edit";
 
-  const [form, setForm] = useState<CreateTournamentInput>({ ...emptyForm });
+  const [formUpdates, setFormUpdates] = useState<Partial<CreateTournamentInput> | null>(null);
   const [activeTab, setActiveTab] = useState("basic");
 
   const createTournament = useCreateTournament();
+  const updateTournament = useUpdateTournament();
+  const publishTournament = usePublishTournament();
+  const { data: tournamentData, isLoading: isTournamentLoading } = useTournamentById(
+    isEditMode ? tournamentId : null,
+    Boolean(isEditMode && tournamentId && open)
+  );
+  const isMutating =
+    createTournament.isPending || updateTournament.isPending || publishTournament.isPending;
+
+  let initialEditForm: CreateTournamentInput | null = null;
+  if (isEditMode && tournamentData?.tournament) {
+    const tournament = tournamentData.tournament;
+    const dateStr = tournament.date
+      ? (() => {
+          try {
+            return isValid(parseISO(tournament.date))
+              ? tournament.date.slice(0, 10)
+              : tournament.date;
+          } catch {
+            return tournament.date;
+          }
+        })()
+      : null;
+
+    initialEditForm = {
+      club: tournament.club?.id ?? "",
+      name: tournament.name ?? "",
+      status: "draft",
+      sponsorId: tournament.sponsor?.id ?? null,
+      logo: tournament.logo ?? null,
+      date: dateStr,
+      startTime: tournament.startTime ?? null,
+      endTime: tournament.endTime ?? null,
+      playMode: tournament.playMode ?? "1set",
+      tournamentMode: (tournament.tournamentMode as "singleDay" | "period") ?? "singleDay",
+      memberFee: tournament.memberFee ?? 0,
+      externalFee: tournament.externalFee ?? 0,
+      minMember: tournament.minMember ?? 1,
+      maxMember: tournament.maxMember ?? 1,
+      playTime: tournament.playTime ?? "30 Min",
+      pauseTime: tournament.pauseTime ?? "5 Minutes",
+      courts: tournament.courts?.map((court) => court.id) ?? [],
+      foodInfo: tournament.foodInfo ?? "",
+      descriptionInfo: tournament.descriptionInfo ?? "",
+      numberOfRounds: tournament.numberOfRounds ?? 1,
+      roundTimings:
+        tournament.roundTimings?.map((timing) => ({
+          startDate: timing.startDate ?? undefined,
+          endDate: timing.endDate ?? undefined,
+        })) ?? [],
+    };
+  }
+
+  const baseForm = initialEditForm ?? emptyForm;
+  const form: CreateTournamentInput = { ...baseForm, ...(formUpdates ?? {}) };
   const { data: sponsorsData } = useClubSponsors(form.club || null);
   const sponsors = sponsorsData?.sponsors ?? [];
 
   const update = (updates: Partial<CreateTournamentInput>) => {
-    setForm((prev) => ({ ...prev, ...updates }));
+    setFormUpdates((prev) => ({ ...(prev ?? {}), ...updates }));
   };
 
   const resetForm = () => {
-    setForm({ ...emptyForm });
+    setFormUpdates(null);
     setActiveTab("basic");
   };
 
@@ -125,7 +195,12 @@ export function CreateTournamentModal({ open, onOpenChange }: CreateTournamentMo
       return;
     }
     try {
-      await createTournament.mutateAsync(buildPayload("draft"));
+      const payload = buildPayload("draft");
+      if (isEditMode && tournamentId) {
+        await updateTournament.mutateAsync({ id: tournamentId, data: payload });
+      } else {
+        await createTournament.mutateAsync(payload);
+      }
       toast.success(t("tournaments.draftSaved"));
       handleClose(false);
     } catch (err: unknown) {
@@ -155,7 +230,12 @@ export function CreateTournamentModal({ open, onOpenChange }: CreateTournamentMo
       return;
     }
     try {
-      await createTournament.mutateAsync(buildPayload("active"));
+      const payload = buildPayload("active");
+      if (isEditMode && tournamentId) {
+        await publishTournament.mutateAsync({ id: tournamentId, data: payload });
+      } else {
+        await createTournament.mutateAsync(payload);
+      }
       toast.success(t("tournaments.published"));
       handleClose(false);
     } catch (err: unknown) {
@@ -175,11 +255,16 @@ export function CreateTournamentModal({ open, onOpenChange }: CreateTournamentMo
       >
         <DialogHeader className="px-6 pt-5 pb-0">
           <DialogTitle className="text-[24px] font-semibold tracking-[-0.01em]">
-            {t("tournaments.createNew")}
+            {isEditMode ? t("tournaments.editTournamentInfo") : t("tournaments.createNew")}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        {isEditMode && isTournamentLoading ? (
+          <div className="flex min-h-[320px] items-center justify-center px-6 py-8">
+            <InlineLoader />
+          </div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mx-6 mt-3 h-auto w-fit rounded-md bg-[#f2f3f5] p-1">
             <TabsTrigger
               value="basic"
@@ -212,33 +297,35 @@ export function CreateTournamentModal({ open, onOpenChange }: CreateTournamentMo
               variant="outline"
               onClick={() => handleClose(false)}
               className="h-11 flex-1 rounded-lg border-[#e5e7eb] text-[15px] font-medium text-[#374151] hover:bg-[#f9fafb]"
+              disabled={isMutating}
             >
               {t("tournaments.cancel")}
             </Button>
             <Button
               className="h-11 flex-1 rounded-lg border-0 bg-[#f4c542] text-[15px] font-semibold text-[#1f2937] hover:bg-[#e7b937]"
               onClick={handleSaveDraft}
-              disabled={createTournament.isPending || !form.club || !form.name.trim()}
+              disabled={isMutating || !form.club || !form.name.trim()}
             >
-              {createTournament.isPending ? (
+              {isMutating ? (
                 <InlineLoader size="sm" />
               ) : (
-                t("tournaments.saveDraft")
+                isEditMode ? t("settings.saveChanges") : t("tournaments.saveDraft")
               )}
             </Button>
             <Button
               className="h-11 flex-1 rounded-lg bg-[#0a9f43] text-[15px] font-semibold text-white hover:bg-[#088a3a]"
               onClick={handlePublish}
-              disabled={createTournament.isPending || !form.club || !form.name.trim()}
+              disabled={isMutating || !form.club || !form.name.trim()}
             >
-              {createTournament.isPending ? (
+              {isMutating ? (
                 <InlineLoader size="sm" />
               ) : (
                 t("tournaments.publish")
               )}
             </Button>
           </div>
-        </Tabs>
+          </Tabs>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -26,7 +26,14 @@ export const queryKeys = {
   },
   tournament: {
     all: ["tournament"] as const,
-    list: (filters?: { status?: string; clubId?: string; page?: number; limit?: number; q?: string }) =>
+    list: (filters?: {
+      status?: string;
+      clubId?: string;
+      page?: number;
+      limit?: number;
+      q?: string;
+      view?: "published" | "drafts";
+    }) =>
       [...queryKeys.tournament.all, "list", filters ?? {}] as const,
     detail: (id: string) => [...queryKeys.tournament.all, "detail", id] as const,
   },
