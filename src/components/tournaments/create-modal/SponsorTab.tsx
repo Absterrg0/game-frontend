@@ -24,6 +24,7 @@ function SponsorCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={`flex w-full items-center justify-between rounded-xl border p-3 text-left transition-colors ${
         selected
           ? "border-[#27a457] bg-[#f7fbf8] ring-1 ring-[#27a457]"
@@ -67,7 +68,7 @@ export function SponsorTab({ form, sponsors, update }: SponsorTabProps) {
         ) : (
           <div className="space-y-2">
             <SponsorCard
-              selected={form.sponsorId === null || form.sponsorId === ""}
+              selected={form.sponsorId == null || form.sponsorId === ""}
               title={t("tournaments.noSponsor")}
               onClick={() => update({ sponsorId: null })}
             />
@@ -77,7 +78,7 @@ export function SponsorTab({ form, sponsors, update }: SponsorTabProps) {
                 key={sponsor.id}
                 selected={form.sponsorId === sponsor.id}
                 title={sponsor.name}
-                subtitle="Official Sponsor"
+                subtitle={t("tournaments.officialSponsor")}
                 onClick={() => update({ sponsorId: sponsor.id })}
               />
             ))}

@@ -15,7 +15,7 @@ import {
 import type { TournamentDetail } from "@/hooks/tournament";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { CreateTournamentModal } from "@/components/tournaments/CreateTournamentModal";
+import { EditTournamentInfoModal } from "./EditTournamentInfoModal";
 
 interface InfoTabProps {
   tournament: TournamentDetail;
@@ -32,9 +32,14 @@ function formatDate(value: string | null, fallback: string) {
   }
 }
 
-function formatTimeRange(startTime: string | null, endTime: string | null, fallback: string) {
+function formatTimeRange(
+  startTime: string | null,
+  endTime: string | null,
+  fallback: string,
+  t: (key: string, opts?: { start?: string; end?: string }) => string
+) {
   if (!startTime && !endTime) return fallback;
-  if (startTime && endTime) return `${startTime} - ${endTime}`;
+  if (startTime && endTime) return t("tournaments.timeRange", { start: startTime, end: endTime });
   return startTime ?? endTime ?? fallback;
 }
 
@@ -43,7 +48,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const spotPercentage = Math.max(0, Math.min(100, tournament.progress.percentage));
   const hasParticipants = tournament.participants.length > 0;
-  const feeValue = Number.isFinite(tournament.memberFee) ? tournament.memberFee : 0;
+  const feeValue = Number.isFinite(tournament.externalFee) ? tournament.externalFee : 0;
 
   return (
     <TabsContent value="info" className="mt-6">
@@ -76,7 +81,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
                 className="h-9 rounded-md border-[#d1d5db] bg-white px-4 text-xs font-medium text-[#374151] hover:bg-[#f9fafb]"
               >
                 <Compass className="size-4" />
-                Get Direction
+                {t("tournaments.getDirection")}
               </Button>
             </div>
 
@@ -95,16 +100,16 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
                 <Clock3 className="mt-0.5 size-4 shrink-0 text-[#6b7280]" />
                 <div>
                   <p className="text-sm font-semibold text-[#111827]">
-                    {formatTimeRange(tournament.startTime, tournament.endTime, t("tournaments.unscheduled"))}
+                    {formatTimeRange(tournament.startTime, tournament.endTime, t("tournaments.unscheduled"), t)}
                   </p>
-                  <p className="mt-0.5 text-xs text-[#6b7280]">Time</p>
+                  <p className="mt-0.5 text-xs text-[#6b7280]">{t("tournaments.time")}</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
                 <Users className="mt-0.5 size-4 shrink-0 text-[#6b7280]" />
                 <div>
-                  <p className="text-sm font-semibold text-[#111827]">{tournament.playMode || "-"}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{tournament.playMode || t("tournaments.notSpecified")}</p>
                   <p className="mt-0.5 text-xs text-[#6b7280]">{t("tournaments.gameMode")}</p>
                 </div>
               </div>
@@ -112,7 +117,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
               <div className="flex items-start gap-3">
                 <Timer className="mt-0.5 size-4 shrink-0 text-[#6b7280]" />
                 <div>
-                  <p className="text-sm font-semibold text-[#111827]">{tournament.playTime || "-"}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{tournament.playTime || t("tournaments.notSpecified")}</p>
                   <p className="mt-0.5 text-xs text-[#6b7280]">{t("tournaments.matchDuration")}</p>
                 </div>
               </div>
@@ -120,7 +125,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
               <div className="flex items-start gap-3">
                 <Clock3 className="mt-0.5 size-4 shrink-0 text-[#6b7280]" />
                 <div>
-                  <p className="text-sm font-semibold text-[#111827]">{tournament.pauseTime || "-"}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{tournament.pauseTime || t("tournaments.notSpecified")}</p>
                   <p className="mt-0.5 text-xs text-[#6b7280]">{t("tournaments.breakTime")}</p>
                 </div>
               </div>
@@ -128,7 +133,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
               <div className="flex items-start gap-3">
                 <Tag className="mt-0.5 size-4 shrink-0 text-[#6b7280]" />
                 <div>
-                  <p className="text-sm font-semibold text-[#111827]">${feeValue}</p>
+                  <p className="text-sm font-semibold text-[#111827]">{t("tournaments.entryFeeFormat", { amount: feeValue })}</p>
                   <p className="mt-0.5 text-xs text-[#6b7280]">{t("tournaments.entryFee")}</p>
                 </div>
               </div>
@@ -205,7 +210,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
             <div className="mt-5 border-t border-[#e6e6e6] pt-4">
               <p className="text-xs font-medium uppercase tracking-wide text-[#9ca3af]">{t("tournaments.entryFee")}</p>
               <p className="mt-1 text-3xl font-bold text-[#111827]">
-                ${feeValue}
+                {t("tournaments.entryFeeFormat", { amount: feeValue })}
               </p>
             </div>
 
@@ -233,11 +238,11 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
         </aside>
       </div>
 
-      <CreateTournamentModal
+      <EditTournamentInfoModal
+        key={tournament.id}
         open={isEditModalOpen}
         onOpenChange={setIsEditModalOpen}
-        mode="edit"
-        tournamentId={tournament.id}
+        tournament={tournament}
       />
     </TabsContent>
   );

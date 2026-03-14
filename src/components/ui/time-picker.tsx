@@ -173,6 +173,7 @@ export function TimePicker({
                   <button
                     key={meridian}
                     type="button"
+                    aria-pressed={isActive}
                     onClick={() => setMeridian(meridian)}
                     className={cn(
                       "min-w-[56px] rounded-md px-3 text-[12px] font-medium transition-colors",

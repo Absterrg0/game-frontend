@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { CreateTournamentModal } from "@/components/tournaments/CreateTournamentModal";
 import { useTranslation } from "react-i18next";
@@ -23,12 +23,15 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format, parseISO, isValid } from "date-fns";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
 export default function TournamentListPage() {
   const { t } = useTranslation();
   const { isAuthenticated, isProfileComplete } = useAuth();
   const isOrganiserOrAbove = useIsOrganiserOrAbove();
+  const statusFilterLabelId = useId();
+  const clubFilterLabelId = useId();
   const [activeTab, setActiveTab] = useState<"published" | "drafts">("published");
   const [filters, setFilters] = useState<{
     status?: string;
@@ -65,7 +68,7 @@ export default function TournamentListPage() {
   const formatDate = (d: string | null) => {
     if (!d) return t("tournaments.unscheduled");
     try {
-      const parsed = typeof d === "string" ? parseISO(d) : new Date(d);
+      const parsed = parseISO(d);
       return isValid(parsed) ? format(parsed, "d MMM, yyyy") : t("tournaments.unscheduled");
     } catch {
       return t("tournaments.unscheduled");
@@ -78,11 +81,7 @@ export default function TournamentListPage() {
       toast.success(t("tournaments.published"));
       setActiveTab("published");
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      toast.error(msg ?? t("tournaments.publishError"));
+      toast.error(getErrorMessage(err) ?? t("tournaments.publishError"));
     }
   };
 
@@ -128,7 +127,10 @@ export default function TournamentListPage() {
                   <div className="space-y-4">
                     {(!isOrganiserOrAbove || activeTab === "published") && (
                       <div>
-                        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                        <label
+                          id={statusFilterLabelId}
+                          className="mb-2 block text-xs font-medium text-muted-foreground"
+                        >
                           {t("tournaments.filterStatus")}
                         </label>
                         <Select
@@ -141,7 +143,7 @@ export default function TournamentListPage() {
                             }))
                           }
                         >
-                          <SelectTrigger className="h-9">
+                          <SelectTrigger className="h-9" aria-labelledby={statusFilterLabelId}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -154,7 +156,10 @@ export default function TournamentListPage() {
                     )}
                     {isOrganiserOrAbove && (
                       <div>
-                        <label className="mb-2 block text-xs font-medium text-muted-foreground">
+                        <label
+                          id={clubFilterLabelId}
+                          className="mb-2 block text-xs font-medium text-muted-foreground"
+                        >
                           {t("tournaments.filterClub")}
                         </label>
                         <Select
@@ -167,7 +172,7 @@ export default function TournamentListPage() {
                             }))
                           }
                         >
-                          <SelectTrigger className="h-9">
+                          <SelectTrigger className="h-9" aria-labelledby={clubFilterLabelId}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

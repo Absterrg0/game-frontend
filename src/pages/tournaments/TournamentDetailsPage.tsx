@@ -8,6 +8,7 @@ import InlineLoader from "@/components/shared/InlineLoader";
 import { useTournamentById, useJoinTournament, usePublishTournament } from "@/hooks/tournament";
 import { useAuth } from "@/hooks/auth";
 import { TournamentDetailsTabs } from "@/components/tournaments/details-tabs/TournamentDetailsTabs";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
 export default function TournamentDetailsPage() {
@@ -30,17 +31,12 @@ export default function TournamentDetailsPage() {
   }
 
   if (isError || !data?.tournament) {
-    const err =
-      error && typeof error === "object" && "response" in error
-        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
-        : null;
-
     return (
       <div className="mx-auto w-full max-w-5xl p-4 sm:p-6">
         <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
           <h1 className="text-lg font-semibold text-foreground">{t("tournaments.tournamentNotFound")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            {err ?? t("tournaments.failedToLoadDetails")}
+            {getErrorMessage(error) ?? t("tournaments.failedToLoadDetails")}
           </p>
           <Button asChild variant="outline" className="mt-4">
             <Link to="/tournaments">{t("tournaments.backToList")}</Link>
@@ -56,11 +52,7 @@ export default function TournamentDetailsPage() {
       await joinTournament.mutateAsync({ id: tournament.id });
       toast.success(t("tournaments.joined"));
     } catch (joinError: unknown) {
-      const err =
-        joinError && typeof joinError === "object" && "response" in joinError
-          ? (joinError as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      toast.error(err ?? t("tournaments.joinError"));
+      toast.error(getErrorMessage(joinError) ?? t("tournaments.joinError"));
     }
   };
 
@@ -68,39 +60,11 @@ export default function TournamentDetailsPage() {
     try {
       await publishTournament.mutateAsync({
         id: tournament.id,
-        data: {
-          club: tournament.club?.id ?? "",
-          name: tournament.name,
-          sponsorId: tournament.sponsor?.id ?? null,
-          logo: tournament.logo,
-          date: tournament.date,
-          startTime: tournament.startTime,
-          endTime: tournament.endTime,
-          playMode: tournament.playMode,
-          tournamentMode: tournament.tournamentMode,
-          memberFee: tournament.memberFee,
-          externalFee: tournament.externalFee,
-          minMember: tournament.minMember,
-          maxMember: tournament.maxMember,
-          playTime: tournament.playTime,
-          pauseTime: tournament.pauseTime,
-          courts: tournament.courts?.map((c) => c.id) ?? [],
-          foodInfo: tournament.foodInfo ?? "",
-          descriptionInfo: tournament.descriptionInfo ?? "",
-          numberOfRounds: tournament.numberOfRounds,
-          roundTimings: tournament.roundTimings?.map((r) => ({
-            startDate: r.startDate ?? undefined,
-            endDate: r.endDate ?? undefined,
-          })),
-        },
+        data: {},
       });
       toast.success(t("tournaments.published"));
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      toast.error(msg ?? t("tournaments.publishError"));
+      toast.error(getErrorMessage(err) ?? t("tournaments.publishError"));
     }
   };
 

@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import InlineLoader from "@/components/shared/InlineLoader";
+import { getErrorMessage } from "@/lib/errors";
 import { toast } from "sonner";
 
 const emptyForm: CreateTournamentInput = {
@@ -34,7 +35,6 @@ const emptyForm: CreateTournamentInput = {
   endTime: null,
   playMode: "1set",
   tournamentMode: "singleDay",
-  memberFee: 0,
   externalFee: 0,
   minMember: 5,
   maxMember: 8,
@@ -102,7 +102,6 @@ export function CreateTournamentModal({
       endTime: tournament.endTime ?? null,
       playMode: tournament.playMode ?? "1set",
       tournamentMode: (tournament.tournamentMode as "singleDay" | "period") ?? "singleDay",
-      memberFee: tournament.memberFee ?? 0,
       externalFee: tournament.externalFee ?? 0,
       minMember: tournament.minMember ?? 1,
       maxMember: tournament.maxMember ?? 1,
@@ -180,7 +179,6 @@ export function CreateTournamentModal({
       sponsorId: form.sponsorId || null,
       foodInfo: form.foodInfo ?? "",
       descriptionInfo: form.descriptionInfo ?? "",
-      memberFee: Number(form.memberFee) || 0,
       externalFee: Number(form.externalFee) || 0,
       minMember: Number(form.minMember) || 1,
       maxMember: Number(form.maxMember) || 1,
@@ -204,11 +202,7 @@ export function CreateTournamentModal({
       toast.success(t("tournaments.draftSaved"));
       handleClose(false);
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      toast.error(msg ?? t("tournaments.saveError"));
+      toast.error(getErrorMessage(err) ?? t("tournaments.saveError"));
     }
   };
 
@@ -221,12 +215,28 @@ export function CreateTournamentModal({
       toast.error(t("tournaments.requiredDateAndTime"));
       return;
     }
+    if (form.tournamentMode === "singleDay" && form.date && form.startTime && form.endTime) {
+      const normStart = formatTimeForBackend(form.startTime);
+      const normEnd = formatTimeForBackend(form.endTime);
+      if (normStart === null || normEnd === null) {
+        toast.error(t("tournaments.invalidTimeRange"));
+        return;
+      }
+      if (normEnd <= normStart) {
+        toast.error(t("tournaments.invalidTimeRange"));
+        return;
+      }
+    }
     if (!form.foodInfo?.trim()) {
       toast.error(t("tournaments.requiredFoodInfo"));
       return;
     }
     if (!form.descriptionInfo?.trim()) {
       toast.error(t("tournaments.requiredDescription"));
+      return;
+    }
+    if(form.minMember && form.maxMember && form.minMember > form.maxMember) {
+      toast.error(t("tournaments.invalidMemberRange"));
       return;
     }
     try {
@@ -239,11 +249,7 @@ export function CreateTournamentModal({
       toast.success(t("tournaments.published"));
       handleClose(false);
     } catch (err: unknown) {
-      const msg =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
-          : null;
-      toast.error(msg ?? t("tournaments.publishError"));
+      toast.error(getErrorMessage(err) ?? t("tournaments.publishError"));
     }
   };
 

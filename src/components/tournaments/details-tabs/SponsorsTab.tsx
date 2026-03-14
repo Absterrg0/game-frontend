@@ -50,7 +50,7 @@ export function SponsorsTab({ tournament }: SponsorsTabProps) {
                     <a
                       href={sponsor.link}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noreferrer noopener"
                       className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#0a9f43] hover:underline"
                     >
                       {t("tournaments.viewSponsorDetails")}

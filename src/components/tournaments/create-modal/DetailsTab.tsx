@@ -12,15 +12,27 @@ import {
 } from "@/components/ui/select";
 
 const PLAY_MODES = [
-  { value: "TieBreak10", label: "TieBreak 10" },
-  { value: "1set", label: "1 Set Match" },
-  { value: "3setTieBreak10", label: "3 Set TieBreak 10" },
-  { value: "3set", label: "3 Set" },
-  { value: "5set", label: "5 Set" },
+  { value: "TieBreak10", labelKey: "tournaments.playModes.tieBreak10" },
+  { value: "1set", labelKey: "tournaments.playModes.oneSet" },
+  { value: "3setTieBreak10", labelKey: "tournaments.playModes.threeSetTieBreak10" },
+  { value: "3set", labelKey: "tournaments.playModes.threeSet" },
+  { value: "5set", labelKey: "tournaments.playModes.fiveSet" },
 ] as const;
 
-const DURATION_OPTIONS = ["15 Min", "30 Min", "45 Min", "60 Min", "90 Min"];
-const BREAK_OPTIONS = ["0 Minutes", "5 Minutes", "10 Minutes", "15 Minutes"];
+const DURATION_OPTIONS = [
+  { value: "15 Min", labelKey: "tournaments.duration.min15" },
+  { value: "30 Min", labelKey: "tournaments.duration.min30" },
+  { value: "45 Min", labelKey: "tournaments.duration.min45" },
+  { value: "60 Min", labelKey: "tournaments.duration.min60" },
+  { value: "90 Min", labelKey: "tournaments.duration.min90" },
+] as const;
+
+const BREAK_OPTIONS = [
+  { value: "0 Minutes", labelKey: "tournaments.break.min0" },
+  { value: "5 Minutes", labelKey: "tournaments.break.min5" },
+  { value: "10 Minutes", labelKey: "tournaments.break.min10" },
+  { value: "15 Minutes", labelKey: "tournaments.break.min15" },
+] as const;
 
 interface DetailsTabProps {
   form: CreateTournamentInput;
@@ -44,7 +56,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
             <SelectContent>
               {PLAY_MODES.map((m) => (
                 <SelectItem key={m.value} value={m.value}>
-                  {m.label}
+                  {t(m.labelKey)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -62,7 +74,11 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
               min={0}
               placeholder="00"
               value={form.externalFee ?? ""}
-              onChange={(e) => update({ externalFee: e.target.value ? Number(e.target.value) : 0 })}
+              onChange={(e) => {
+                const v = e.target.value;
+                const n = v === "" ? undefined : parseFloat(v);
+                update({ externalFee: Number.isFinite(n) ? n : undefined });
+              }}
               className="h-auto border-0 p-0 text-[14px] shadow-none focus-visible:ring-0"
             />
           </div>
@@ -79,8 +95,8 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
               </SelectTrigger>
               <SelectContent>
                 {DURATION_OPTIONS.map((d) => (
-                  <SelectItem key={d} value={d}>
-                    {d}
+                  <SelectItem key={d.value} value={d.value}>
+                    {t(d.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -97,8 +113,8 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
               </SelectTrigger>
               <SelectContent>
                 {BREAK_OPTIONS.map((b) => (
-                  <SelectItem key={b} value={b}>
-                    {b}
+                  <SelectItem key={b.value} value={b.value}>
+                    {t(b.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -115,7 +131,11 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
               type="number"
               min={1}
               value={form.minMember ?? ""}
-              onChange={(e) => update({ minMember: e.target.value ? Number(e.target.value) : 1 })}
+              onChange={(e) => {
+                const v = e.target.value;
+                const n = v === "" ? undefined : parseFloat(v);
+                update({ minMember: Number.isFinite(n) ? n : undefined });
+              }}
               className="mt-1 h-10 rounded-lg border-[#e5e7eb] text-[14px]"
             />
           </div>
@@ -128,7 +148,11 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
               type="number"
               min={1}
               value={form.maxMember ?? ""}
-              onChange={(e) => update({ maxMember: e.target.value ? Number(e.target.value) : 1 })}
+              onChange={(e) => {
+                const v = e.target.value;
+                const n = v === "" ? undefined : parseFloat(v);
+                update({ maxMember: Number.isFinite(n) ? n : undefined });
+              }}
               className="mt-1 h-10 rounded-lg border-[#e5e7eb] text-[14px]"
             />
           </div>

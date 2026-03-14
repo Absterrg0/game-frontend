@@ -2,10 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
 
-export interface CreateTournamentInput {
-  club: string;
-  name: string;
-  status: "draft" | "active";
+interface TournamentInputBase {
   sponsorId?: string | null;
   logo?: string | null;
   date?: string | null;
@@ -13,7 +10,6 @@ export interface CreateTournamentInput {
   endTime?: string | null;
   playMode?: string;
   tournamentMode?: string;
-  memberFee?: number;
   externalFee?: number;
   minMember?: number;
   maxMember?: number;
@@ -26,28 +22,13 @@ export interface CreateTournamentInput {
   roundTimings?: { startDate?: string; endDate?: string }[];
 }
 
-export interface UpdateTournamentInput {
-  club?: string;
-  name?: string;
-  sponsorId?: string | null;
-  logo?: string | null;
-  date?: string | null;
-  startTime?: string | null;
-  endTime?: string | null;
-  playMode?: string;
-  tournamentMode?: string;
-  memberFee?: number;
-  externalFee?: number;
-  minMember?: number;
-  maxMember?: number;
-  playTime?: string | null;
-  pauseTime?: string | null;
-  courts?: string[];
-  foodInfo?: string | null;
-  descriptionInfo?: string | null;
-  numberOfRounds?: number;
-  roundTimings?: { startDate?: string; endDate?: string }[];
+export interface CreateTournamentInput extends TournamentInputBase {
+  club: string;
+  name: string;
+  status: "draft" | "active";
 }
+
+export type UpdateTournamentInput = Partial<TournamentInputBase & { club: string; name: string }>;
 
 interface CreateTournamentResponse {
   message: string;

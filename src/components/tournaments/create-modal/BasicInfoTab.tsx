@@ -22,10 +22,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { TimePicker } from "@/components/ui/time-picker";
 
-const TOURNAMENT_MODES = [
-  { value: "singleDay", label: "Scheduled" },
-  { value: "period", label: "Period" },
-] as const;
+const TOURNAMENT_MODES = ["singleDay", "period"] as const;
 
 type Club = { id: string; name: string };
 
@@ -40,13 +37,13 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
 
   const parsedDate = form.date
     ? (() => {
-        try {
-          const parsed = typeof form.date === "string" ? parseISO(form.date) : new Date(form.date);
-          return isValid(parsed) ? parsed : undefined;
-        } catch {
-          return undefined;
-        }
-      })()
+      try {
+        const parsed = typeof form.date === "string" ? parseISO(form.date) : new Date(form.date);
+        return isValid(parsed) ? parsed : undefined;
+      } catch {
+        return undefined;
+      }
+    })()
     : undefined;
 
   return (
@@ -76,9 +73,9 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {TOURNAMENT_MODES.map((m) => (
-                <SelectItem key={m.value} value={m.value}>
-                  {m.label}
+              {TOURNAMENT_MODES.map((mode) => (
+                <SelectItem key={mode} value={mode}>
+                  {t(`tournaments.tournamentMode.${mode}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -143,34 +140,34 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
 
             </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label className="text-[14px] font-medium text-[#111827]">
-                    {t("tournaments.startTime")} *
-                  </Label>
-                  <div className="mt-1">
-                    <TimePicker
-                      value={form.startTime ?? null}
-                      onChange={(time) => update({ startTime: time })}
-                      placeholder={t("tournaments.timePlaceholder")}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-[14px] font-medium text-[#111827]">
-                    {t("tournaments.endTime")} *
-                  </Label>
-                  <div className="mt-1">
-                    <TimePicker
-                      value={form.endTime ?? null}
-                      onChange={(time) => update({ endTime: time })}
-                      placeholder={t("tournaments.timePlaceholder")}
-                      popoverAlign="end"
-                    />
-                  </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-[14px] font-medium text-[#111827]">
+                  {t("tournaments.startTime")} *
+                </Label>
+                <div className="mt-1">
+                  <TimePicker
+                    value={form.startTime ?? null}
+                    onChange={(time) => update({ startTime: time })}
+                    placeholder={t("tournaments.timePlaceholder")}
+                  />
                 </div>
               </div>
+
+              <div>
+                <Label className="text-[14px] font-medium text-[#111827]">
+                  {t("tournaments.endTime")} *
+                </Label>
+                <div className="mt-1">
+                  <TimePicker
+                    value={form.endTime ?? null}
+                    onChange={(time) => update({ endTime: time })}
+                    placeholder={t("tournaments.timePlaceholder")}
+                    popoverAlign="end"
+                  />
+                </div>
+              </div>
+            </div>
 
           </>
         )}

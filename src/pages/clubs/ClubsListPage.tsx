@@ -20,10 +20,7 @@ import InlineLoader from "@/components/shared/InlineLoader";
 
 const DESCRIPTION_MAX_LENGTH = 80;
 
-function truncateDescription(text: string, maxLen: number): string {
-  if (text.length <= maxLen) return text;
-  return `${text.slice(0, maxLen).trim()}...`;
-}
+
 
 export default function ClubsListPage() {
   const { t } = useTranslation();
@@ -82,7 +79,7 @@ export default function ClubsListPage() {
                       <h3 className="font-semibold text-foreground">{club.name}</h3>
                       {club.address ? (
                         <p className="mt-2 line-clamp-3 text-sm text-muted-foreground">
-                          {truncateDescription(club.address, DESCRIPTION_MAX_LENGTH)}
+                          {club.address}
                         </p>
                       ) : null}
                       <Link

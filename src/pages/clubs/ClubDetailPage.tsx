@@ -98,7 +98,7 @@ export default function ClubDetailPage() {
                       <a
                         href={club.website}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noreferrer noopener"
                         className="block text-blue-600 underline hover:text-blue-700"
                       >
                         {club.website}
@@ -106,7 +106,7 @@ export default function ClubDetailPage() {
                       <a
                         href={club.website}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noreferrer noopener"
                         className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-brand-primary hover:underline"
                       >
                         {t("clubs.viewWebsite")} →

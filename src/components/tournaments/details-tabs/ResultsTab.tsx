@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronUp, Minus } from "lucide-react";
 import type { TournamentDetail } from "@/hooks/tournament";
 import { TabsContent } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 interface ResultsTabProps {
   tournament: TournamentDetail;
@@ -83,15 +84,12 @@ export function ResultsTab({ tournament, currentUserId }: ResultsTabProps) {
   const { t } = useTranslation();
   const [myScoreOnly, setMyScoreOnly] = useState(false);
 
-  const results = useMemo(
-    () => deriveResults(tournament, t("tournaments.unknownPlayer")),
-    [tournament, t]
-  );
+  const results = deriveResults(tournament, t("tournaments.unknownPlayer"));
 
-  const filteredResults = useMemo(() => {
-    if (!myScoreOnly || !currentUserId) return results;
-    return results.filter((r) => r.id === currentUserId);
-  }, [results, myScoreOnly, currentUserId]);
+  // Compute filteredResults as a value, not a function, and give correct type
+  const filteredResults = (!myScoreOnly || !currentUserId)
+    ? results
+    : results.filter((r) => r.id === currentUserId);
 
   const isCurrentUser = (id: string) => !!currentUserId && id === currentUserId;
 
@@ -102,27 +100,14 @@ export function ResultsTab({ tournament, currentUserId }: ResultsTabProps) {
           <h2 className="text-xl font-semibold text-[#111827]">
             {t("tournaments.allResults")}
           </h2>
-          <button
-            type="button"
-            onClick={() => setMyScoreOnly((prev) => !prev)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#374151]"
-            aria-pressed={myScoreOnly}
-          >
+          <div className="inline-flex items-center gap-2 text-sm font-medium text-[#374151]">
             <span>{t("settings.nav.myScore")}</span>
-            <span
-              role="switch"
-              aria-checked={myScoreOnly}
-              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
-                myScoreOnly ? "bg-[#16a34a]" : "bg-[#d1d5db]"
-              }`}
-            >
-              <span
-                className={`inline-block size-5 transform rounded-full bg-white shadow-sm transition ${
-                  myScoreOnly ? "translate-x-5" : "translate-x-0.5"
-                }`}
-              />
-            </span>
-          </button>
+            <Switch
+              checked={myScoreOnly}
+              onCheckedChange={setMyScoreOnly}
+              aria-label={t("settings.nav.myScore")}
+            />
+          </div>
         </div>
 
         {results.length === 0 ? (

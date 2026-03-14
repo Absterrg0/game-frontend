@@ -35,6 +35,6 @@ export const queryKeys = {
       view?: "published" | "drafts";
     }) =>
       [...queryKeys.tournament.all, "list", filters ?? {}] as const,
-    detail: (id: string) => [...queryKeys.tournament.all, "detail", id] as const,
+    detail: (id: string | null) => [...queryKeys.tournament.all, "detail", id] as const,
   },
 } as const;

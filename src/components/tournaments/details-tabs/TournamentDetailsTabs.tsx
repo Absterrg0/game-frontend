@@ -26,30 +26,20 @@ export function TournamentDetailsTabs({
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="mt-6 h-auto w-fit rounded-lg bg-[#f2f3f5] p-1">
-        <TabsTrigger
-          value="info"
-          className="h-9 rounded-md px-5 text-sm font-medium text-[#6b7280] data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
-        >
-          {t("tournaments.info")}
-        </TabsTrigger>
-        <TabsTrigger
-          value="matches"
-          className="h-9 rounded-md px-5 text-sm font-medium text-[#6b7280] data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
-        >
-          {t("tournaments.matches")}
-        </TabsTrigger>
-        <TabsTrigger
-          value="results"
-          className="h-9 rounded-md px-5 text-sm font-medium text-[#6b7280] data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
-        >
-          {t("tournaments.results")}
-        </TabsTrigger>
-        <TabsTrigger
-          value="sponsors"
-          className="h-9 rounded-md px-5 text-sm font-medium text-[#6b7280] data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
-        >
-          {t("tournaments.sponsorsTab")}
-        </TabsTrigger>
+        {[
+          { value: "info", label: t("tournaments.info") },
+          { value: "matches", label: t("tournaments.matches") },
+          { value: "results", label: t("tournaments.results") },
+          { value: "sponsors", label: t("tournaments.sponsorsTab") },
+        ].map((tab) => (
+          <TabsTrigger
+            key={tab.value}
+            value={tab.value}
+            className="h-9 rounded-md px-5 text-sm font-medium text-[#6b7280] data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
+          >
+            {tab.label}
+          </TabsTrigger>
+        ))}
       </TabsList>
 
       <InfoTab

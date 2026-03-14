@@ -21,7 +21,6 @@ export interface TournamentDetail {
   endTime: string | null;
   playMode: string;
   tournamentMode: string;
-  memberFee: number;
   externalFee: number;
   minMember: number;
   maxMember: number;
@@ -51,7 +50,7 @@ async function fetchTournamentById(id: string): Promise<TournamentDetailResponse
 
 export function useTournamentById(id: string | null, enabled = true) {
   return useQuery({
-    queryKey: queryKeys.tournament.detail(id ?? ""),
+    queryKey: queryKeys.tournament.detail(id),
     queryFn: () => fetchTournamentById(id!),
     enabled: !!id && enabled,
   });
