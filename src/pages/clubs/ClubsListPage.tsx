@@ -18,7 +18,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { Settings01Icon } from "@hugeicons/core-free-icons";
 import InlineLoader from "@/components/shared/InlineLoader";
 
-const DESCRIPTION_MAX_LENGTH = 80;
 
 
 

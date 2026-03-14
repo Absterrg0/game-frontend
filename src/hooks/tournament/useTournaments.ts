@@ -8,7 +8,7 @@ export interface TournamentListItem {
   club: { id: string; name: string } | null;
   date: string | null;
   status: "active" | "draft" | "inactive";
-  sponsorId?: string | null;
+  sponsor: { id: string; name: string; logoUrl: string | null; link: string | null } | null;
 }
 
 interface TournamentsResponse {
