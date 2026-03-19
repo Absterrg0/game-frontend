@@ -9,6 +9,7 @@ interface ManageClubSubscriptionBannersProps {
   showSubscriptionBanner: boolean;
   showUpgradeBanner: boolean;
   subscriptionExpiryDate: Date | null | undefined;
+  isExpired: boolean;
   onRenew: () => void;
   onUpgrade: () => void;
 }
@@ -17,14 +18,13 @@ export function ManageClubSubscriptionBanners({
   showSubscriptionBanner,
   showUpgradeBanner,
   subscriptionExpiryDate,
+  isExpired,
   onRenew,
   onUpgrade,
 }: ManageClubSubscriptionBannersProps) {
   const { t, i18n } = useTranslation();
 
   const hasExpiryDate = subscriptionExpiryDate != null;
-  const isExpired =
-    hasExpiryDate && subscriptionExpiryDate.getTime() < Date.now();
   const expiryDateLabel = hasExpiryDate
     ? format(subscriptionExpiryDate, "P", {
         locale: getDateFnsLocale(i18n.language),

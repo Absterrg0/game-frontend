@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
 import type { AdminClub } from "@/pages/clubs/hooks";
+import {
+  isSubscriptionExpiredByLocalDay,
+  isWithinCalendarDaysFromNow,
+} from "@/utils/date";
 
 export function shouldShowSubscriptionBanner(
   subscription: { plan: string; expiresAt: Date | null } | undefined
@@ -9,10 +13,9 @@ export function shouldShowSubscriptionBanner(
 
   if (!subscription.expiresAt) return true;
 
-  if (subscription.expiresAt.getTime() < Date.now()) return true;
+  if (isSubscriptionExpiredByLocalDay(subscription.expiresAt)) return true;
 
-  const sevenDaysFromNow = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-  return subscription.expiresAt <= sevenDaysFromNow;
+  return isWithinCalendarDaysFromNow(subscription.expiresAt, 7);
 }
 
 export function useManageClubState(clubs: AdminClub[]) {

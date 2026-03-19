@@ -50,7 +50,11 @@ export default function ManageClubPage() {
     staffData?.subscription?.plan === "free" && !showSubscriptionBanner;
   const canAddStaff =
     staffData != null && staffData.subscription?.plan !== "free";
+    const subscriptionExpiryDate = staffData?.subscription?.expiresAt ?? null;
 
+    const isExpired =
+      subscriptionExpiryDate != null &&
+      subscriptionExpiryDate.getTime() < Date.now();
   const handleUpdateClubSubscription = async (selectedExpiryDate: Date) => {
     try {
       await updateClubSubscription.mutateAsync({
@@ -59,7 +63,9 @@ export default function ManageClubPage() {
       });
       toast.success(t("manageClub.premiumExpiryUpdated"));
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      toast.error(
+        getErrorMessage(error) || t("manageClub.premiumExpiryUpdateError")
+      );
     }
   };  
 
@@ -122,6 +128,7 @@ export default function ManageClubPage() {
                 showSubscriptionBanner={showSubscriptionBanner}
                 showUpgradeBanner={showUpgradeBanner}
                 subscriptionExpiryDate={staffData?.subscription?.expiresAt}
+                isExpired={isExpired}
                 onRenew={openPremiumExpiryModal}
                 onUpgrade={openPremiumExpiryModal}
               />
