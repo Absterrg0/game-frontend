@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogClose,
@@ -30,46 +30,43 @@ const QUICK_EXTEND_OPTIONS: QuickExtendOption[] = [
   {
     key: "30d",
     labelKey: "manageClub.quickExtend30Days",
-    applyToDate: (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + 30),
+    applyToDate: (date) =>
+      new Date(date.getFullYear(), date.getMonth(), date.getDate() + 30),
   },
   {
     key: "3m",
     labelKey: "manageClub.quickExtend3Months",
-    applyToDate: (date) => new Date(date.getFullYear(), date.getMonth() + 3, date.getDate()),
+    applyToDate: (date) =>
+      new Date(date.getFullYear(), date.getMonth() + 3, date.getDate()),
   },
   {
     key: "6m",
     labelKey: "manageClub.quickExtend6Months",
-    applyToDate: (date) => new Date(date.getFullYear(), date.getMonth() + 6, date.getDate()),
+    applyToDate: (date) =>
+      new Date(date.getFullYear(), date.getMonth() + 6, date.getDate()),
   },
   {
     key: "1y",
     labelKey: "manageClub.quickExtend1Year",
-    applyToDate: (date) => new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()),
+    applyToDate: (date) =>
+      new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()),
   },
   {
     key: "2y",
     labelKey: "manageClub.quickExtend2Years",
-    applyToDate: (date) => new Date(date.getFullYear() + 2, date.getMonth(), date.getDate()),
+    applyToDate: (date) =>
+      new Date(date.getFullYear() + 2, date.getMonth(), date.getDate()),
   },
   {
     key: "3y",
     labelKey: "manageClub.quickExtend3Years",
-    applyToDate: (date) => new Date(date.getFullYear() + 3, date.getMonth(), date.getDate()),
+    applyToDate: (date) =>
+      new Date(date.getFullYear() + 3, date.getMonth(), date.getDate()),
   },
 ];
 
-function toOptionValue(date: Date) {
-  return format(date, "yyyy-MM-dd");
-}
-
 function toOptionLabel(date: Date) {
   return format(date, "dd/MM/yyyy");
-}
-
-function parseOptionValueToDate(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(year, (month ?? 1) - 1, day ?? 1);
 }
 
 export function RequestSubscriptionRenewalModal({
@@ -81,55 +78,54 @@ export function RequestSubscriptionRenewalModal({
 }: RequestSubscriptionRenewalModalProps) {
   const { t } = useTranslation();
 
-  const baseDate = useMemo(() => {
-    return currentExpiryDate ? new Date(currentExpiryDate.getTime()) : new Date();
-  }, [currentExpiryDate]);
-
-  const expiryOptions = useMemo(() => {
-    const options = [{ value: toOptionValue(baseDate), label: toOptionLabel(baseDate) }];
-    QUICK_EXTEND_OPTIONS.forEach((option) => {
-      const extended = option.applyToDate(baseDate);
-      options.push({ value: toOptionValue(extended), label: toOptionLabel(extended) });
-    });
-
-    return options.filter(
-      (option, index, array) =>
-        array.findIndex((item) => item.value === option.value) === index
-    );
-  }, [baseDate]);
+  /**
+   * Always derive baseDate directly from props
+   * (React Compiler will optimize this)
+   */
+  const baseDate = currentExpiryDate
+    ? new Date(currentExpiryDate.getTime())
+    : new Date();
 
   const defaultQuickExtend = QUICK_EXTEND_OPTIONS[1];
-  const [selectedExpiryDate, setSelectedExpiryDate] = useState<Date>(() => {
-    if (!defaultQuickExtend) {
-      return expiryOptions[0]?.value ? parseOptionValueToDate(expiryOptions[0].value) : baseDate;
-    }
-    return defaultQuickExtend.applyToDate(baseDate);
-  });
+
+  /**
+   * State now represents "intent", not computed result
+   */
   const [activeQuickExtend, setActiveQuickExtend] = useState<string | null>(
     defaultQuickExtend?.key ?? null
   );
+
+  const [manualDate, setManualDate] = useState<Date | null>(null);
+
   const [calendarOpen, setCalendarOpen] = useState(false);
+
+  /**
+   * Always derived → never stale
+   */
+  const selectedExpiryDate = (() => {
+    if (manualDate) return manualDate;
+
+    const option = QUICK_EXTEND_OPTIONS.find(
+      (o) => o.key === activeQuickExtend
+    );
+
+    if (option) return option.applyToDate(baseDate);
+
+    return baseDate;
+  })();
 
   const handleOpenChange = (nextOpen: boolean) => {
     onOpenChange(nextOpen);
-    if (!nextOpen) {
-      if (!defaultQuickExtend) {
-        const fallback = expiryOptions[0]?.value ? parseOptionValueToDate(expiryOptions[0].value) : baseDate;
-        setSelectedExpiryDate(fallback);
-        setActiveQuickExtend(null);
-        setCalendarOpen(false);
-        return;
-      }
 
-      setSelectedExpiryDate(defaultQuickExtend.applyToDate(baseDate));
-      setActiveQuickExtend(defaultQuickExtend.key);
+    if (!nextOpen) {
+      setManualDate(null);
+      setActiveQuickExtend(defaultQuickExtend?.key ?? null);
       setCalendarOpen(false);
     }
   };
 
   const handleQuickExtend = (option: QuickExtendOption) => {
-    const nextDate = option.applyToDate(baseDate);
-    setSelectedExpiryDate(nextDate);
+    setManualDate(null);
     setActiveQuickExtend(option.key);
   };
 
@@ -143,7 +139,7 @@ export function RequestSubscriptionRenewalModal({
       await onConfirm(selectedExpiryDate);
       handleOpenChange(false);
     } catch {
-      return;
+      // noop (intentionally swallow; parent handles errors)
     }
   };
 
@@ -160,13 +156,12 @@ export function RequestSubscriptionRenewalModal({
                 {t("manageClub.expiryModalTitle")}
               </h2>
               <DialogClose asChild>
-                <button
-                  type="button"
+                <Button
                   className="inline-flex size-6 items-center justify-center text-[#010a04]/70 transition-colors hover:text-[#010a04]"
-                  aria-label={t("manageClub.renewModalCancel")}
+                  aria-label={t("manageClub.renewModalClose")}
                 >
                   <XIcon className="size-5" />
-                </button>
+                </Button>
               </DialogClose>
             </div>
             <div className="h-px w-full bg-black/10" />
@@ -177,6 +172,7 @@ export function RequestSubscriptionRenewalModal({
               {t("manageClub.expiryModalDescription")}
             </p>
 
+            {/* Date picker */}
             <div className="flex w-full flex-col gap-[10px]">
               <p className="text-[12px] font-medium uppercase text-[#010a04]/70">
                 {t("manageClub.expiryDate")}
@@ -203,18 +199,18 @@ export function RequestSubscriptionRenewalModal({
                     selected={selectedExpiryDate}
                     onSelect={(date) => {
                       if (!date) return;
-                      setSelectedExpiryDate(date);
+                      setManualDate(date);
                       setActiveQuickExtend(null);
                       setCalendarOpen(false);
                     }}
                     initialFocus
                     captionLayout="dropdown"
-
                   />
                 </PopoverContent>
               </Popover>
             </div>
 
+            {/* Quick extend */}
             <div className="flex w-full flex-col gap-[10px]">
               <p className="text-[12px] font-medium uppercase text-[#010a04]/70">
                 {t("manageClub.quickExtend")}
@@ -228,6 +224,7 @@ export function RequestSubscriptionRenewalModal({
                     className={cn(
                       "h-[42px] rounded-[8px] border border-[#e1e3e8] bg-[#f9fafc] px-[12px] py-[8px] text-[14px] font-medium text-[#010a04] shadow-none hover:bg-[#f9fafc]",
                       activeQuickExtend === option.key &&
+                        !manualDate &&
                         "border-[rgba(6,116,41,0.44)] bg-[rgba(6,116,41,0.08)] hover:bg-[rgba(6,116,41,0.08)]"
                     )}
                     onClick={() => handleQuickExtend(option)}
@@ -238,13 +235,17 @@ export function RequestSubscriptionRenewalModal({
               </div>
             </div>
 
+            {/* Tip */}
             <div className="flex w-full items-center border-l-[2.5px] border-[#067429] bg-[rgba(6,116,41,0.10)] py-[12px] pr-[12px] pl-[15px]">
               <p className="text-[13px] leading-[1.4] font-normal text-[#010a04]">
                 <span className="font-semibold">💡 Tip:</span>
-                <span>{` ${t("manageClub.expiryTip")}`.replace(/^Tip:\s*/i, "")}</span>
+                <span>
+                  {` ${t("manageClub.expiryTip")}`.replace(/^Tip:\s*/i, "")}
+                </span>
               </p>
             </div>
 
+            {/* Actions */}
             <div className="flex w-full items-center justify-center gap-[12px]">
               <Button
                 type="button"
@@ -253,7 +254,7 @@ export function RequestSubscriptionRenewalModal({
                 disabled={isSubmitting}
                 className="h-[38px] flex-1 rounded-[8px] border border-[rgba(0,0,0,0.15)] bg-white text-[16px] font-medium text-[#010a04] shadow-none hover:bg-white"
               >
-                {t("manageClub.renewModalCancel")}
+                {t("manageClub.renewModalClose")}
               </Button>
               <Button
                 type="button"

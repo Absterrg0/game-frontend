@@ -203,7 +203,7 @@
     "renewNow": "Renew Now",
     "renewModalTitle": "Request Subscription Renewal",
     "renewModalDescription": "This will submit a renewal request to the super admin. Once approved, your premium features will be restored.",
-    "renewModalCancel": "Cancel",
+    "renewModalClose": "Close",
     "renewModalConfirm": "Confirm",
     "expiryModalTitle": "Update Premium Expiry",
     "expiryModalDescription": "Set or extend the premium expiry date for this club. Quick access for fast updates without changing subscription plans.",

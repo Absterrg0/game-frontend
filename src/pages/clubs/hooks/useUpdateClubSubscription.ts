@@ -2,8 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { formatDateForApi, parseIsoDateSafely } from "@/utils/date";
-
-export type ClubPlan = "free" | "premium";
+import type { ClubPlan } from "@/pages/clubs/hooks";
 
 export interface UpdateClubSubscriptionInput {
   plan?: ClubPlan;

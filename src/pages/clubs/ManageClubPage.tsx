@@ -54,6 +54,7 @@ export default function ManageClubPage() {
   const handleUpdateClubSubscription = async (selectedExpiryDate: Date) => {
     try {
       await updateClubSubscription.mutateAsync({
+        plan: "premium",
         expiresAt: selectedExpiryDate,
       });
       toast.success(t("manageClub.premiumExpiryUpdated"));
@@ -139,7 +140,7 @@ export default function ManageClubPage() {
       <RequestSubscriptionRenewalModal
         open={premiumExpiryModalOpen}
         onOpenChange={setPremiumExpiryModalOpen}
-        currentExpiryDate={staffData?.subscription.expiresAt}
+        currentExpiryDate={staffData?.subscription?.expiresAt}
         isSubmitting={updateClubSubscription.isPending}
         onConfirm={(selectedExpiryDate) => handleUpdateClubSubscription(selectedExpiryDate)}
       />
