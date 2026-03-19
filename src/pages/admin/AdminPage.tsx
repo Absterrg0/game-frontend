@@ -12,9 +12,14 @@ export default function AdminPage() {
         {t("admin.dashboardDescription")}
       </p>
       <div className="mt-6">
-        <Button asChild className="bg-brand-primary hover:bg-brand-primary-hover">
-          <Link to="/admin/promote-super-admin">{t("admin.promoteToSuperAdminCta")}</Link>
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button asChild className="bg-brand-primary hover:bg-brand-primary-hover">
+            <Link to="/admin/clubs-subscriptions">Subscription Management</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/admin/promote-super-admin">{t("admin.promoteToSuperAdminCta")}</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
