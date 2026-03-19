@@ -39,6 +39,9 @@ export function AddAdminOrganiserModal({
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [role, setRole] = useState<AddStaffRole>("admin");
 
+  const isInvalidSelection = selectedUserId !== null && existingStaffIds.includes(selectedUserId);
+  const validSelectedUserId = isInvalidSelection ? selectedUserId : null;
+  const displayValue = isInvalidSelection ? "" : searchQuery;
   const addStaff = useAddClubStaff();
 
   const resetForm = () => {
@@ -53,20 +56,13 @@ export function AddAdminOrganiserModal({
   };
 
   const handleAdd = async () => {
-    if (!selectedUserId) {
+    if (!validSelectedUserId) {
       toast.error(t("manageClub.selectUserFirst"));
       return;
     }
 
-    if (
-      existingStaffIds.includes(selectedUserId)
-    ) {
-      toast.error(t("manageClub.userNoLongerEligible"));
-      return;
-    }
-
     try {
-      await addStaff.mutateAsync({ clubId, userId: selectedUserId, role });
+      await addStaff.mutateAsync({ clubId, userId: validSelectedUserId, role });
       toast.success(
         role === "admin"
           ? t("manageClub.addAdminSuccess")
@@ -99,7 +95,7 @@ export function AddAdminOrganiserModal({
             </label>
             <UserSearchSelect
               inputId="search-user"
-              value={searchQuery}
+              value={displayValue}
               onValueChange={(value) => {
                 setSearchQuery(value);
                 setSelectedUserId(null);
@@ -139,9 +135,8 @@ export function AddAdminOrganiserModal({
             className="w-full bg-brand-primary hover:bg-brand-primary-hover"
             onClick={handleAdd}
             disabled={
-              !selectedUserId ||
-              addStaff.isPending ||
-              existingStaffIds.includes(selectedUserId)
+              !validSelectedUserId ||
+              addStaff.isPending
             }
           >
             {addStaff.isPending ? t("common.loading") : t("manageClub.addMember")}

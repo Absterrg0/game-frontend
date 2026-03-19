@@ -8,32 +8,62 @@ import { Button } from "@/components/ui/button";
 import { usePromoteToSuperAdmin } from "@/pages/admin/hooks";
 import { Input } from "@/components/ui/input";
 import { UserSearchSelect } from "@/components/shared/UserSearchSelect";
+import {
+  USER_SEARCH_MIN_LENGTH,
+  type SearchUserResult,
+} from "@/pages/clubs/hooks";
+
+function usernameForPromotion(user: SearchUserResult): string {
+  return user.alias?.trim() || user.email;
+}
 
 export default function PromoteSuperAdminPage() {
   const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedUser, setSelectedUser] = useState<SearchUserResult | null>(
+    null
+  );
 
   const trimmedUsername = username.trim();
   const promote = usePromoteToSuperAdmin();
 
+  const handleUsernameChange = (next: string) => {
+    setUsername(next);
+    setSelectedUser((prev) => {
+      if (!prev) return null;
+      return usernameForPromotion(prev) === next.trim() ? prev : null;
+    });
+  };
+
+  const handleSelectUser = (user: SearchUserResult) => {
+    setSelectedUser(user);
+    setUsername(usernameForPromotion(user));
+  };
+
+  const showSelectHint =
+    trimmedUsername.length >= USER_SEARCH_MIN_LENGTH && !selectedUser;
+
+  const canSubmit =
+    selectedUser !== null && password.length > 0 && !promote.isPending;
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    if (!trimmedUsername) {
-      toast.error(t("admin.promoteSuperAdmin.toastUsernameRequired"));
+    if (password.length === 0) {
+      toast.error(t("admin.promoteSuperAdmin.toastPasswordRequired"));
       return;
     }
 
-    if (!password.trim()) {
-      toast.error(t("admin.promoteSuperAdmin.toastPasswordRequired"));
+    if (!selectedUser) {
+      toast.error(t("admin.promoteSuperAdmin.toastSelectUserRequired"));
       return;
     }
 
     try {
       const result = await promote.mutateAsync({
-        username: trimmedUsername,
-        password: password.trim(),
+        username: usernameForPromotion(selectedUser),
+        password: password,
       });
 
       toast.success(
@@ -42,6 +72,8 @@ export default function PromoteSuperAdminPage() {
         })
       );
       setPassword("");
+      setSelectedUser(null);
+      setUsername("");
     } catch (err: unknown) {
       const message =
         err && typeof err === "object" && "response" in err
@@ -82,13 +114,8 @@ export default function PromoteSuperAdminPage() {
             <UserSearchSelect
               inputId="promote-username"
               value={username}
-              onValueChange={setUsername}
-              onSelectUser={(user) => {
-                const alias = user.alias?.trim() ?? "";
-                if (alias) {
-                  setUsername(alias);
-                }
-              }}
+              onValueChange={handleUsernameChange}
+              onSelectUser={handleSelectUser}
               placeholder={t("admin.promoteSuperAdmin.usernamePlaceholder")}
               keepTypingText={t("admin.promoteSuperAdmin.keepTypingUsernames")}
               noResultsText={t("admin.promoteSuperAdmin.noMatchingUsernames")}
@@ -101,7 +128,7 @@ export default function PromoteSuperAdminPage() {
               }}
               primaryText={(user) => user.alias?.trim() ?? user.email}
             />
-
+         
           </div>
 
           <div>
@@ -124,13 +151,13 @@ export default function PromoteSuperAdminPage() {
           <Button
             type="submit"
             className="w-full bg-brand-primary hover:bg-brand-primary-hover"
-            disabled={promote.isPending || !trimmedUsername || !password.trim()}
+            disabled={!canSubmit}
           >
             {promote.isPending
               ? t("admin.promoteSuperAdmin.submitting")
               : t("admin.promoteSuperAdmin.submit")}
           </Button>
-        </form>
+      </form>
       </div>
     </div>
   );

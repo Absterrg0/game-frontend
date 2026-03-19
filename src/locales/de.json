@@ -35,6 +35,7 @@
       "submit": "Zum Super-Admin hochstufen",
       "submitting": "Wird hochgestuft...",
       "toastUsernameRequired": "Benutzername ist erforderlich",
+      "toastSelectUserRequired": "Wählen Sie einen Benutzer aus den Suchergebnissen.",
       "toastPasswordRequired": "Beförderungspasswort ist erforderlich",
       "toastSuccess": "{{name}} ist jetzt Super-Admin",
       "toastError": "Benutzer konnte nicht befördert werden"

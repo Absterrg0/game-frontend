@@ -31,10 +31,12 @@ async function searchUsers(q: string): Promise<SearchUsersResponse> {
 
 export function useSearchUsers(query: string, enabled: boolean) {
   const debouncedQuery = useDebouncedValue(query, USER_SEARCH_DEBOUNCE_MS);
+  const trimmedQuery = debouncedQuery.trim();
 
   return useQuery({
-    queryKey: queryKeys.user.search(debouncedQuery.trim()),
-    queryFn: () => searchUsers(debouncedQuery),
-    enabled: enabled && isUserSearchQueryValid(debouncedQuery),
+    queryKey: queryKeys.user.search(trimmedQuery),
+    queryFn: () => searchUsers(trimmedQuery),
+    enabled: enabled && isUserSearchQueryValid(trimmedQuery),
+    placeholderData: (prev) => prev,
   });
 }

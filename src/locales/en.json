@@ -24,7 +24,7 @@
     },
     "promoteSuperAdmin": {
       "pageTitle": "Promote User to Super Admin",
-      "pageDescription": "Type a username (alias) and provide the promotion password to upgrade that user to super_admin.",
+      "pageDescription": "Type a username (alias) and provide the promotion password to upgrade that user to Super Admin .",
       "backToAdmin": "Back to admin",
       "usernameLabel": "Username",
       "usernamePlaceholder": "Enter username (alias)",
@@ -32,11 +32,12 @@
       "noMatchingUsernames": "No matching usernames found.",
       "passwordLabel": "Promotion Password",
       "passwordPlaceholder": "Enter promotion password",
-      "submit": "Upgrade to super_admin",
+      "submit": "Upgrade to Super Admin ",
       "submitting": "Upgrading...",
       "toastUsernameRequired": "Username is required",
+      "toastSelectUserRequired": "Select a user from the search results.",
       "toastPasswordRequired": "Promotion password is required",
-      "toastSuccess": "{{name}} is now a super_admin",
+      "toastSuccess": "{{name}} is now a Super Admin ",
       "toastError": "Failed to promote user"
     }
   },
