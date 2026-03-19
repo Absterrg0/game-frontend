@@ -21,7 +21,8 @@ const ManageSponsorsPage = lazy(() => import('./pages/sponsors/ManageSponsorsPag
 const AboutPage = lazy(() => import('./pages/about/AboutPage'))
 const AdminPage = lazy(() => import('./pages/admin/AdminPage'))
 const PromoteSuperAdminPage = lazy(() => import('./pages/admin/PromoteSuperAdminPage'))
-const ClubSubscriptionsOverviewPage = lazy(() => import('./pages/admin/ClubSubscriptionsOverviewPage'))
+const ClubSubscriptionsOverviewPage = lazy(() => import('@/pages/admin/ClubSubscriptionsOverviewPage'))
+const ClubSubscriptionDetailPage = lazy(() => import('@/pages/admin/ClubSubscriptionDetailPage'))
 
 
 function Home() {
@@ -66,6 +67,8 @@ function App() {
             <Route path="/admin" element={ <ProtectedRoute requireRoleOrAbove={ROLES.SUPER_ADMIN}> <AdminPage /> </ProtectedRoute>} />
             { /* Todo: Restrict this route to super_admins only once implemented. Currently left open for initial setup/testing.*/ }
             <Route path="/admin/clubs-subscriptions" element={ <ProtectedRoute requireRoleOrAbove={ROLES.PLAYER}> <ClubSubscriptionsOverviewPage /> </ProtectedRoute>} />
+            { /* Todo: Restrict this route to super_admins only once implemented. Currently left open for initial setup/testing.*/ }
+            <Route path="/admin/clubs-subscriptions/:clubId" element={ <ProtectedRoute requireRoleOrAbove={ROLES.PLAYER}> <ClubSubscriptionDetailPage /> </ProtectedRoute>} />
             { /* Todo: Restrict this route to super_admins only once implemented. Currently left open for initial setup/testing.*/ }
             <Route path="/admin/promote-super-admin" element={ <ProtectedRoute requireRoleOrAbove={ROLES.PLAYER}> <PromoteSuperAdminPage /> </ProtectedRoute>} />
           </Route>
