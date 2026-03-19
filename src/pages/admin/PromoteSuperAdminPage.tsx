@@ -9,7 +9,6 @@ import { usePromoteToSuperAdmin } from "@/pages/admin/hooks";
 import { Input } from "@/components/ui/input";
 import { UserSearchSelect } from "@/components/shared/UserSearchSelect";
 import {
-  USER_SEARCH_MIN_LENGTH,
   type SearchUserResult,
 } from "@/pages/clubs/hooks";
 
@@ -41,8 +40,6 @@ export default function PromoteSuperAdminPage() {
     setUsername(usernameForPromotion(user));
   };
 
-  const showSelectHint =
-    trimmedUsername.length >= USER_SEARCH_MIN_LENGTH && !selectedUser;
 
   const canSubmit =
     selectedUser !== null && password.length > 0 && !promote.isPending;
