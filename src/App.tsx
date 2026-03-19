@@ -13,8 +13,6 @@ const UserInformation = lazy(() => import('./pages/user/UserInformation'))
 const AuthCallback = lazy(() => import('./pages/auth/AuthCallback'))
 const SettingsPage = lazy(() => import('./pages/profile/SettingsPage'))
 const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
-const TournamentListPage = lazy(() => import('./pages/tournaments/TournamentListPage'))
-const TournamentDetailsPage = lazy(() => import('./pages/tournaments/TournamentDetailsPage'))
 const ClubsListPage = lazy(() => import('./pages/clubs/ClubsListPage'))
 const ClubDetailPage = lazy(() => import('./pages/clubs/ClubDetailPage'))
 const ManageClubPage = lazy(() => import('./pages/clubs/ManageClubPage'))
@@ -53,8 +51,8 @@ function App() {
       <MainLayout />
     </ProtectedRoute>}>
             <Route path="/profile" element={<SettingsPage />} />
-            <Route path="/tournaments" element={<TournamentListPage />} />
-            <Route path="/tournaments/:id" element={<TournamentDetailsPage />} />
+            <Route path="/tournaments" element={<PlaceholderPage />} />
+            <Route path="/tournaments/:id" element={<PlaceholderPage />} />
             <Route path="/my-score" element={<PlaceholderPage />} />
             <Route path="/record-score" element={<PlaceholderPage />} />
             <Route path="/clubs/manage" element={ <ProtectedRoute requireRoleOrAbove={ROLES.CLUB_ADMIN}> <ManageClubPage /> </ProtectedRoute>} />
