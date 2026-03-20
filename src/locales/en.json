@@ -17,28 +17,8 @@
   "admin": {
     "title": "Admin",
     "dashboardDescription": "Super Admin dashboard. Coming soon.",
-    "promoteToSuperAdminCta": "Promote User to Super Admin",
     "nav": {
-      "admin": "Admin",
-      "setup": "Admin Setup"
-    },
-    "promoteSuperAdmin": {
-      "pageTitle": "Promote User to Super Admin",
-      "pageDescription": "Type a username (alias) and provide the promotion password to upgrade that user to Super Admin .",
-      "backToAdmin": "Back to admin",
-      "usernameLabel": "Username",
-      "usernamePlaceholder": "Enter username (alias)",
-      "keepTypingUsernames": "Keep typing to search usernames.",
-      "noMatchingUsernames": "No matching usernames found.",
-      "passwordLabel": "Promotion Password",
-      "passwordPlaceholder": "Enter promotion password",
-      "submit": "Upgrade to Super Admin ",
-      "submitting": "Upgrading...",
-      "toastUsernameRequired": "Username is required",
-      "toastSelectUserRequired": "Select a user from the search results.",
-      "toastPasswordRequired": "Promotion password is required",
-      "toastSuccess": "{{name}} is now a Super Admin ",
-      "toastError": "Failed to promote user"
+      "admin": "Admin"
     }
   },
   "profile": {

@@ -61,7 +61,6 @@ const pathToTitleKey: Record<string, string> = {
   "/sponsors": "sponsors.allSponsors",
   "/about": "settings.nav.about",
   "/information": "signup.title",
-  "/admin/promote-super-admin": "admin.promoteSuperAdmin.pageTitle",
   "/admin": "admin.title",
 };
 
@@ -173,17 +172,11 @@ export function AppNavbar() {
               </Link>
             </DropdownMenuItem>
             {/* TODO: Setup-only shortcut. Replace with final admin IA/navigation flow. */}
-            <RoleGuard requireRoleOrAbove={ROLES.PLAYER}>
+            <RoleGuard requireRoleOrAbove={ROLES.SUPER_ADMIN}>
               <DropdownMenuItem asChild>
                 <Link to="/admin" className="flex items-center gap-2 cursor-pointer">
                   <HugeiconsIcon icon={Award01Icon} size={18} />
                   {t("admin.nav.admin")}
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/admin/promote-super-admin" className="flex items-center gap-2 cursor-pointer">
-                  <HugeiconsIcon icon={Award01Icon} size={18} />
-                  {t("admin.nav.setup")}
                 </Link>
               </DropdownMenuItem>
             </RoleGuard>

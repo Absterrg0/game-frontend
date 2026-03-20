@@ -17,28 +17,8 @@
   "admin": {
     "title": "Administration",
     "dashboardDescription": "Super-Admin-Dashboard. Demnächst verfügbar.",
-    "promoteToSuperAdminCta": "Benutzer zum Super-Admin befördern",
     "nav": {
-      "admin": "Administration",
-      "setup": "Admin-Einrichtung"
-    },
-    "promoteSuperAdmin": {
-      "pageTitle": "Benutzer zum Super-Admin befördern",
-      "pageDescription": "Geben Sie einen Benutzernamen (Alias) und das Beförderungspasswort ein, um diesen Benutzer zum Super-Admin zu machen.",
-      "backToAdmin": "Zurück zur Administration",
-      "usernameLabel": "Benutzername",
-      "usernamePlaceholder": "Benutzername (Alias) eingeben",
-      "keepTypingUsernames": "Tippen Sie weiter, um Benutzernamen zu suchen.",
-      "noMatchingUsernames": "Keine passenden Benutzernamen gefunden.",
-      "passwordLabel": "Beförderungspasswort",
-      "passwordPlaceholder": "Beförderungspasswort eingeben",
-      "submit": "Zum Super-Admin hochstufen",
-      "submitting": "Wird hochgestuft...",
-      "toastUsernameRequired": "Benutzername ist erforderlich",
-      "toastSelectUserRequired": "Wählen Sie einen Benutzer aus den Suchergebnissen.",
-      "toastPasswordRequired": "Beförderungspasswort ist erforderlich",
-      "toastSuccess": "{{name}} ist jetzt Super-Admin",
-      "toastError": "Benutzer konnte nicht befördert werden"
+      "admin": "Administration"
     }
   },
   "profile": {
