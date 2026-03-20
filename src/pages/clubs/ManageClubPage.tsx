@@ -127,7 +127,6 @@ export default function ManageClubPage() {
               <ManageClubSubscriptionBanners
                 showSubscriptionBanner={showSubscriptionBanner}
                 showUpgradeBanner={showUpgradeBanner}
-                subscriptionExpiryDate={staffData?.subscription?.expiresAt}
                 isExpired={isExpired}
                 onRenew={openPremiumExpiryModal}
                 onUpgrade={openPremiumExpiryModal}

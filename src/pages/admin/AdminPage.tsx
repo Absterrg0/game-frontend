@@ -18,6 +18,9 @@ export default function AdminPage() {
               {t("admin.subscriptionManagementCta")}
             </Link>
           </Button>
+          <Button asChild className="bg-brand-primary hover:bg-brand-primary-hover">
+            <Link to="/admin/sponsors">Platform Sponsors</Link>
+          </Button>
         </div>
       </div>
     </div>
