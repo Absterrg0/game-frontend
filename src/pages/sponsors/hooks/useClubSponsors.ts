@@ -20,7 +20,7 @@ interface ClubSponsorsResponse {
 }
 
 async function fetchClubSponsors(clubId: string): Promise<ClubSponsorsResponse> {
-  const res = await api.get<ClubSponsorsResponse>(`/api/clubs/${clubId}/sponsors`);
+  const res = await api.get<ClubSponsorsResponse>(`/api/sponsors/clubs/${clubId}`);
   return res.data;
 }
 

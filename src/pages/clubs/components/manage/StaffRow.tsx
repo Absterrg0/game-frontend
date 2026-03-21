@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,17 +8,18 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
   DragDropVerticalIcon,
+  CrownIcon,
   MoreVerticalIcon,
 } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 import type { ClubStaffMember } from "@/pages/clubs/hooks";
 
 function StaffAvatar({ name, alias }: { name: string | null; alias: string | null }) {
-  const display = (alias?.trim() || name?.trim() || "?").slice(0, 2).toUpperCase();
+  const display = (alias?.trim() || name?.trim() || "").slice(0, 2).toUpperCase();
 
   return (
     <div
-      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-muted-foreground"
+      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#d8d8d8] text-[11px] font-medium text-[#010a04]/50"
       aria-hidden
     >
       {display}
@@ -35,43 +35,51 @@ interface StaffRowProps {
 export function StaffRow({ member, onMenuAction }: StaffRowProps) {
   const { t } = useTranslation();
   const isDefault = member.role === "default_admin";
+  const roleLabel = isDefault ? t("manageClub.mainAdmin") : member.roleLabel;
+  const memberDisplayName = member.name?.trim() || member.alias?.trim() || member.email;
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
+    <div
+      className={cn(
+        "flex items-center justify-between rounded-[12px] border px-[12px] py-[15px] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)]",
+        isDefault
+          ? "border-[rgba(10,105,37,0.17)] bg-[linear-gradient(90deg,rgba(10,105,37,0.06)_0%,rgba(10,105,37,0.06)_100%),linear-gradient(90deg,#fff_0%,#fff_100%)]"
+          : "border-black/12 bg-white"
+      )}
+    >
       <button
         type="button"
-        className="cursor-grab touch-none text-muted-foreground hover:text-foreground"
+        className="mr-3 cursor-grab touch-none text-[#010a04]/45 hover:text-[#010a04]/70"
         aria-label={t("manageClub.dragUser")}
       >
-        <HugeiconsIcon icon={DragDropVerticalIcon} size={16} />
+        <HugeiconsIcon icon={DragDropVerticalIcon} size={20} />
       </button>
-      <StaffAvatar name={member.name} alias={member.alias} />
-      <div className="min-w-0 flex-1">
-        <p className="font-medium text-foreground">
-          {member.name?.trim() || member.alias?.trim() || member.email}
-        </p>
-        <p className="truncate text-sm text-muted-foreground">{member.email}</p>
+      <div className="flex min-w-0 flex-1 items-center gap-[14px]">
+        <StaffAvatar name={member.name} alias={member.alias} />
+        <div className="min-w-0">
+          <div className="flex items-center gap-[7px]">
+            <p className="truncate text-[16px] font-medium text-[#010a04]">{memberDisplayName}</p>
+            {isDefault && (
+              <span className="inline-flex h-[18px] items-center gap-1 rounded-[5px] bg-[rgba(10,105,37,0.12)] px-[6px] pr-[8px] text-[10px] font-medium text-brand-primary">
+                <HugeiconsIcon icon={CrownIcon} size={10} />
+                {t("manageClub.default")}
+              </span>
+            )}
+          </div>
+          <p className="truncate text-[12px] text-[#010a04]/60">{member.email}</p>
+          <p className="truncate text-[12px] text-[#010a04]/60">{roleLabel}</p>
+        </div>
       </div>
-      <div className="flex items-center gap-2">
-        {isDefault && (
-          <span className="rounded-full bg-brand-primary px-2.5 py-0.5 text-xs font-medium text-white">
-            {t("manageClub.default")}
-          </span>
-        )}
-        <span
-          className={cn(
-            "rounded-full px-2.5 py-0.5 text-xs font-medium",
-            isDefault ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-          )}
-        >
-          {member.roleLabel}
-        </span>
-      </div>
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-            <HugeiconsIcon icon={MoreVerticalIcon} size={16} aria-hidden />
-          </Button>
+          <button
+            type="button"
+            className="ml-2 flex h-6 w-6 shrink-0 items-center justify-center text-[#010a04]/45"
+            aria-label={t("manageClub.staffActionsMenu", { name: memberDisplayName })}
+          >
+            <HugeiconsIcon icon={MoreVerticalIcon} size={18} aria-hidden />
+          </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem

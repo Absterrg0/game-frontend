@@ -6,15 +6,28 @@ export interface AdminClub {
   id: string;
   name: string;
   courtCount: number;
+  membersCount: number;
+  eventsCount: number;
 }
 
 interface AdminClubsResponse {
   clubs: AdminClub[];
 }
 
+function coerceFiniteCount(value: unknown): number {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+
 async function fetchAdminClubs(): Promise<AdminClubsResponse> {
   const res = await api.get<AdminClubsResponse>("/api/user/admin-clubs");
-  return res.data;
+  return {
+    clubs: (res.data.clubs ?? []).map((club) => ({
+      ...club,
+      membersCount: coerceFiniteCount(club.membersCount),
+      eventsCount: coerceFiniteCount(club.eventsCount),
+    })),
+  };
 }
 
 export function useAdminClubs(enabled = true) {

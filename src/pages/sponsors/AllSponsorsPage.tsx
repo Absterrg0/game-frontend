@@ -1,18 +1,11 @@
-import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ExternalLink } from "lucide-react";
 import { useAllSponsors } from "@/pages/sponsors/hooks";
-import { useHasRoleOrAbove } from "@/pages/auth/hooks";
-import { ROLES } from "@/constants/roles";
-import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Settings01Icon } from "@hugeicons/core-free-icons";
 import InlineLoader from "@/components/shared/InlineLoader";
 
 export default function AllSponsorsPage() {
   const { t } = useTranslation();
   const { data, isLoading } = useAllSponsors();
-  const canManage = useHasRoleOrAbove(ROLES.CLUB_ADMIN);
 
   const sponsors = data?.sponsors ?? [];
 
@@ -24,14 +17,6 @@ export default function AllSponsorsPage() {
             <h1 className="text-2xl font-bold text-foreground">
               {t("sponsors.allSponsors")}
             </h1>
-            {canManage && (
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/sponsors/manage">
-                  <HugeiconsIcon icon={Settings01Icon} size={16} className="mr-2" />
-                  {t("sponsors.manageSponsors")}
-                </Link>
-              </Button>
-            )}
           </div>
 
           {isLoading ? (
