@@ -25,6 +25,7 @@ interface UserSearchSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  openOnFocus?: boolean;
   noResultsText?: string;
   keepTypingText?: string;
   userFilter?: (user: SearchUserResult) => boolean;
@@ -41,6 +42,7 @@ export function UserSearchSelect({
   placeholder,
   className,
   disabled = false,
+  openOnFocus = true,
   noResultsText,
   keepTypingText,
   userFilter,
@@ -99,11 +101,15 @@ export function UserSearchSelect({
             value={value}
             onChange={(event) => {
               onValueChange(event.target.value);
+              const nextOpen = event.target.value.trim().length > 0;
+              setOpen(nextOpen);
+            }}
+            onFocus={() => {
+              if (!openOnFocus) return;
               setOpen(true);
             }}
-            onFocus={() => setOpen(true)}
             placeholder={resolvedPlaceholder}
-            className="pl-9"
+            className="h-[38px] rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] pl-9 text-[14px]"
             autoComplete="off"
             disabled={disabled}
           />
@@ -111,10 +117,10 @@ export function UserSearchSelect({
       </PopoverAnchor>
 
       <PopoverContent
-        className="w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] p-0 overflow-hidden rounded-md border border-border bg-popover shadow-md"
+        className="w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] overflow-hidden rounded-[9px] border border-black/10 bg-white p-[15px] shadow-[0px_10px_23.5px_0px_rgba(0,0,0,0.2)]"
         align="center"
         side="bottom"
-        sideOffset={4}
+        sideOffset={5}
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="max-h-64 overflow-y-auto">
@@ -138,7 +144,7 @@ export function UserSearchSelect({
           )}
 
           {uiState === "results" && (
-            <ul className="py-1">
+            <ul className="py-0">
               {users.map((user) => {
                 const alias = user.alias?.trim();
                 const display =
@@ -151,12 +157,21 @@ export function UserSearchSelect({
                   <li
                     key={user.id}
                     onClick={() => handleSelectUser(user)}
-                    className="cursor-pointer px-3 py-2 text-sm hover:bg-accent/60 flex justify-between"
+                    className="cursor-pointer border-b border-black/10 py-2.5 last:border-b-0"
                   >
-                    {display}
-                    <span className="ml-2 text-muted-foreground">
-                      {user.email}
-                    </span>
+                    <div className="flex items-center gap-[13px]">
+                      <div className="flex h-[27px] w-[27px] shrink-0 items-center justify-center rounded-full border border-black/70 bg-[#dddddd99] text-[11px] font-medium text-black/70">
+                        {(display[0] ?? user.email[0] ?? "U").toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-[14px] leading-4 text-foreground">
+                          {display}
+                        </p>
+                        <p className="truncate text-[12px] leading-4 text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
                   </li>
                 );
               })}

@@ -33,30 +33,30 @@ export function ClubCourtsEditor({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-3">
-      <Label className="text-xs font-medium uppercase text-muted-foreground">
-        {t("settings.adminClubsAllCourts")} <span className="text-muted-foreground/70">(optional)</span>
+    <div className="space-y-[10px] rounded-[12px]">
+      <Label className="text-base font-medium text-[#010a04]">
+        {t("settings.adminClubsAllCourts")}
       </Label>
-      <div className="rounded-lg border border-[#e5e7eb] overflow-hidden">
-        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2 p-2 bg-[#f9fafb] text-xs font-medium uppercase text-muted-foreground">
+      <div className="space-y-[9px]">
+        <div className="grid grid-cols-[minmax(0,128px)_minmax(0,1fr)_minmax(0,1fr)_16px] items-center gap-[9px] text-xs font-medium uppercase text-[#010a04]/70">
           <span>{t("settings.adminClubsCourtName")}</span>
-          <span className="w-24">{t("settings.adminClubsCourtType")}</span>
-          <span className="w-24">{t("settings.adminClubsCourtPlacement")}</span>
-          <span className="w-8" />
+          <span>{t("settings.adminClubsCourtType")}</span>
+          <span>{t("settings.adminClubsCourtPlacement")}</span>
+          <span />
         </div>
         {courts.map((court, index) => (
           <div
             key={index}
-            className="grid grid-cols-[1fr_auto_auto_auto] gap-2 p-2 items-center border-t border-[#e5e7eb]"
+            className="grid grid-cols-[minmax(0,128px)_minmax(0,1fr)_minmax(0,1fr)_16px] items-center gap-[9px]"
           >
             <Input
               placeholder={t("settings.adminClubsCourtName")}
               value={court.name}
               onChange={(event) => onCourtChange(index, "name", event.target.value)}
-              className="h-9 text-sm"
+              className="h-[38px] rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-sm shadow-none placeholder:text-[#010a04]/50 focus-visible:ring-0"
             />
             <Select value={court.type} onValueChange={(value) => onCourtChange(index, "type", value)}>
-              <SelectTrigger className="h-9 w-24">
+              <SelectTrigger className="h-[38px] w-full rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] px-2 text-[13px] font-medium text-[#010a04] shadow-none focus-visible:ring-0 [&_svg]:size-3.5">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -71,7 +71,7 @@ export function ClubCourtsEditor({
               value={court.placement}
               onValueChange={(value) => onCourtChange(index, "placement", value)}
             >
-              <SelectTrigger className="h-9 w-24">
+              <SelectTrigger className="h-[38px] w-full rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] px-2 text-[13px] font-medium text-[#010a04] shadow-none focus-visible:ring-0 [&_svg]:size-3.5">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -88,16 +88,22 @@ export function ClubCourtsEditor({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-9 w-9 text-muted-foreground hover:text-destructive"
+              className="size-4 rounded-none p-0 text-[#010a04]/50 hover:bg-transparent hover:text-[#010a04]"
               onClick={() => onRemoveCourt(index)}
               aria-label={t("settings.adminClubsDeleteCourtAria")}
             >
-              <HugeiconsIcon icon={Delete01Icon} size={16} />
+              <HugeiconsIcon icon={Delete01Icon} size={14} />
             </Button>
           </div>
         ))}
       </div>
-      <Button type="button" variant="outline" size="sm" onClick={onAddCourt} className="w-full">
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={onAddCourt}
+        className="h-[30px] w-full rounded-[8px] border-dashed border-[#f4c95d]/55 bg-[#f4c95d]/15 text-xs font-medium text-[#a4790d] shadow-none hover:bg-[#f4c95d]/20"
+      >
         {t("settings.adminClubsAddCourt")}
       </Button>
     </div>

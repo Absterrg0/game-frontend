@@ -105,17 +105,23 @@ export function AddAdminOrganiserModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>{t("manageClub.addModalTitle")}</DialogTitle>
+      <DialogContent
+        className="gap-[22px] rounded-[12px] border-black/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] sm:max-w-[416px]"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+      >
+        <DialogHeader className="gap-[18px] pr-8">
+          <DialogTitle className="text-[21px] font-semibold leading-none">
+            {t("manageClub.addModalTitle")}
+          </DialogTitle>
+          <div className="h-px w-full bg-black/10" />
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-[25px]">
           {/* User Search */}
-          <div>
+          <div className="space-y-[10px]">
             <label
               htmlFor="search-user"
-              className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground"
+              className="block text-xs font-medium uppercase tracking-wider text-black/70"
             >
               {t("manageClub.searchUser")}
             </label>
@@ -127,6 +133,7 @@ export function AddAdminOrganiserModal({
                 setSearchQuery(value);
                 setSelectedUser(null); // typing cancels selection
               }}
+              openOnFocus={false}
               onSelectUser={(user) => {
                 setSelectedUser(user);
                 setSearchQuery(
@@ -150,10 +157,10 @@ export function AddAdminOrganiserModal({
           </div>
 
           {/* Role Select */}
-          <div>
+          <div className="space-y-[10px]">
             <label
               htmlFor="role-select"
-              className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground"
+              className="block text-xs font-medium uppercase tracking-wider text-black/70"
             >
               {t("manageClub.role")}
             </label>
@@ -164,7 +171,10 @@ export function AddAdminOrganiserModal({
                 setRole(value as AddStaffRole)
               }
             >
-              <SelectTrigger id="role-select" className="w-full">
+              <SelectTrigger
+                id="role-select"
+                className="h-[38px] w-full rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] text-[14px]"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -177,14 +187,14 @@ export function AddAdminOrganiserModal({
               </SelectContent>
             </Select>
 
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="text-[11px] text-black/60">
               {t("manageClub.roleHint")}
             </p>
           </div>
 
           {/* Submit */}
           <Button
-            className="w-full bg-brand-primary hover:bg-brand-primary-hover"
+            className="h-[38px] w-full rounded-[8px] bg-gradient-to-r from-[#0A6925] via-[#0C7B2C] to-[#0F8D33] text-[16px] font-medium text-white hover:from-[#095f22] hover:via-[#0b7228] hover:to-[#0d812f]"
             onClick={handleAdd}
             disabled={!isSelectedUserValid || addStaff.isPending}
           >

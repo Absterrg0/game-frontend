@@ -2,10 +2,12 @@ import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
+  DialogClose,
   DialogHeader,
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { XIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -44,18 +46,38 @@ export function AddEditClubModal({
     courtPlacements,
   } = useAddEditClubForm({ editClubId, onOpenChange });
 
+  const inputClassName =
+    "h-[38px] rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-sm shadow-none placeholder:text-[#010a04]/50 focus-visible:ring-0 focus-visible:border-[#d5d8de]";
+  const labelClassName = "text-xs font-medium uppercase text-[#010a04]/70";
+
   return (
     <Dialog
       open={open}
       onOpenChange={handleDialogOpenChange}
     >
       <DialogContent
-        className="sm:max-w-xl"
-        showCloseButton={true}
+        className="gap-0 rounded-[12px] border-[#010a04]/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] sm:max-w-[416px]"
+        showCloseButton={false}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
-          <DialogTitle>{t("settings.adminClubsModalTitle")}</DialogTitle>
+        <DialogHeader className="gap-[18px]">
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-[21px] font-semibold text-[#010a04]">
+              {t("settings.adminClubsModalTitle")}
+            </DialogTitle>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-6 rounded-none p-0 text-[#010a04]/80 hover:bg-transparent hover:text-[#010a04]"
+                aria-label="Close"
+              >
+                <XIcon className="size-5" />
+              </Button>
+            </DialogClose>
+          </div>
+          <div className="h-px w-full bg-[#010a04]/10" />
         </DialogHeader>
 
         {isEdit && loadingClub ? (
@@ -63,49 +85,49 @@ export function AddEditClubModal({
             <InlineLoader />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="club-name" className="text-xs font-medium uppercase text-muted-foreground">
-                {t("settings.adminClubsClubName")} <span className="text-destructive">*</span>
+          <form onSubmit={handleSubmit} className="mt-[22px] flex flex-col gap-[22px]">
+            <div className="grid gap-[10px]">
+              <Label htmlFor="club-name" className={labelClassName}>
+                {t("settings.adminClubsClubName")}
               </Label>
               <Input
                 id="club-name"
                 placeholder={t("settings.adminClubsClubNamePlaceholder")}
                 value={currentForm.name}
                 onChange={(event) => setField("name", event.target.value)}
-                className="h-10"
+                className={inputClassName}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="club-website" className="text-xs font-medium uppercase text-muted-foreground">
-                {t("settings.adminClubsWebsite")} <span className="text-muted-foreground/70">(optional)</span>
+            <div className="grid gap-[10px]">
+              <Label htmlFor="club-website" className={labelClassName}>
+                {t("settings.adminClubsWebsite")}
               </Label>
               <Input
                 id="club-website"
                 placeholder={t("settings.adminClubsWebsitePlaceholder")}
                 value={currentForm.website}
                 onChange={(event) => setField("website", event.target.value)}
-                className="h-10"
+                className={inputClassName}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="club-booking-url" className="text-xs font-medium uppercase text-muted-foreground">
-                {t("settings.adminClubsBookingUrl")} <span className="text-muted-foreground/70">(optional)</span>
+            <div className="grid gap-[10px]">
+              <Label htmlFor="club-booking-url" className={labelClassName}>
+                {t("settings.adminClubsBookingUrl")}
               </Label>
               <Input
                 id="club-booking-url"
                 placeholder={t("settings.adminClubsBookingUrlPlaceholder")}
                 value={currentForm.bookingSystemUrl}
                 onChange={(event) => setField("bookingSystemUrl", event.target.value)}
-                className="h-10"
+                className={inputClassName}
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="club-address" className="text-xs font-medium uppercase text-muted-foreground">
-                {t("settings.adminClubsAddress")} <span className="text-destructive">*</span>
+            <div className="grid gap-[10px]">
+              <Label htmlFor="club-address" className={labelClassName}>
+                {t("settings.adminClubsAddress")}
               </Label>
               <LocationSearchInput
                 id="club-address"
@@ -114,6 +136,7 @@ export function AddEditClubModal({
                 onSelect={handleLocationSelect}
                 placeholder={t("settings.adminClubsLocationSearchPlaceholder")}
                 searchingLabel={t("settings.adminClubsLocationSearching")}
+                className={inputClassName}
               />
             </div>
             <ClubCourtsEditor
@@ -125,18 +148,19 @@ export function AddEditClubModal({
               onCourtChange={handleCourtChange}
             />
 
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:justify-start">
               <Button
                 type="button"
                 variant="outline"
                 onClick={close}
+                className="h-[38px] rounded-[8px] border-black/12 bg-white text-base font-medium text-[#010a04] shadow-none hover:bg-[#f9fafc]"
               >
                 {t("settings.adminClubsCancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isPending}
-                className="bg-brand-primary text-white hover:bg-brand-primary-hover"
+                className="h-[38px] rounded-[8px] bg-linear-to-r from-[#0a6925] via-[#0c7b2c] to-[#0f8d33] text-base font-medium text-white hover:opacity-95"
               >
                 {isPending ? (
                   <InlineLoader size="sm" />

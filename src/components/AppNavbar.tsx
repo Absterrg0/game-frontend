@@ -5,11 +5,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Menu01Icon,
   Award01Icon,
-  BarChartIcon,
   ClipboardIcon,
   Settings01Icon,
-  UserGroupIcon,
-  MoneyBag01Icon,
+  ShieldIcon,
   InformationCircleIcon,
   ArrowDown01Icon,
   UserIcon,
@@ -35,19 +33,13 @@ import {
 } from "@/components/ui/sheet";
 
 const navItems = [
+  { path: "/clubs", labelKey: "manageClub.allClubs", icon: Award01Icon },
   { path: "/tournaments", labelKey: "settings.nav.tournaments", icon: Award01Icon },
-  { path: "/my-score", labelKey: "settings.nav.myScore", icon: BarChartIcon },
   { path: "/record-score", labelKey: "settings.nav.recordScore", icon: ClipboardIcon },
   { path: "/profile", labelKey: "settings.nav.settings", icon: Settings01Icon },
-  { path: "/clubs", labelKey: "settings.nav.clubs", icon: UserGroupIcon },
-  { path: "/sponsors", labelKey: "settings.nav.sponsors", icon: MoneyBag01Icon },
+  { path: "/sponsors", labelKey: "settings.nav.sponsors", icon: ShieldIcon },
   { path: "/about", labelKey: "settings.nav.about", icon: InformationCircleIcon },
 ];
-
-const LANGUAGES = [
-  { code: "en", label: "ENG" },
-  { code: "de", label: "DEU" },
-] as const;
 
 const tb10LogoImage = "https://www.figma.com/api/mcp/asset/5f56c3eb-f8bf-419e-bc2c-0780682ffca6";
 
@@ -57,10 +49,10 @@ const pathToTitleKey: Record<string, string> = {
   "/tournaments": "settings.nav.tournaments",
   "/my-score": "settings.nav.myScore",
   "/record-score": "settings.nav.recordScore",
+  "/clubs/manage/sponsors/": "sponsors.title",
   "/clubs/manage": "manageClub.title",
   "/clubs/": "clubs.clubDetails",
   "/clubs": "clubs.allClubs",
-  "/sponsors/manage": "sponsors.title",
   "/sponsors": "sponsors.allSponsors",
   "/about": "settings.nav.about",
   "/information": "signup.title",
@@ -90,6 +82,8 @@ function NavLinks({
       {navItems.map(({ path, labelKey, icon }) => {
         const isActive = path === "/profile"
           ? location.pathname.startsWith("/profile")
+          : path === "/clubs"
+            ? location.pathname.startsWith("/clubs")
           : location.pathname.startsWith(path);
         return (
           <Link
@@ -119,7 +113,16 @@ export function AppNavbar() {
   const { isAuthenticated, user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const baseLanguage = (i18n.resolvedLanguage || i18n.language || "en").split("-")[0];
+  const normalizedLanguage = i18n.resolvedLanguage?.toLowerCase().startsWith("de")
+    ? "de"
+    : "en";
+  const languageLabel = normalizedLanguage === "de" ? "DEU" : "ENG";
+
+  const handleLanguageChange = (language: "en" | "de") => {
+    if (language !== normalizedLanguage) {
+      void i18n.changeLanguage(language);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -133,43 +136,16 @@ export function AppNavbar() {
 
   const authSection = (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button
-            type="button"
-            className="hidden sm:flex h-[34px] w-[90px] items-center justify-between rounded-[8px] border border-white/20 px-3 pr-2 text-[14px] font-medium text-white transition-colors hover:bg-white/5"
-            aria-label={t("common.language")}
-          >
-            {LANGUAGES.find((l) => l.code === baseLanguage)?.label ?? "ENG"}
-            <HugeiconsIcon icon={ArrowDown01Icon} size={14} className="shrink-0" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="min-w-[10rem] rounded-lg p-1.5 shadow-lg">
-          {LANGUAGES.map(({ code, label }) => (
-            <DropdownMenuItem
-              key={code}
-              onClick={() => i18n.changeLanguage(code)}
-              className={cn(
-                "cursor-pointer px-3 py-2.5 text-sm rounded-md transition-colors",
-                  code === baseLanguage && "bg-accent font-medium"
-              )}
-            >
-              {label}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
       {isAuthenticated ? (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="flex h-[32px] items-center justify-center gap-1.5 rounded-[8px] bg-brand-accent px-[15px] text-[14px] font-medium text-[#010a04] transition-colors hover:bg-brand-accent-hover sm:h-[34px] sm:px-5"
+              className="flex h-[34px] items-center justify-center gap-[7px] rounded-[8px] bg-white/25 px-[10px] text-[14px] font-medium text-white transition-colors hover:bg-white/30"
             >
               <HugeiconsIcon icon={UserIcon} size={17} className="shrink-0" />
-              <span className="max-w-[78px] truncate sm:max-w-[120px]">{user?.alias?.trim() || user?.name?.trim() || t("profile.title")}</span>
-              <HugeiconsIcon icon={ArrowDown01Icon} size={14} className="hidden shrink-0 sm:block" />
+              <span className="max-w-[120px] truncate">{user?.alias?.trim() || user?.name?.trim() || t("profile.title")}</span>
+              <HugeiconsIcon icon={ArrowDown01Icon} size={14} className="hidden shrink-0 lg:block" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
@@ -192,7 +168,7 @@ export function AppNavbar() {
       ) : (
         <Link
           to="/login"
-          className="flex h-[32px] shrink-0 items-center justify-center gap-1.5 rounded-[8px] bg-brand-accent px-[15px] text-[14px] font-medium text-[#010a04] transition-colors hover:bg-brand-accent-hover sm:h-[34px] sm:w-[100px] sm:px-5"
+          className="flex h-[34px] shrink-0 items-center justify-center gap-[7px] rounded-[8px] bg-brand-accent px-[20px] text-[14px] font-medium text-[#010a04] transition-colors hover:bg-brand-accent-hover"
         >
           <HugeiconsIcon icon={UserIcon} size={17} />
           {t("common.login")}
@@ -203,13 +179,13 @@ export function AppNavbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 h-[56px] w-full sm:h-[60px]"
+      className="sticky top-0 z-50 h-[56px] w-full lg:h-[60px]"
       style={{ backgroundColor: "var(--brand-primary)" }}
     >
-      <div className="mx-auto flex h-full w-full max-w-[1440px] min-w-0 items-center justify-between px-5 sm:px-6 lg:px-[96px]">
-        <div className="flex h-[33px] w-[169px] items-center sm:h-[39px] sm:w-[200px]">
+      <div className="mx-auto flex h-full w-full max-w-[1440px] min-w-0 items-center justify-between px-5 lg:px-[96px]">
+        <div className="flex h-[33px] w-[169px] items-center lg:h-[39px] lg:w-[200px]">
           <Link to="/" className="inline-flex items-center" aria-label="TB10 Home">
-            <img src={tb10LogoImage} alt="TB10 v1.6" className="block h-[33px] w-auto sm:h-[39px]" />
+            <img src={tb10LogoImage} alt="TB10 v1.6" className="block h-[33px] w-auto lg:h-[39px]" />
           </Link>
         </div>
 
@@ -217,7 +193,35 @@ export function AppNavbar() {
           <NavLinks location={location} t={t} />
         </nav>
 
-        <div className="flex flex-shrink-0 items-center justify-end gap-[10px]">
+        <div className="flex flex-shrink-0 items-center justify-end gap-3 lg:gap-[14px]">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex h-[34px] w-[90px] items-center justify-between rounded-[8px] border-[1.2px] border-white/20 pl-[12px] pr-[8px] text-[14px] font-medium text-white transition-colors hover:bg-white/10"
+                aria-label={t("common.language")}
+              >
+                {languageLabel}
+                <HugeiconsIcon icon={ArrowDown01Icon} size={14} className="shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[90px] min-w-[90px]">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => handleLanguageChange("en")}
+              >
+                ENG
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onClick={() => handleLanguageChange("de")}
+              >
+                DEU
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+    
           {authSection}
 
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -246,45 +250,6 @@ export function AppNavbar() {
                   t={t}
                   onNavigate={() => setMobileMenuOpen(false)}
                 />
-                <div className="mt-4 border-t border-white/20 pt-4">
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wider text-white/80">
-                    {t("common.language")}
-                  </p>
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="flex w-full items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/10 px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-white/15"
-                        aria-label={t("common.language")}
-                      >
-                        {LANGUAGES.find((l) => l.code === baseLanguage)?.label ?? "ENG"}
-                        <HugeiconsIcon icon={ArrowDown01Icon} size={16} className="shrink-0" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="start"
-                      side="bottom"
-                      sideOffset={8}
-                      className="z-[100] w-[var(--radix-dropdown-menu-trigger-width)] min-w-[var(--radix-dropdown-menu-trigger-width)] rounded-lg border border-white/20 bg-white/95 p-1.5 text-[#1a1a1a] shadow-xl backdrop-blur-md"
-                    >
-                      {LANGUAGES.map(({ code, label }) => (
-                        <DropdownMenuItem
-                          key={code}
-                          onClick={() => {
-                            i18n.changeLanguage(code);
-                            setMobileMenuOpen(false);
-                          }}
-                          className={cn(
-                            "cursor-pointer rounded-md px-3 py-2.5 text-sm transition-colors",
-                            code === baseLanguage && "bg-accent font-medium"
-                          )}
-                        >
-                          {label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
               </nav>
             </SheetContent>
           </Sheet>

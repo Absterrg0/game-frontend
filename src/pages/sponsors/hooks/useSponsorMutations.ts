@@ -19,7 +19,7 @@ export interface UpdateSponsorInput {
 }
 
 async function createSponsor(clubId: string, input: CreateSponsorInput) {
-  const res = await api.post(`/api/clubs/${clubId}/sponsors`, input);
+  const res = await api.post(`/api/sponsors/clubs/${clubId}`, input);
   return res.data;
 }
 
@@ -29,14 +29,14 @@ async function updateSponsor(
   input: UpdateSponsorInput
 ) {
   const res = await api.patch(
-    `/api/clubs/${clubId}/sponsors/${sponsorId}`,
+    `/api/sponsors/clubs/${clubId}/${sponsorId}`,
     input
   );
   return res.data;
 }
 
 async function deleteSponsor(clubId: string, sponsorId: string) {
-  await api.delete(`/api/clubs/${clubId}/sponsors/${sponsorId}`);
+  await api.delete(`/api/sponsors/clubs/${clubId}/${sponsorId}`);
 }
 
 export function useCreateSponsor(clubId: string | null) {

@@ -31,13 +31,11 @@ export function AddEditSponsorModal({
   const { t } = useTranslation();
   const initialForm = {
     name: editSponsor?.name ?? "",
-    description: editSponsor?.description ?? "",
     logoUrl: editSponsor?.logoUrl ?? "",
     link: editSponsor?.link ?? "",
   };
   const [form, setForm] = useState<{
     name: string;
-    description: string;
     logoUrl: string;
     link: string;
   } | null>(null);
@@ -60,7 +58,6 @@ export function AddEditSponsorModal({
 
     const payload = {
       name: trimmedName,
-      description: currentForm.description.trim() || undefined,
       logoUrl: currentForm.logoUrl.trim(),
       link: currentForm.link.trim(),
     };
@@ -104,13 +101,25 @@ export function AddEditSponsorModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {isEdit ? t("sponsors.editTitle") : t("sponsors.newSponsor")}
+            {isEdit ? t("sponsors.editTitle") : t("sponsors.addTitle")}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <SponsorLogoUploadZone
+            logoUrl={currentForm.logoUrl}
+            onLogoUrlChange={(nextUrl) =>
+              setForm((prev) => ({ ...(prev ?? initialForm), logoUrl: nextUrl }))
+            }
+            disabled={!canManage || isPending}
+            label={t("sponsors.logoUploadLabel")}
+            hint={t("sponsors.logoUploadHint")}
+          />
+
           <div>
-            <Label htmlFor="sponsor-name">{t("sponsors.name")}</Label>
+            <Label htmlFor="sponsor-name" className="text-[10px] font-medium uppercase text-[#010a04]/70">
+              {t("sponsors.nameLabel")}
+            </Label>
             <Input
               id="sponsor-name"
               value={currentForm.name}
@@ -122,29 +131,11 @@ export function AddEditSponsorModal({
               disabled={!canManage}
             />
           </div>
+
           <div>
-            <Label htmlFor="sponsor-description">{t("sponsors.description")}</Label>
-            <textarea
-              id="sponsor-description"
-              value={currentForm.description}
-              onChange={(e) =>
-                setForm((prev) => ({ ...(prev ?? initialForm), description: e.target.value }))
-              }
-              placeholder={t("sponsors.descriptionPlaceholder")}
-              rows={3}
-              className="mt-1.5 flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              disabled={!canManage}
-            />
-          </div>
-          <SponsorLogoUploadZone
-            logoUrl={currentForm.logoUrl}
-            onLogoUrlChange={(nextUrl) =>
-              setForm((prev) => ({ ...(prev ?? initialForm), logoUrl: nextUrl }))
-            }
-            disabled={!canManage || isPending}
-          />
-          <div>
-            <Label htmlFor="sponsor-link">{t("sponsors.link")}</Label>
+            <Label htmlFor="sponsor-link" className="text-[10px] font-medium uppercase text-[#010a04]/70">
+              {t("sponsors.urlLabel")}
+            </Label>
             <Input
               id="sponsor-link"
               type="url"
@@ -163,7 +154,7 @@ export function AddEditSponsorModal({
             className="w-full bg-brand-primary hover:bg-brand-primary-hover"
             disabled={!canManage || isPending}
           >
-            {isPending ? t("common.loading") : isEdit ? t("sponsors.save") : t("sponsors.add")}
+            {isPending ? t("common.loading") : isEdit ? t("sponsors.save") : t("sponsors.create")}
           </Button>
         </form>
       </DialogContent>

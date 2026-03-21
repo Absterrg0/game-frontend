@@ -10,7 +10,7 @@ import { useClubsListFilters } from "@/pages/clubs/hooks/useClubsListFilters";
 export default function ClubsListPage() {
   const { page, limit, setPage } = useClubsListFilters();
   const { clubs, pagination, isLoading } = useClubsListData({ page, limit });
-  const canManage = useHasRoleOrAbove(ROLES.CLUB_ADMIN);
+  const canManage = useHasRoleOrAbove(ROLES.ORGANISER);
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] justify-center bg-gray-50">
