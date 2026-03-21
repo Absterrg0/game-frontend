@@ -1,5 +1,6 @@
 {
   "common": {
+    "close": "Schließen",
     "welcome": "Willkommen",
     "login": "Anmelden",
     "logout": "Abmelden",
@@ -245,6 +246,7 @@
     "selectClubToManage": "Wählen Sie einen Verein aus der Liste, um dessen Admins und Organisatoren zu verwalten.",
     "dragUser": "Zum Sortieren ziehen",
     "default": "STANDARD",
+    "mainAdmin": "Haupt-Admin",
     "editRole": "Rolle bearbeiten",
     "remove": "Entfernen",
     "addModalTitle": "Neuen Admin/Organisator hinzufügen",
@@ -554,7 +556,11 @@
     "glicko2Credit2": "Elo wurde von Arpad Elo, einem ungarisch-amerikanischen Physikprofessor, entwickelt",
     "otherInformation": "Weitere Informationen",
     "contactUs": "Kontaktieren Sie uns",
-    "inviteFriends": "Freunde einladen"
+    "inviteFriends": "Freunde einladen",
+    "inviteShareTitle": "TB10",
+    "inviteShareText": "Mach mit bei TB10: {{url}}",
+    "linkCopied": "Link kopiert",
+    "unableToCopyLink": "Link konnte nicht kopiert werden"
   },
   "timepicker": {
     "placeholder": "Zeit wählen",

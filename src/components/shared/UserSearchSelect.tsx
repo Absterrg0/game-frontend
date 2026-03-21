@@ -161,7 +161,7 @@ export function UserSearchSelect({
                   >
                     <div className="flex items-center gap-[13px]">
                       <div className="flex h-[27px] w-[27px] shrink-0 items-center justify-center rounded-full border border-black/70 bg-[#dddddd99] text-[11px] font-medium text-black/70">
-                        {(display[0] ?? user.email[0] ?? "U").toUpperCase()}
+                        {(display?.[0] || user.email?.[0] || "U").toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-[14px] leading-4 text-foreground">

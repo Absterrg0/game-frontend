@@ -14,8 +14,8 @@ export default function AboutPage() {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
-          title: "TB10",
-          text: TB10_URL,
+          title: t("about.inviteShareTitle"),
+          text: t("about.inviteShareText", { url: TB10_URL }),
           url: TB10_URL,
         });
         return;
@@ -27,10 +27,10 @@ export default function AboutPage() {
     if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(TB10_URL);
-        toast.success("Link copied");
+        toast.success(t("about.linkCopied"));
         return;
       } catch {
-        toast.error("Unable to copy the link");
+        toast.error(t("about.unableToCopyLink"));
       }
     }
 

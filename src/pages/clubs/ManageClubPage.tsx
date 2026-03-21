@@ -63,11 +63,12 @@ export default function ManageClubPage() {
         expiresAt: selectedExpiryDate,
       });
       toast.success(t("manageClub.premiumExpiryUpdated"));
-      setPremiumExpiryModalOpen(false);
+      return true;
     } catch (error) {
       toast.error(
         getErrorMessage(error) || t("manageClub.premiumExpiryUpdateError")
       );
+      return false;
     }
   };
 
@@ -75,7 +76,8 @@ export default function ManageClubPage() {
     setPremiumExpiryModalOpen(true);
   };
 
-  const handleRequestSubscriptionRenewal = async () => {
+  const handleRequestSubscriptionRenewal = async (_selectedExpiryDate: Date) => {
+    // Notification-only: no API accepts this date yet for club-admin renewal requests.
     toast.success(t("manageClub.renewRequestSent"));
     setPremiumExpiryModalOpen(false);
   };

@@ -105,10 +105,7 @@ export function AddAdminOrganiserModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="gap-[22px] rounded-[12px] border-black/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] sm:max-w-[416px]"
-        onOpenAutoFocus={(event) => event.preventDefault()}
-      >
+      <DialogContent className="gap-[22px] rounded-[12px] border-black/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] sm:max-w-[416px]">
         <DialogHeader className="gap-[18px] pr-8">
           <DialogTitle className="text-[21px] font-semibold leading-none">
             {t("manageClub.addModalTitle")}

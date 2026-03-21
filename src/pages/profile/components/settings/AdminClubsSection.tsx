@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SquarePen } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PencilIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
 import { useAdminClubs } from "@/pages/clubs/hooks";
 import { AddEditClubModal } from "./AddEditClubModal";
@@ -34,14 +35,15 @@ export function AdminClubsSection() {
     <>
       <div className="flex flex-col gap-4">
         <div className="flex w-full items-center justify-between gap-4">
-          <h2 className="text-[20px] font-semibold text-[#010a04]">
-            {t("settings.clubsIAdministrate")}
+          <h2 className="text-xl font-bold text-foreground">
+            {t("settings.adminClubsTitle")}
           </h2>
           <Button
             type="button"
             onClick={handleAddClub}
-            className="h-[30px] shrink-0 rounded-[8px] border border-[rgba(1,10,4,0.12)] bg-brand-accent px-[15px] py-2 text-[12px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
+            className="h-10 shrink-0 rounded-lg bg-brand-accent px-4 font-medium text-black hover:bg-brand-accent-hover"
           >
+            <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
             {t("settings.adminClubsAddButton")}
           </Button>
         </div>
@@ -59,28 +61,30 @@ export function AdminClubsSection() {
             {t("settings.adminClubsPlaceholder")}
           </p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-2 sm:grid-cols-2">
             {clubs.map((club) => (
               <div
                 key={club.id}
-                className="flex items-center justify-between gap-3 rounded-[8px] border border-[#e1e3e8] bg-[#f9fafc] pl-[14px] pr-5 py-[14px]"
+                className="flex items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-4 py-3 shadow-sm"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[16px] font-medium text-[#010a04]">
+                  <p className="font-medium text-foreground truncate">
                     {club.name}
                   </p>
-                  <p className="text-[14px] font-normal text-[#010a04]">
+                  <p className="text-sm text-muted-foreground">
                     {t("settings.adminClubsCourts")}: {club.courtCount}
                   </p>
                 </div>
-                <button
+                <Button
                   type="button"
-                  className="flex h-[18px] w-[18px] shrink-0 items-center justify-center text-[#010a04]/45 hover:text-[#010a04]/70"
+                  variant="ghost"
+                  size="icon"
+                  className="h-9 w-9 shrink-0 rounded border border-[#e5e7eb] bg-white text-muted-foreground hover:bg-[#f3f4f6] hover:text-foreground"
                   onClick={() => handleEditClub(club.id)}
                   aria-label={t("settings.adminClubsEditAria", { name: club.name })}
                 >
-                  <SquarePen size={18} strokeWidth={1.7} />
-                </button>
+                  <HugeiconsIcon icon={PencilIcon} size={16} />
+                </Button>
               </div>
             ))}
           </div>

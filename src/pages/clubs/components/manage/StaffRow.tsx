@@ -35,7 +35,7 @@ interface StaffRowProps {
 export function StaffRow({ member, onMenuAction }: StaffRowProps) {
   const { t } = useTranslation();
   const isDefault = member.role === "default_admin";
-  const roleLabel = isDefault ? "Main Admin" : member.roleLabel;
+  const roleLabel = isDefault ? t("manageClub.mainAdmin") : member.roleLabel;
 
   return (
     <div

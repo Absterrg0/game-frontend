@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { format } from "date-fns";
+import { format, addDays, addMonths, addYears } from "date-fns";
 import { useMemo, useState } from "react";
 import { Dialog, DialogClose, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ interface UpdatePremiumExpiryModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentExpiryDate?: Date | null;
-  onConfirm?: (selectedExpiryDate: Date) => Promise<void> | void;
+  onConfirm?: (selectedExpiryDate: Date) => Promise<boolean | void> | boolean | void;
   isSubmitting?: boolean;
 }
 
@@ -26,32 +26,32 @@ const QUICK_EXTEND_OPTIONS: QuickExtendOption[] = [
   {
     key: "30d",
     labelKey: "manageClub.quickExtend30Days",
-    applyToDate: (date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + 30),
+    applyToDate: (date) => addDays(date, 30),
   },
   {
     key: "3m",
     labelKey: "manageClub.quickExtend3Months",
-    applyToDate: (date) => new Date(date.getFullYear(), date.getMonth() + 3, date.getDate()),
+    applyToDate: (date) => addMonths(date, 3),
   },
   {
     key: "6m",
     labelKey: "manageClub.quickExtend6Months",
-    applyToDate: (date) => new Date(date.getFullYear(), date.getMonth() + 6, date.getDate()),
+    applyToDate: (date) => addMonths(date, 6),
   },
   {
     key: "1y",
     labelKey: "manageClub.quickExtend1Year",
-    applyToDate: (date) => new Date(date.getFullYear() + 1, date.getMonth(), date.getDate()),
+    applyToDate: (date) => addYears(date, 1),
   },
   {
     key: "2y",
     labelKey: "manageClub.quickExtend2Years",
-    applyToDate: (date) => new Date(date.getFullYear() + 2, date.getMonth(), date.getDate()),
+    applyToDate: (date) => addYears(date, 2),
   },
   {
     key: "3y",
     labelKey: "manageClub.quickExtend3Years",
-    applyToDate: (date) => new Date(date.getFullYear() + 3, date.getMonth(), date.getDate()),
+    applyToDate: (date) => addYears(date, 3),
   },
 ];
 
@@ -105,23 +105,23 @@ export function UpdatePremiumExpiryModal({
   );
   const [calendarOpen, setCalendarOpen] = useState(false);
 
-  const handleOpenChange = (nextOpen: boolean) => {
-    onOpenChange(nextOpen);
-    if (!nextOpen) {
-      if (!defaultQuickExtend) {
-        const fallback = expiryOptions[0]?.value
-          ? parseOptionValueToDate(expiryOptions[0].value)
-          : baseDate;
-        setSelectedExpiryDate(fallback);
-        setActiveQuickExtend(null);
-        setCalendarOpen(false);
-        return;
-      }
-
+  const resetLocalStateToCurrentExpiry = () => {
+    if (!defaultQuickExtend) {
+      const fallback = expiryOptions[0]?.value
+        ? parseOptionValueToDate(expiryOptions[0].value)
+        : baseDate;
+      setSelectedExpiryDate(fallback);
+      setActiveQuickExtend(null);
+    } else {
       setSelectedExpiryDate(defaultQuickExtend.applyToDate(baseDate));
       setActiveQuickExtend(defaultQuickExtend.key);
-      setCalendarOpen(false);
     }
+    setCalendarOpen(false);
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    resetLocalStateToCurrentExpiry();
+    onOpenChange(nextOpen);
   };
 
   const handleQuickExtend = (option: QuickExtendOption) => {
@@ -137,8 +137,10 @@ export function UpdatePremiumExpiryModal({
     }
 
     try {
-      await onConfirm(selectedExpiryDate);
-      handleOpenChange(false);
+      const success = await onConfirm(selectedExpiryDate);
+      if (success === true) {
+        handleOpenChange(false);
+      }
     } catch {
       return;
     }

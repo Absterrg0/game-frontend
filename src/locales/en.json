@@ -1,5 +1,6 @@
 {
   "common": {
+    "close": "Close",
     "welcome": "Welcome",
     "login": "Log In",
     "logout": "Log out",
@@ -246,6 +247,7 @@
     "selectClubToManage": "Select a club from the list to manage its admins and organisers.",
     "dragUser": "Drag to reorder",
     "default": "DEFAULT",
+    "mainAdmin": "Main Admin",
     "editRole": "Edit role",
     "remove": "Remove",
     "addModalTitle": "Add New Admin/Organiser",
@@ -555,7 +557,11 @@
     "glicko2Credit2": "Developed by Arpad Elo, a Hungarian-American physics professor.",
     "otherInformation": "Other Information",
     "contactUs": "Contact Us",
-    "inviteFriends": "Invite Friends"
+    "inviteFriends": "Invite Friends",
+    "inviteShareTitle": "TB10",
+    "inviteShareText": "Join me on TB10: {{url}}",
+    "linkCopied": "Link copied",
+    "unableToCopyLink": "Unable to copy the link"
   },
   "timepicker": {
     "placeholder": "Select time",

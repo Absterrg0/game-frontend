@@ -55,7 +55,8 @@ export function ManageClubSidebar({
                     <div className="min-w-0">
                       <p className="truncate text-[16px] font-medium text-[#010a04]">{club.name}</p>
                       <p className="text-[12px] text-[#010a04]/60">
-                        {t("manageClub.membersCount", { count: 0 })} • {t("manageClub.eventsCount", { count: 0 })}
+                        {t("manageClub.membersCount", { count: club.membersCount })} •{" "}
+                        {t("manageClub.eventsCount", { count: club.eventsCount })}
                       </p>
                     </div>
                   </div>

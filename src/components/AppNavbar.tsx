@@ -41,7 +41,7 @@ const navItems = [
   { path: "/about", labelKey: "settings.nav.about", icon: InformationCircleIcon },
 ];
 
-const tb10LogoImage = "https://www.figma.com/api/mcp/asset/5f56c3eb-f8bf-419e-bc2c-0780682ffca6";
+const tb10LogoImage = "/TB10-logo.png";
 
 const pathToTitleKey: Record<string, string> = {
   "/profile": "settings.title",

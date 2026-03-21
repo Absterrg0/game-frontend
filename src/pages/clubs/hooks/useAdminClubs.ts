@@ -6,6 +6,8 @@ export interface AdminClub {
   id: string;
   name: string;
   courtCount: number;
+  membersCount: number;
+  eventsCount: number;
 }
 
 interface AdminClubsResponse {

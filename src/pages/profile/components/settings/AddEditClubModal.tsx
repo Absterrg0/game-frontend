@@ -71,7 +71,7 @@ export function AddEditClubModal({
                 variant="ghost"
                 size="icon"
                 className="size-6 rounded-none p-0 text-[#010a04]/80 hover:bg-transparent hover:text-[#010a04]"
-                aria-label="Close"
+                aria-label={t("common.close")}
               >
                 <XIcon className="size-5" />
               </Button>

@@ -38,7 +38,7 @@ export function ClubCourtsEditor({
         {t("settings.adminClubsAllCourts")}
       </Label>
       <div className="space-y-[9px]">
-        <div className="grid grid-cols-[minmax(0,128px)_minmax(0,1fr)_minmax(0,1fr)_16px] items-center gap-[9px] text-xs font-medium uppercase text-[#010a04]/70">
+        <div className="grid grid-cols-[minmax(0,128px)_minmax(0,1fr)_minmax(0,1fr)_44px] items-center gap-[9px] text-xs font-medium uppercase text-[#010a04]/70">
           <span>{t("settings.adminClubsCourtName")}</span>
           <span>{t("settings.adminClubsCourtType")}</span>
           <span>{t("settings.adminClubsCourtPlacement")}</span>
@@ -47,7 +47,7 @@ export function ClubCourtsEditor({
         {courts.map((court, index) => (
           <div
             key={index}
-            className="grid grid-cols-[minmax(0,128px)_minmax(0,1fr)_minmax(0,1fr)_16px] items-center gap-[9px]"
+            className="grid grid-cols-[minmax(0,128px)_minmax(0,1fr)_minmax(0,1fr)_44px] items-center gap-[9px]"
           >
             <Input
               placeholder={t("settings.adminClubsCourtName")}
@@ -87,8 +87,8 @@ export function ClubCourtsEditor({
             <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="size-4 rounded-none p-0 text-[#010a04]/50 hover:bg-transparent hover:text-[#010a04]"
+              size="icon-lg"
+              className="min-h-[44px] min-w-[44px] shrink-0 rounded-none p-0 text-[#010a04]/50 hover:bg-transparent hover:text-[#010a04] focus-visible:ring-offset-0"
               onClick={() => onRemoveCourt(index)}
               aria-label={t("settings.adminClubsDeleteCourtAria")}
             >

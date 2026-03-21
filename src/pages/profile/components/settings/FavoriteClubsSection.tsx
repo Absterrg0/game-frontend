@@ -9,6 +9,12 @@ import { House, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   useSearchClubs,
   useFavoriteClubs,
   useAddFavoriteClub,
@@ -90,14 +96,24 @@ export function FavoriteClubsSection() {
           <h2 className="text-[20px] font-semibold text-[#010a04]">
             {t("settings.favoriteClubsTitle")}
           </h2>
-          <button
-            type="button"
-            className="flex size-6 shrink-0 items-center justify-center text-[#010a04]/55"
-            aria-label={t("settings.favoriteClubsInfoAria")}
-            title={t("settings.favoriteClubsInfoTooltip")}
-          >
-            <Info size={20} strokeWidth={1.8} />
-          </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                className="shrink-0 text-[#010a04]/55 hover:text-[#010a04]/70"
+                aria-label={t("settings.favoriteClubsInfoAria")}
+              >
+                <Info size={20} strokeWidth={1.8} aria-hidden />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-[min(100vw-2rem,20rem)]">
+              <PopoverDescription className="text-[14px] leading-snug text-[#010a04]/85">
+                {t("settings.favoriteClubsInfoTooltip")}
+              </PopoverDescription>
+            </PopoverContent>
+          </Popover>
         </div>
 
         <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
