@@ -1,11 +1,17 @@
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { format } from "date-fns";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { InformationCircleIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { Button } from "@/components/ui/button";
+import { getDateFnsLocale } from "@/lib/dateFnsLocale";
+import type { ClubSubscription } from "@/pages/clubs/hooks/useClubStaff";
+import { isSubscriptionExpiredByLocalDay } from "@/utils/date";
 
 interface ManageClubSubscriptionBannersProps {
   showSubscriptionBanner: boolean;
   showUpgradeBanner: boolean;
+  subscription: ClubSubscription | undefined;
   onRenew: () => void;
   onUpgrade: () => void;
 }
@@ -13,10 +19,38 @@ interface ManageClubSubscriptionBannersProps {
 export function ManageClubSubscriptionBanners({
   showSubscriptionBanner,
   showUpgradeBanner,
+  subscription,
   onRenew,
   onUpgrade,
 }: ManageClubSubscriptionBannersProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  let subscriptionBannerCopy: {
+    key: "manageClub.subscriptionBannerUnknownExpiry" | "manageClub.subscriptionBannerExpiredOn" | "manageClub.subscriptionBannerExpiresOn",
+    date: string | undefined
+  };
+
+  const expiresAt = subscription?.expiresAt ?? null;
+  if (!expiresAt) {
+    subscriptionBannerCopy = {
+      key: "manageClub.subscriptionBannerUnknownExpiry",
+      date: undefined,
+    };
+  } else {
+    const locale = getDateFnsLocale(i18n.language);
+    const date = format(expiresAt, "PPP", { locale });
+    if (isSubscriptionExpiredByLocalDay(expiresAt)) {
+      subscriptionBannerCopy = {
+        key: "manageClub.subscriptionBannerExpiredOn",
+        date,
+      };
+    } else {
+      subscriptionBannerCopy = {
+        key: "manageClub.subscriptionBannerExpiresOn",
+        date,
+      };
+    }
+  }
 
   return (
     <>
@@ -28,7 +62,11 @@ export function ManageClubSubscriptionBanners({
               size={20}
               className="shrink-0 text-amber-600 dark:text-amber-400"
             />
-            <p className="text-sm text-foreground">{t("manageClub.subscriptionBannerText")}</p>
+            <p className="text-sm text-foreground">
+              {subscriptionBannerCopy.date === undefined
+                ? t(subscriptionBannerCopy.key)
+                : t(subscriptionBannerCopy.key, { date: subscriptionBannerCopy.date })}
+            </p>
           </div>
           <Button
             variant="secondary"

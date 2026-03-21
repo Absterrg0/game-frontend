@@ -76,7 +76,7 @@
       "formNameLabel": "Sponsor name",
       "formNamePlaceholder": "Enter sponsor name",
       "formUrlLabel": "Sponsor URL",
-      "formUrlPlaceholder": "www.example.com",
+      "formUrlPlaceholder": "https://www.example.com",
       "formNameRequired": "Name is required",
       "closeAria": "Close",
       "removeTitle": "Remove sponsor",
@@ -369,7 +369,8 @@
       "toastNoUrl": "Upload finished but no file URL was returned.",
       "toastSuccess": "Logo uploaded successfully",
       "toastUploadFailed": "Failed to upload logo",
-      "fileTooLarge": "File size must be less than {{maxMb}} MB"
+      "fileTooLarge": "File size must be less than {{maxMb}} MB",
+      "invalidFileType": "Only PNG, JPEG, or WebP images are allowed"
     }
   },
   "tournaments": {

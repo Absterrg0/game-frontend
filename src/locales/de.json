@@ -76,7 +76,7 @@
       "formNameLabel": "Sponsorname",
       "formNamePlaceholder": "Sponsornamen eingeben",
       "formUrlLabel": "Sponsor-URL",
-      "formUrlPlaceholder": "www.beispiel.de",
+      "formUrlPlaceholder": "https://www.beispiel.de",
       "formNameRequired": "Name ist erforderlich",
       "closeAria": "Schließen",
       "removeTitle": "Sponsor entfernen",
@@ -368,7 +368,8 @@
       "toastNoUrl": "Upload abgeschlossen, aber es wurde keine Datei-URL zurückgegeben.",
       "toastSuccess": "Logo erfolgreich hochgeladen",
       "toastUploadFailed": "Logo konnte nicht hochgeladen werden",
-      "fileTooLarge": "Die Datei muss kleiner als {{maxMb}} MB sein"
+      "fileTooLarge": "Die Datei muss kleiner als {{maxMb}} MB sein",
+      "invalidFileType": "Nur PNG-, JPEG- oder WebP-Bilder sind erlaubt"
     }
   },
   "tournaments": {

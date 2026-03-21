@@ -13,6 +13,16 @@ interface SponsorLogoUploadZoneProps {
 
 const MAX_FILE_SIZE_MB = 2;
 
+const ACCEPTED_IMAGE_MIME_TYPES = [
+	'image/png',
+	'image/jpeg',
+	'image/jpg',
+	'image/webp',
+] as const;
+
+const ACCEPT_IMAGE_ATTR = ACCEPTED_IMAGE_MIME_TYPES.join(',');
+const ACCEPTED_IMAGE_MIME_SET = new Set<string>(ACCEPTED_IMAGE_MIME_TYPES);
+
 export function SponsorLogoUploadZone({
 	logoUrl,
 	onLogoUrlChange,
@@ -29,7 +39,14 @@ export function SponsorLogoUploadZone({
 	const hintText = hint ?? t('sponsors.logoUpload.hint');
 
 	const handleFileSelection = async (file: File | null) => {
-		if (!file || disabled || isProcessingFile) return;
+		if (!file) return;
+
+		if (!ACCEPTED_IMAGE_MIME_SET.has(file.type)) {
+			toast.error(t('sponsors.logoUpload.invalidFileType'));
+			return;
+		}
+
+		if (disabled || isProcessingFile) return;
 
 		if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
 			toast.error(t('sponsors.logoUpload.fileTooLarge', { maxMb: MAX_FILE_SIZE_MB }));
@@ -76,7 +93,7 @@ export function SponsorLogoUploadZone({
 			<input
 				ref={fileInputRef}
 				type="file"
-				accept="image/png,image/jpeg,image/jpg,image/webp"
+				accept={ACCEPT_IMAGE_ATTR}
 				className="hidden"
 				onChange={(event) => void handleFileSelection(event.target.files?.[0] ?? null)}
 				disabled={disabled || isProcessingFile}

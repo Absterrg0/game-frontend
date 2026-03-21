@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CirclePlus, PenLine, Trash2 } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth, useHasRoleOrAbove } from "@/pages/auth/hooks";
 import { ROLES } from "@/constants/roles";
 import { getErrorMessage } from "@/lib/errors";
-import { getSafeLink } from "@/lib/url";
 import InlineLoader from "@/components/shared/InlineLoader";
 import { Button } from "@/components/ui/button";
 import { PlatformSponsorFormDialog } from "@/pages/admin/components/PlatformSponsorFormDialog";
 import { PlatformSponsorRemoveDialog } from "@/pages/admin/components/PlatformSponsorRemoveDialog";
+import { SponsorItem } from "@/pages/admin/components/SponsorItem";
 import {
   useCreatePlatformSponsor,
   useDeletePlatformSponsor,
@@ -19,7 +19,6 @@ import {
   type PlatformSponsor,
   type UpsertPlatformSponsorInput,
 } from "@/pages/admin/hooks";
-import { RenderLogo } from "@/components/shared/RenderLogo";
 export default function AdminPlatformSponsorsPage() {
   const { t } = useTranslation();
   const hasAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
@@ -36,8 +35,6 @@ export default function AdminPlatformSponsorsPage() {
 
   const isSaving = createSponsor.isPending || updateSponsor.isPending;
   const sponsors = data?.sponsors ?? [];
-
-  
 
   if (loading) {
     return (
@@ -129,57 +126,16 @@ export default function AdminPlatformSponsorsPage() {
             </div>
           ) : (
             <div>
-              {sponsors.map((sponsor) => {
-                const safeLink = getSafeLink(sponsor.link);
-
-                return (
-                  <div
-                    key={sponsor.id}
-                    className="grid h-[45px] grid-cols-[100px_minmax(180px,1fr)_minmax(220px,1fr)_170px] items-center border-b border-black/10 px-5 text-sm text-[#010a04]"
-                  >
-                    <div className="flex items-center">{RenderLogo(sponsor.logoUrl, "size-6")}</div>
-
-                    <span className="truncate pr-3">{sponsor.name}</span>
-
-                    {safeLink ? (
-                      <a
-                        href={safeLink}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className="truncate pr-3 text-sm font-medium text-[#3083ea] underline"
-                      >
-                        {safeLink}
-                      </a>
-                    ) : (
-                      <span className="text-[#010a04]/50">—</span>
-                    )}
-
-                    <div className="flex items-center gap-5 text-[12px]">
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        className="h-auto rounded-none p-0 text-brand-primary hover:bg-transparent hover:text-brand-primary-hover"
-                        onClick={() => openEditDialog(sponsor)}
-                        disabled={deleteSponsor.isPending}
-                      >
-                        <PenLine className="size-4" />
-                        {t("admin.platformSponsors.edit")}
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        className="h-auto rounded-none p-0 text-[#d92100] hover:bg-transparent hover:text-[#b71e00]"
-                        onClick={() => setRemovingSponsor(sponsor)}
-                        disabled={deleteSponsor.isPending}
-                      >
-                        <Trash2 className="size-4" />
-                        {t("admin.platformSponsors.remove")}
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+              {sponsors.map((s) => (
+                <SponsorItem
+                  key={s.id}
+                  sponsor={s}
+                  variant="desktop"
+                  onEdit={() => openEditDialog(s)}
+                  onRemove={() => setRemovingSponsor(s)}
+                  isDeleting={deleteSponsor.isPending}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -193,58 +149,16 @@ export default function AdminPlatformSponsorsPage() {
             <div className="flex justify-center py-8 text-sm text-[#010a04]/70">{t("admin.platformSponsors.empty")}</div>
           ) : (
             <div className="flex flex-col gap-3">
-              {sponsors.map((sponsor) => {
-                const safeLink = getSafeLink(sponsor.link);
-
-                return (
-                  <div
-                    key={sponsor.id}
-                    className="rounded-lg bg-black/[0.04] px-4 py-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      {RenderLogo(sponsor.logoUrl, "size-10")}
-
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-base font-medium text-[#010a04]">{sponsor.name}</p>
-                        {safeLink ? (
-                          <a
-                            href={safeLink}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            className="block truncate text-sm text-[#3083ea] underline"
-                          >
-                            {safeLink}
-                          </a>
-                        ) : (
-                          <span className="text-sm text-[#010a04]/50">—</span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 border-t border-black/10 pt-4">
-                      <div className="flex items-center justify-between text-xs">
-                        <Button
-                          className="inline-flex items-center gap-[5px] text-[#d92100]"
-                          onClick={() => setRemovingSponsor(sponsor)}
-                          disabled={deleteSponsor.isPending}
-                        >
-                          <Trash2 className="size-4" />
-                          {t("admin.platformSponsors.remove")}
-                        </Button>
-
-                        <Button
-                          disabled={deleteSponsor.isPending}
-                          className="inline-flex items-center gap-[5px] text-brand-primary"
-                          onClick={() => openEditDialog(sponsor)}
-                        >
-                          <PenLine className="size-4" />
-                          {t("admin.platformSponsors.edit")}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {sponsors.map((s) => (
+                <SponsorItem
+                  key={s.id}
+                  sponsor={s}
+                  variant="mobile"
+                  onEdit={() => openEditDialog(s)}
+                  onRemove={() => setRemovingSponsor(s)}
+                  isDeleting={deleteSponsor.isPending}
+                />
+              ))}
             </div>
           )}
         </div>

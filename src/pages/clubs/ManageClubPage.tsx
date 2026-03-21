@@ -124,6 +124,7 @@ export default function ManageClubPage() {
               <ManageClubSubscriptionBanners
                 showSubscriptionBanner={showSubscriptionBanner}
                 showUpgradeBanner={showUpgradeBanner}
+                subscription={staffData?.subscription}
                 onRenew={openPremiumExpiryModal}
                 onUpgrade={openPremiumExpiryModal}
               />
