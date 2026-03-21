@@ -22,7 +22,7 @@ function coerceFiniteCount(value: unknown): number {
 async function fetchAdminClubs(): Promise<AdminClubsResponse> {
   const res = await api.get<AdminClubsResponse>("/api/user/admin-clubs");
   return {
-    clubs: res.data.clubs.map((club) => ({
+    clubs: (res.data.clubs ?? []).map((club) => ({
       ...club,
       membersCount: coerceFiniteCount(club.membersCount),
       eventsCount: coerceFiniteCount(club.eventsCount),

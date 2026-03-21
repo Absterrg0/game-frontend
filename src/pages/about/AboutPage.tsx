@@ -40,9 +40,6 @@ export default function AboutPage() {
   return (
     <div
       className="min-h-full bg-[#f8fbf8] px-5 pb-8 pt-[30px] sm:px-6 sm:pb-10 sm:pt-[45px]"
-      style={{
-        backgroundColor: "#f8fbf8",
-      }}
     >
       <div className="mx-auto w-full max-w-[880px] min-w-0">
         <div className="rounded-[12px] border border-[#010a0414] bg-white p-5 shadow-[0_3px_15px_0_rgba(0,0,0,0.06)]">
