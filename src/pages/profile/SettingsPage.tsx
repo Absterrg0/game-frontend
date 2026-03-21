@@ -55,19 +55,19 @@ export default function SettingsPage() {
             <TabsList className="h-auto w-fit min-w-max justify-start gap-0 rounded-none bg-transparent p-0">
               <TabsTrigger
                 value="settings"
-                className={`${tabTriggerClassName} sm:px-[17px]`}
+                className={`${tabTriggerClassName} sm:px-[15px]`}
               >
                 {t("settings.title")}
               </TabsTrigger>
               <TabsTrigger
                 value="favorite-clubs"
-                  className="h-[30px] flex-none shrink-0 rounded-[8px] px-[12px] py-2 text-[12px] font-medium text-[#010a04]/70 transition-all sm:px-[15px] sm:text-[14px] data-[state=active]:bg-white data-[state=active]:text-[#010a04] data-[state=active]:shadow-[0px_0px_4px_0px_rgba(0,0,0,0.04),0px_4px_8px_0px_rgba(0,0,0,0.06)]"
+                  className={`${tabTriggerClassName} sm:px-[15px]`}
               >
                 {t("settings.favoriteClubs")}
               </TabsTrigger>
               <TabsTrigger
                 value="admin-clubs"
-                  className="h-[30px] flex-none shrink-0 rounded-[8px] px-[12px] py-2 text-[12px] font-medium text-[#010a04]/70 transition-all sm:px-[15px] sm:text-[14px] data-[state=active]:bg-white data-[state=active]:text-[#010a04] data-[state=active]:shadow-[0px_0px_4px_0px_rgba(0,0,0,0.04),0px_4px_8px_0px_rgba(0,0,0,0.06)]"
+                  className={`${tabTriggerClassName} sm:px-[15px]`}
               >
                 {t("settings.clubsIAdministrate")}
               </TabsTrigger>
