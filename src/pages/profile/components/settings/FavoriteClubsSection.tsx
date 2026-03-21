@@ -4,16 +4,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import {
   Search01Icon,
   Delete01Icon,
-  Home01Icon,
-  InformationCircleIcon,
 } from "@hugeicons/core-free-icons";
+import { House, Info } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   useSearchClubs,
   useFavoriteClubs,
@@ -91,33 +85,27 @@ export function FavoriteClubsSection() {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        <h2 className="text-xl font-bold text-foreground flex w-full justify-between">
-          {t("settings.favoriteClubsTitle")}
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="flex size-9 shrink-0 items-center justify-center rounded-full border border-[#e5e7eb] bg-white text-muted-foreground hover:bg-[#f3f4f6] hover:text-foreground transition-colors"
-                aria-label={t("settings.favoriteClubsInfoAria")}
-              >
-                <HugeiconsIcon icon={InformationCircleIcon} size={16} />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72" align="end">
-              <p className="text-sm text-muted-foreground">
-                {t("settings.favoriteClubsInfoTooltip")}
-              </p>
-            </PopoverContent>
-          </Popover>
-        </h2>
+      <div className="flex flex-col gap-[25px]">
+        <div className="flex w-full items-center justify-between">
+          <h2 className="text-[20px] font-semibold text-[#010a04]">
+            {t("settings.favoriteClubsTitle")}
+          </h2>
+          <button
+            type="button"
+            className="flex size-6 shrink-0 items-center justify-center text-[#010a04]/55"
+            aria-label={t("settings.favoriteClubsInfoAria")}
+            title={t("settings.favoriteClubsInfoTooltip")}
+          >
+            <Info size={20} strokeWidth={1.8} />
+          </button>
+        </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative flex-1 min-w-[200px]">
+        <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
+          <div className="relative w-full flex-1">
             <HugeiconsIcon
               icon={Search01Icon}
               size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#010a04]/50"
               aria-hidden
             />
             <Input
@@ -132,16 +120,16 @@ export function FavoriteClubsSection() {
               onBlur={() =>
                 setTimeout(() => setDropdownOpen(false), 150)
               }
-              className="h-11 pl-10 w-full rounded-lg border border-[#e5e7eb] bg-white text-sm placeholder:text-muted-foreground"
+              className="h-[38px] w-full rounded-[8px] border border-[#e1e3e8] bg-white pl-10 text-[14px] text-[#010a04] placeholder:text-[#010a04]/50"
             />
             {dropdownOpen && searchInput.trim() && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-10 rounded-lg border border-[#e5e7eb] bg-white shadow-md max-h-48 overflow-y-auto">
+              <div className="absolute left-0 right-0 top-full z-10 mt-1 max-h-48 overflow-y-auto rounded-[8px] border border-[#e1e3e8] bg-white shadow-md">
                 {searchLoading ? (
-                  <div className="p-3 text-sm text-muted-foreground">
+                  <div className="p-3 text-sm text-[#010a04]/60">
                     {t("common.loading")}
                   </div>
                 ) : filteredResults.length === 0 ? (
-                  <div className="p-3 text-sm text-muted-foreground">
+                  <div className="p-3 text-sm text-[#010a04]/60">
                     {t("settings.favoriteClubsNoResults")}
                   </div>
                 ) : (
@@ -149,7 +137,7 @@ export function FavoriteClubsSection() {
                     <button
                       key={club.id}
                       type="button"
-                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#f3f4f6] first:rounded-t-lg last:rounded-b-lg"
+                      className="w-full px-4 py-2.5 text-left text-sm hover:bg-[#f3f4f6] first:rounded-t-[8px] last:rounded-b-[8px]"
                       onMouseDown={(e) => {
                         e.preventDefault();
                         handleAddFavorite(club.id);
@@ -166,7 +154,7 @@ export function FavoriteClubsSection() {
             type="button"
             disabled={!firstResult || addFavorite.isPending}
             onClick={() => firstResult && handleAddFavorite(firstResult.id)}
-            className="h-11 px-5 rounded-lg font-medium shrink-0 bg-brand-accent text-black hover:bg-brand-accent-hover"
+            className="h-[32px] w-full rounded-[8px] border border-[rgba(1,10,4,0.12)] bg-brand-accent px-[15px] text-[12px] font-medium text-[#010a04] hover:bg-brand-accent-hover sm:h-[38px] sm:w-auto sm:shrink-0"
           >
             <span className="inline-flex items-center gap-2">
               {t("settings.favoriteClubsAddButton")}
@@ -176,7 +164,7 @@ export function FavoriteClubsSection() {
        
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {favoriteClubs.map((club) => {
             const isHome = club.id === homeClubId;
             return (
@@ -192,38 +180,40 @@ export function FavoriteClubsSection() {
                     handleSetHomeClub(club.id);
                   }
                 }}
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${
+                className={`flex items-center justify-between gap-3 rounded-[10px] border px-[14px] py-[15px] text-[16px] font-medium transition-colors cursor-pointer sm:rounded-[12px] sm:py-[8px] ${
                   isHome
-                    ? "bg-brand-primary/10 text-brand-primary border border-brand-primary/30"
-                    : "bg-white text-foreground border border-[#e5e7eb] hover:border-[#9ca3af]"
+                    ? "border-[rgba(6,116,41,0.1)] bg-[rgba(6,116,41,0.07)] text-[#010a04]"
+                    : "border-[#e1e3e8] bg-[#f9fafc] text-[#010a04] hover:border-[#cdd2da]"
                 }`}
               >
-                <span>{club.name}</span>
-                <button
-                  type="button"
-                  onClick={(e) => handleRemoveFavorite(club.id, e)}
-                  disabled={removeFavorite.isPending}
-                  className="rounded p-0.5 hover:bg-black/10 transition-colors disabled:opacity-50"
-                  aria-label={t("settings.favoriteClubsRemoveAria", {
-                    name: club.name,
-                  })}
-                >
-                  <HugeiconsIcon icon={Delete01Icon} size={16} />
-                </button>
-                {isHome && (
-                  <HugeiconsIcon
-                    icon={Home01Icon}
-                    size={16}
-                    className="text-brand-primary"
-                    aria-label={t("settings.favoriteClubsHomeAria")}
-                  />
-                )}
+                <span className="truncate">{club.name}</span>
+                <div className="flex shrink-0 items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={(e) => handleRemoveFavorite(club.id, e)}
+                    disabled={removeFavorite.isPending}
+                    className="text-[#010a04]/45 transition-colors hover:text-[#010a04]/70 disabled:opacity-50"
+                    aria-label={t("settings.favoriteClubsRemoveAria", {
+                      name: club.name,
+                    })}
+                  >
+                    <HugeiconsIcon icon={Delete01Icon} size={16} className="sm:size-[18px]" />
+                  </button>
+                  {isHome && (
+                    <House
+                      size={16}
+                      strokeWidth={2}
+                      className="text-[#067429]"
+                      aria-label={t("settings.favoriteClubsHomeAria")}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}
         </div>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-[14px] text-[#010a04]/50">
           {t("settings.favoriteClubsSelectHomeHint")}
         </p>
       </div>
