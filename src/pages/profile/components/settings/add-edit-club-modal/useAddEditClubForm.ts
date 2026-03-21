@@ -176,7 +176,7 @@ export function useAddEditClubForm({ editClubId, onOpenChange }: UseAddEditClubF
 
     const seen = new Set<string>();
     const hasDuplicate = courtsPayload.some((court) => {
-      const key = court.name;
+      const key = court.name.toLowerCase();
       if (seen.has(key)) return true;
       seen.add(key);
       return false;
