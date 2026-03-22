@@ -24,4 +24,32 @@ export const queryKeys = {
     staff: (id: string) => [...queryKeys.club.all, "staff", id] as const,
     sponsors: (id: string) => [...queryKeys.club.all, "sponsors", id] as const,
   },
+  admin: {
+    all: ["admin"] as const,
+    clubSubscriptions: () => [...queryKeys.admin.all, "club-subscriptions"] as const,
+    platformSponsors: () => [...queryKeys.admin.all, "platform-sponsors"] as const,
+  },
+  sponsors: {
+    all: ["sponsors", "all"] as const,
+  },
+  tournament: {
+    all: ["tournament"] as const,
+    list: (filters?: {
+      status?: string;
+      page?: number;
+      limit?: number;
+      q?: string;
+      view?: "published" | "drafts";
+    }) => {
+      const f = filters ?? {};
+      const normalizedFilters: Record<string, string | number> = {};
+      if (f.status) normalizedFilters.status = f.status;
+      if (f.view) normalizedFilters.view = f.view;
+      if (f.page != null) normalizedFilters.page = f.page;
+      if (f.limit != null) normalizedFilters.limit = f.limit;
+      if (f.q) normalizedFilters.q = f.q;
+      return [...queryKeys.tournament.all, "list", normalizedFilters] as const;
+    },
+    detail: (id: string | null) => [...queryKeys.tournament.all, "detail", id] as const,
+  },
 } as const;
