@@ -36,6 +36,44 @@ interface AddAdminOrganiserModalProps {
   existingStaffIds: string[];
 }
 
+function parseAddStaffRole(value: string): AddStaffRole | null {
+  if (value === "admin" || value === "organiser") {
+    return value;
+  }
+
+  return null;
+}
+
+function extractApiErrorMessage(err: unknown): string | null {
+  if (!err || typeof err !== "object") {
+    return null;
+  }
+
+  if (!("response" in err)) {
+    return null;
+  }
+
+  const response = err.response;
+  if (!response || typeof response !== "object") {
+    return null;
+  }
+
+  if (!("data" in response)) {
+    return null;
+  }
+
+  const data = response.data;
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+
+  if (!("message" in data)) {
+    return null;
+  }
+
+  return typeof data.message === "string" ? data.message : null;
+}
+
 export function AddAdminOrganiserModal({
   open,
   onOpenChange,
@@ -93,11 +131,7 @@ export function AddAdminOrganiserModal({
 
       handleOpenChange(false);
     } catch (err: unknown) {
-      const message =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: { message?: string } } })
-              .response?.data?.message
-          : null;
+      const message = extractApiErrorMessage(err);
 
       toast.error(message ?? t("manageClub.addStaffError"));
     }
@@ -164,9 +198,11 @@ export function AddAdminOrganiserModal({
 
             <Select
               value={role}
-              onValueChange={(value) =>
-                setRole(value as AddStaffRole)
-              }
+              onValueChange={(value) => {
+                const parsed = parseAddStaffRole(value);
+                if (!parsed) return;
+                setRole(parsed);
+              }}
             >
               <SelectTrigger
                 id="role-select"

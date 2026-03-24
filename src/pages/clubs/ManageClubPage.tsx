@@ -1,10 +1,15 @@
-import { Navigate, useNavigate } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   useAdminClubs,
   useClubStaff,
   useUpdateClubSubscription,
 } from "@/pages/clubs/hooks";
+import {
+  useClubSubscriptionsOverview,
+  type ClubSubscriptionStatus,
+} from "@/pages/admin/hooks";
 import { useAuth, useHasRoleOrAbove } from "@/pages/auth/hooks";
 import { ROLES } from "@/constants/roles";
 import { cn } from "@/lib/utils";
@@ -19,19 +24,84 @@ import { ManageClubSubscriptionBanners } from "@/pages/clubs/components/manage/M
 import { RequestSubscriptionRenewalModal } from "@/pages/clubs/components/manage/RequestSubscriptionRenewalModal";
 import { UpdatePremiumExpiryModal } from "@/pages/clubs/components/manage/UpdatePremiumExpiryModal";
 import { ManageClubInfoCard } from "@/pages/clubs/components/manage/ManageClubInfoCard";
+import type {
+  ManageClubSidebarClub,
+  SidebarStatusFilter,
+} from "@/pages/clubs/components/manage/ManageClubSidebar";
 import {
   shouldShowSubscriptionBanner,
   useManageClubState,
 } from "@/pages/clubs/hooks/useManageClubState";
+import { isSubscriptionExpiredByLocalDay } from "@/utils/date";
+
+function deriveSubscriptionStatus(
+  plan: "free" | "premium",
+  expiresAt: Date | null
+): ClubSubscriptionStatus {
+  if (plan === "free") {
+    return "nothing";
+  }
+
+  if (!expiresAt || isSubscriptionExpiredByLocalDay(expiresAt)) {
+    return "renewal_needed";
+  }
+
+  return "subscribed";
+}
+
+function toSidebarStatusCategory(
+  status?: ClubSubscriptionStatus
+): Exclude<SidebarStatusFilter, "all"> {
+  return status === "subscribed" ? "subscription" : "no_subscription";
+}
 
 export default function ManageClubPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const hasAccess = useHasRoleOrAbove(ROLES.ORGANISER);
+  const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
   const { user, isAuthenticated, isProfileComplete, loading } = useAuth();
   const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(hasAccess);
+  const { data: clubSubscriptionsData, isLoading: subscriptionsLoading } =
+    useClubSubscriptionsOverview(hasSuperAdminAccess);
+  const isSidebarDataLoading =
+    clubsLoading || (hasSuperAdminAccess && subscriptionsLoading);
+  const [statusFilter, setStatusFilter] = useState<SidebarStatusFilter>("all");
 
   const clubs = adminClubsData?.clubs ?? [];
+  const subscriptionsByClubId = useMemo(
+    () =>
+      new Map(
+        (clubSubscriptionsData?.clubs ?? []).map((club) => [
+          club.id,
+          {
+            status: club.subscription.status,
+            expiresAt: club.subscription.expiresAt,
+          },
+        ])
+      ),
+    [clubSubscriptionsData]
+  );
+
+  const clubsWithSubscriptionStatus = useMemo<ManageClubSidebarClub[]>(() => {
+    if (!hasSuperAdminAccess) {
+      return clubs;
+    }
+
+    return clubs.map((club) => {
+      const subscription = subscriptionsByClubId.get(club.id);
+
+      return {
+        id: club.id,
+        name: club.name,
+        membersCount: club.membersCount,
+        eventsCount: club.eventsCount,
+        courtCount: club.courtCount,
+        subscriptionStatus: subscription?.status,
+        subscriptionExpiresAt: subscription?.expiresAt ?? null,
+      };
+    });
+  }, [clubs, hasSuperAdminAccess, subscriptionsByClubId]);
+
   const {
     selectedClub,
     effectiveClubId,
@@ -42,15 +112,63 @@ export default function ManageClubPage() {
     setAddModalOpen,
     premiumExpiryModalOpen,
     setPremiumExpiryModalOpen,
-  } = useManageClubState(clubs);
+  } = useManageClubState(isSidebarDataLoading ? [] : clubsWithSubscriptionStatus);
 
-  const { data: staffData, isLoading: staffLoading } = useClubStaff(effectiveClubId);
+  const { data: staffData, isLoading: staffLoading } = useClubStaff(
+    isSidebarDataLoading ? null : effectiveClubId
+  );
+  const isInitialClubDetailLoading =
+    !isSidebarDataLoading &&
+    effectiveClubId !== null &&
+    staffLoading &&
+    staffData === undefined;
   const updateClubSubscription = useUpdateClubSubscription(effectiveClubId);
+
+  const clubsWithResolvedSubscription = useMemo(() => {
+    if (!hasSuperAdminAccess || !effectiveClubId || !staffData?.subscription) {
+      return clubsWithSubscriptionStatus;
+    }
+
+    const resolvedStatus = deriveSubscriptionStatus(
+      staffData.subscription.plan,
+      staffData.subscription.expiresAt
+    );
+
+    return clubsWithSubscriptionStatus.map((club) => {
+      if (club.id !== effectiveClubId) {
+        return club;
+      }
+
+      return {
+        ...club,
+        subscriptionStatus: resolvedStatus,
+        subscriptionExpiresAt:
+          staffData.subscription.plan === "premium"
+            ? staffData.subscription.expiresAt
+            : null,
+      };
+    });
+  }, [
+    clubsWithSubscriptionStatus,
+    effectiveClubId,
+    hasSuperAdminAccess,
+    staffData?.subscription,
+  ]);
+
+  const visibleClubs = useMemo(() => {
+    if (!hasSuperAdminAccess || statusFilter === "all") {
+      return clubsWithResolvedSubscription;
+    }
+
+    return clubsWithResolvedSubscription.filter(
+      (club) => toSidebarStatusCategory(club.subscriptionStatus) === statusFilter
+    );
+  }, [clubsWithResolvedSubscription, hasSuperAdminAccess, statusFilter]);
   const staff = staffData?.staff ?? [];
   const existingStaffIds = staff.map((s) => s.id);
   const showSubscriptionBanner = shouldShowSubscriptionBanner(staffData?.subscription);
-  const showUpgradeBanner =
-    staffData?.subscription?.plan === "free" && !showSubscriptionBanner;
+  const showPremiumBanner =
+    hasSuperAdminAccess && staffData?.subscription?.plan === "premium";
   const canAddStaff =
     staffData != null && staffData.subscription?.plan !== "free";
   const isClubAdminOrOrganiserOnly =
@@ -96,65 +214,158 @@ export default function ManageClubPage() {
   return (
     <div className="flex min-h-[calc(100vh-60px)] justify-center bg-[#f8fbf8] px-6 py-[22px]">
       <div className="flex w-full max-w-[1088px] flex-col gap-[25px] lg:flex-row lg:gap-[34px]">
-        <ManageClubSidebar
-          clubs={clubs}
-          clubsLoading={clubsLoading}
-          effectiveClubId={effectiveClubId}
-          mobileView={mobileView}
-          onClubSelect={(clubId) => {
-            setSelectedClubId(clubId);
-            setMobileView("staff");
-          }}
-        />
+        {isSidebarDataLoading ? (
+          <>
+            <aside className="w-full lg:w-[312px]">
+              <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-6 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)]">
+                <div className="animate-pulse space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-2">
+                      <div className="h-6 w-32 rounded-md bg-[#edf2ed]" />
+                      <div className="h-3 w-36 rounded-md bg-[#edf2ed]" />
+                    </div>
+                    <div className="h-8 w-28 rounded-md bg-[#edf2ed]" />
+                  </div>
 
-        <main
-          className={cn(
-            "flex-1",
-            mobileView === "clubs" && "hidden lg:block"
-          )}
-        >
-          {!effectiveClubId ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <p className="text-muted-foreground">{t("manageClub.selectClubToManage")}</p>
-            </div>
-          ) : (
-            <>
-              <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-5">
-                <ManageClubHeader
-                  selectedClub={selectedClub}
-                  canAddStaff={canAddStaff}
-                  canViewSponsors={Boolean(effectiveClubId)}
-                  onOpenAddModal={() => setAddModalOpen(true)}
-                  onViewSponsors={() => {
-                    if (!effectiveClubId) return;
-                    navigate(`/clubs/manage/sponsors/${effectiveClubId}`);
-                  }}
-                />
-
-                <ManageClubStaffSection
-                  staff={staff}
-                  staffLoading={staffLoading}
-                  canAddStaff={canAddStaff}
-                  onOpenAddModal={() => setAddModalOpen(true)}
-                />
-
-                <ManageClubSubscriptionBanners
-                  showSubscriptionBanner={showSubscriptionBanner}
-                  showUpgradeBanner={showUpgradeBanner}
-                  subscription={staffData?.subscription}
-                  onRenew={openPremiumExpiryModal}
-                  onUpgrade={openPremiumExpiryModal}
-                />
-              </div>
-
-              {mobileView === "staff" && (
-                <div className="mt-[25px] lg:hidden">
-                  <ManageClubInfoCard />
+                  <div className="space-y-2 rounded-[8px] border border-black/8 p-2">
+                    <div className="flex items-center gap-3 rounded-[8px] px-2 py-2">
+                      <div className="h-10 w-10 rounded-full bg-[#edf2ed]" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="h-4 w-32 rounded-md bg-[#edf2ed]" />
+                        <div className="h-3 w-24 rounded-md bg-[#edf2ed]" />
+                        <div className="h-3 w-20 rounded-md bg-[#edf2ed]" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-[8px] px-2 py-2">
+                      <div className="h-10 w-10 rounded-full bg-[#edf2ed]" />
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <div className="h-4 w-36 rounded-md bg-[#edf2ed]" />
+                        <div className="h-3 w-28 rounded-md bg-[#edf2ed]" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
+              </div>
+              <div className="mt-4 hidden lg:block">
+                <ManageClubInfoCard />
+              </div>
+            </aside>
+            <main className="flex-1">
+              <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-6 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-6">
+                <div className="animate-pulse space-y-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-2">
+                      <div className="h-6 w-52 rounded-md bg-[#edf2ed]" />
+                      <div className="h-3 w-44 rounded-md bg-[#edf2ed]" />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-8 w-28 rounded-md bg-[#edf2ed]" />
+                      <div className="h-8 w-36 rounded-md bg-[#edf2ed]" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="h-16 rounded-[10px] bg-[#edf2ed]" />
+                    <div className="h-16 rounded-[10px] bg-[#edf2ed]" />
+                    <div className="h-16 rounded-[10px] bg-[#edf2ed]" />
+                  </div>
+
+                  <div className="h-14 rounded-[10px] bg-[#edf2ed]" />
+                </div>
+              </div>
+            </main>
+          </>
+        ) : (
+          <>
+            <ManageClubSidebar
+              clubs={visibleClubs}
+              clubsLoading={false}
+              effectiveClubId={effectiveClubId}
+              mobileView={mobileView}
+              isSuperAdminView={hasSuperAdminAccess}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              onClubSelect={(clubId) => {
+                setSelectedClubId(clubId);
+                setMobileView("staff");
+              }}
+            />
+
+            <main
+              className={cn(
+                "flex-1",
+                mobileView === "clubs" && "hidden lg:block"
               )}
-            </>
-          )}
-        </main>
+            >
+              {!effectiveClubId ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="text-muted-foreground">{t("manageClub.selectClubToManage")}</p>
+                </div>
+              ) : isInitialClubDetailLoading ? (
+                <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-6 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="h-6 w-52 rounded-md bg-[#edf2ed]" />
+                        <div className="h-3 w-44 rounded-md bg-[#edf2ed]" />
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="h-8 w-28 rounded-md bg-[#edf2ed]" />
+                        <div className="h-8 w-36 rounded-md bg-[#edf2ed]" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="h-16 rounded-[10px] bg-[#edf2ed]" />
+                      <div className="h-16 rounded-[10px] bg-[#edf2ed]" />
+                      <div className="h-16 rounded-[10px] bg-[#edf2ed]" />
+                    </div>
+
+                    <div className="h-14 rounded-[10px] bg-[#edf2ed]" />
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-5">
+                    <ManageClubHeader
+                      selectedClub={selectedClub}
+                      showClubCrown={staffData?.subscription?.plan === "premium"}
+                      canUpdateExpiry={hasSuperAdminAccess}
+                      canAddStaff={canAddStaff}
+                      onOpenExpiryModal={openPremiumExpiryModal}
+                      onOpenAddModal={() => setAddModalOpen(true)}
+                    />
+
+                    <ManageClubStaffSection
+                      staff={staff}
+                      staffLoading={staffLoading}
+                      canAddStaff={canAddStaff}
+                      onOpenAddModal={() => setAddModalOpen(true)}
+                    />
+
+                    <ManageClubSubscriptionBanners
+                      roleMode={
+                        hasSuperAdminAccess
+                          ? "super_admin"
+                          : "club_admin_or_organiser"
+                      }
+                      showPremiumBanner={showPremiumBanner}
+                      showSubscriptionBanner={showSubscriptionBanner}
+                      subscription={staffData?.subscription}
+                      onRenew={openPremiumExpiryModal}
+                    />
+                  </div>
+
+                  {mobileView === "staff" && (
+                    <div className="mt-[25px] lg:hidden">
+                      <ManageClubInfoCard />
+                    </div>
+                  )}
+                </>
+              )}
+            </main>
+          </>
+        )}
       </div>
 
       <AddAdminOrganiserModal
