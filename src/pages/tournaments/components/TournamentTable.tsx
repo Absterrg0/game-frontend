@@ -119,7 +119,7 @@ export function TournamentTable({
                         className="h-auto px-1.5 text-sm font-normal text-foreground hover:bg-transparent"
                         onClick={() => onEdit(tournament.id)}
                       >
-                        <HugeiconsIcon icon={PencilIcon} size={16} className="mr-1" />
+                        <HugeiconsIcon icon={PencilIcon} size={14} className="mr-1" />
                         {t("tournaments.edit")}
                       </Button>
                     )}

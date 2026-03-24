@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAdminClubs } from "@/pages/clubs/hooks";
 import { useClubSponsors } from "@/pages/sponsors/hooks";
@@ -77,18 +77,21 @@ export function CreateTournamentModal({
 
   const resetForm = () => {
     setFormUpdates(null);
-    setActiveTab("basic");
   };
 
-  const handleClose = (open: boolean) => {
-    onOpenChange(open);
-  };
-
-  useEffect(() => {
+  /** Tab resets when opening so we don't change the tab during close (avoids flicker on exit animation). */
+  useLayoutEffect(() => {
     if (open) {
-      resetForm();
+      setActiveTab("basic");
     }
   }, [open]);
+
+  const handleClose = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      resetForm();
+    }
+    onOpenChange(nextOpen);
+  };
 
   const handleSaveDraft = async () => {
     const validationError = getDraftValidationError(form);

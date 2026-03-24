@@ -5,6 +5,7 @@ import { CreateTournamentModal } from "@/pages/tournaments/components/CreateTour
 import { useAuth, useIsOrganiserOrAbove } from "@/pages/auth/hooks";
 import { TournamentActions } from "@/pages/tournaments/components/TournamentActions";
 import { TournamentTable } from "@/pages/tournaments/components/TournamentTable";
+import { TournamentTabs } from "@/pages/tournaments/components/TournamentTabs";
 import { useTournamentActions } from "@/pages/tournaments/hooks/useTournamentActions";
 import { useTournamentFilters } from "@/pages/tournaments/hooks/useTournamentFilters";
 import { useTournamentPermissions } from "@/pages/tournaments/hooks/useTournamentPermissions";
@@ -62,18 +63,27 @@ function TournamentListContent() {
     <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-brand-primary/[0.03]">
       <div className="mx-auto w-full max-w-[1060px] flex-1 px-4 py-8 sm:px-6">
         <div className="overflow-hidden rounded-[12px] border border-black/10 bg-white shadow-sm">
-          <div className="flex items-center justify-between px-4 py-3 sm:px-5 sm:py-3.5">
-            <h1 className="text-xl font-semibold leading-tight text-foreground">
-              {t("tournaments.allTournaments")}
-            </h1>
-            <TournamentActions
-              filtersOpen={filtersOpen}
-              onFiltersOpenChange={setFiltersOpen}
-              status={filters.status}
-              canShowStatusFilter={canShowStatusFilter}
-              onStatusChange={setStatusFromValue}
-              onCreate={openCreateModal}
-            />
+          <div className="px-4 py-3 sm:px-5 sm:py-3.5">
+            <div className="flex items-center justify-between">
+              <h1 className="text-xl font-semibold leading-tight text-foreground">
+                {t("tournaments.allTournaments")}
+              </h1>
+              <TournamentActions
+                filtersOpen={filtersOpen}
+                onFiltersOpenChange={setFiltersOpen}
+                status={filters.status}
+                canShowStatusFilter={canShowStatusFilter}
+                onStatusChange={setStatusFromValue}
+                onCreate={openCreateModal}
+              />
+            </div>
+            <div className="mt-3">
+              <TournamentTabs
+                visible={isOrganiserOrAbove}
+                activeTab={activeTab}
+                onTabChange={setTab}
+              />
+            </div>
           </div>
 
           {tournaments.length === 0 ? (

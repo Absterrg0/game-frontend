@@ -138,7 +138,6 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
                   <TimePicker
                     value={form.startTime ?? null}
                     onChange={(time) => update({ startTime: time })}
-                    placeholder="00:00 AM"
                   />
                 </div>
               </div>
@@ -153,7 +152,6 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
                   <TimePicker
                     value={form.endTime ?? null}
                     onChange={(time) => update({ endTime: time })}
-                    placeholder="00:00 AM"
                   />
                 </div>
               </div>

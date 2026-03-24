@@ -53,6 +53,7 @@ function SponsorOption({
   return (
     <button
       type="button"
+      aria-pressed={selected}
       onClick={onClick}
       className={`w-full rounded-[12px] border text-left transition ${
         selected
