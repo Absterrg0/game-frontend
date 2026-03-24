@@ -154,6 +154,7 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
   };
 
   const handleClubChange = (clubId: string) => {
+    if (isMutating) return;
     setSelection({ clubId, sponsorId: "" });
   };
 
@@ -200,8 +201,11 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
               <p className="text-[14px] leading-[1.4] text-[#010a04]/60">{t("tournaments.editClubHint")}</p>
             </div>
 
-            <Select value={selectedClubId} onValueChange={handleClubChange}>
-              <SelectTrigger className="h-[46px] w-full rounded-[12px] border-[#e1e3e8] bg-[#f9fafc] px-[15px] text-[16px] font-medium text-[#010a04]">
+            <Select value={selectedClubId} onValueChange={handleClubChange} disabled={isMutating}>
+              <SelectTrigger
+                className="h-[46px] w-full rounded-[12px] border-[#e1e3e8] bg-[#f9fafc] px-[15px] text-[16px] font-medium text-[#010a04]"
+                disabled={isMutating}
+              >
                 <SelectValue placeholder={t("tournaments.chooseClub")} />
               </SelectTrigger>
               <SelectContent>
@@ -226,7 +230,11 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
               <SponsorOption
                 title={t("tournaments.noSponsor")}
                 selected={selectedSponsorId === ""}
-                onClick={() => setSelection((prev) => ({ ...(prev ?? initialSelection), sponsorId: "" }))}
+                disabled={isMutating}
+                onClick={() => {
+                  if (isMutating) return;
+                  setSelection((prev) => ({ ...(prev ?? initialSelection), sponsorId: "" }));
+                }}
                 compact
               />
 
@@ -266,9 +274,11 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
                             : t("tournaments.statusActive")
                         }
                         selected={selectedSponsorId === sponsor.id}
-                        onClick={() =>
-                          setSelection((prev) => ({ ...(prev ?? initialSelection), sponsorId: sponsor.id }))
-                        }
+                        disabled={isMutating}
+                        onClick={() => {
+                          if (isMutating) return;
+                          setSelection((prev) => ({ ...(prev ?? initialSelection), sponsorId: sponsor.id }));
+                        }}
                         logoUrl={sponsor.logoUrl}
                       />
                     ))

@@ -97,6 +97,7 @@ export function TournamentTable({
                     />
                     <span className="truncate text-sm text-foreground">{tournament.name}</span>
                     <span
+                      role="img"
                       className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass}`}
                       aria-label={statusLabel}
                       title={statusLabel}
@@ -105,7 +106,10 @@ export function TournamentTable({
                 </TableCell>
                 <TableCell className="px-3 py-0">
                   <div className="flex items-center gap-2">
-                    <span className="h-4 w-4 shrink-0 rounded-full bg-black/15" />
+                    <span
+                      className="h-4 w-4 shrink-0 rounded-full bg-black/15"
+                      aria-hidden="true"
+                    />
                     <span className="truncate text-sm text-foreground">
                       {tournament.club?.name ?? "-"}
                     </span>
