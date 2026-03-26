@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useRef, useState } from "react";
 import {
   closestCenter,
   DndContext,
@@ -46,8 +46,10 @@ export function ManageClubStaffSection({
   onMainAdminChange,
 }: ManageClubStaffSectionProps) {
   const { t } = useTranslation();
-  const [orderedStaff, setOrderedStaff] = useState<ClubStaffMember[]>(staff);
+  const [orderedStaffIds, setOrderedStaffIds] = useState<string[]>(() => staff.map((member) => member.id));
   const [pendingMainAdminId, setPendingMainAdminId] = useState<string | null>(null);
+  const latestStaffRef = useRef(staff);
+  latestStaffRef.current = staff;
   const isMainAdminChangePending = pendingMainAdminId !== null;
   const sensors = useSensors(
     useSensor(MouseSensor),
@@ -57,14 +59,53 @@ export function ManageClubStaffSection({
     })
   );
 
-  useEffect(() => {
-    setOrderedStaff(staff);
-    setPendingMainAdminId(null);
-  }, [staff]);
+  const staffById = new Map(staff.map((member) => [member.id, member]));
+  const existingIds = new Set(staffById.keys());
+  const sortedIds = orderedStaffIds.filter((id) => existingIds.has(id));
 
-  const staffIds = useMemo<UniqueIdentifier[]>(() => {
-    return orderedStaff.map((member) => member.id);
-  }, [orderedStaff]);
+  const sortedIdsSet = new Set(sortedIds);
+  for (const member of staff) {
+    if (!sortedIdsSet.has(member.id)) {
+      sortedIdsSet.add(member.id);
+    }
+  }
+
+  const canonicalMainAdminId =
+    staff.find((member) => member.role === "default_admin")?.id ?? currentMainAdminId;
+
+  const orderedStaff: ClubStaffMember[] = sortedIds
+    .map((id) => staffById.get(id))
+    .filter((member): member is ClubStaffMember => member !== undefined)
+    .map((member) => {
+      if (!pendingMainAdminId) {
+        return member;
+      }
+
+      if (member.id === pendingMainAdminId && member.role !== "default_admin") {
+        return {
+          ...member,
+          role: "default_admin",
+          roleLabel: t("manageClub.mainAdmin"),
+        };
+      }
+
+      if (
+        canonicalMainAdminId &&
+        member.id === canonicalMainAdminId &&
+        member.id !== pendingMainAdminId &&
+        member.role === "default_admin"
+      ) {
+        return {
+          ...member,
+          role: "admin",
+          roleLabel: t("manageClub.roleAdmin"),
+        };
+      }
+
+      return member;
+    });
+
+  const staffIds: UniqueIdentifier[] = orderedStaff.map((member) => member.id);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -81,12 +122,13 @@ export function ManageClubStaffSection({
     }
 
     const next = arrayMove(orderedStaff, sourceIndex, targetIndex);
+    const nextIds = next.map((member) => member.id);
     const nextMainAdmin = next.find(
       (member) => member.role === "default_admin" || member.role === "admin"
     );
 
     if (!nextMainAdmin) {
-      setOrderedStaff(next);
+      setOrderedStaffIds(nextIds);
       return;
     }
 
@@ -96,40 +138,25 @@ export function ManageClubStaffSection({
       nextMainAdmin.id !== currentMainAdminId;
 
     if (!shouldPersistMainAdminChange) {
-      setOrderedStaff(next);
+      setOrderedStaffIds(nextIds);
       return;
     }
 
-    const currentMainAdmin = orderedStaff.find((member) => member.role === "default_admin");
-    const optimistic = next.map((member) => {
-      if (member.id === nextMainAdmin.id) {
-        return {
-          ...member,
-          role: "default_admin" as const,
-          roleLabel: t("manageClub.mainAdmin"),
-        };
-      }
-
-      if (currentMainAdmin && member.id === currentMainAdmin.id) {
-        return {
-          ...member,
-          role: "admin" as const,
-          roleLabel: t("manageClub.roleAdmin"),
-        };
-      }
-
-      return member;
-    });
-
-    setOrderedStaff(optimistic);
+    setOrderedStaffIds(nextIds);
     setPendingMainAdminId(nextMainAdmin.id);
 
-    void onMainAdminChange(nextMainAdmin.id).then((success) => {
-      if (!success) {
-        setOrderedStaff(staff);
-      }
-      setPendingMainAdminId(null);
-    });
+    void onMainAdminChange(nextMainAdmin.id)
+      .then((success) => {
+        if (!success) {
+          setOrderedStaffIds(latestStaffRef.current.map((member) => member.id));
+        }
+      })
+      .catch(() => {
+        setOrderedStaffIds(latestStaffRef.current.map((member) => member.id));
+      })
+      .finally(() => {
+        setPendingMainAdminId(null);
+      });
   };
 
   if (staffLoading) {
