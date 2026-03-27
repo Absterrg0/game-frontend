@@ -3,7 +3,7 @@ import { Navigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { CirclePlus, PenLine, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth, useHasRoleOrAbove } from "@/pages/auth/hooks";
+import { useHasRoleOrAbove } from "@/pages/auth/hooks";
 import { ROLES } from "@/constants/roles";
 import { getErrorMessage } from "@/lib/errors";
 import { getSafeLink } from "@/lib/url";
@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useAdminClubs } from "@/pages/clubs/hooks";
+import { useClubPageAccess } from "@/pages/clubs/hooks";
 import {
   type ClubSponsor,
   useClubSponsors,
@@ -31,30 +31,29 @@ export default function ManageClubSponsorsPage() {
   const { t } = useTranslation();
   const { clubId } = useParams<{ clubId: string }>();
   const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
-  const { isAuthenticated, isProfileComplete, loading } = useAuth();
 
   const [addEditModalOpen, setAddEditModalOpen] = useState(false);
   const [editSponsor, setEditSponsor] = useState<ClubSponsor | null>(null);
   const [removeSponsor, setRemoveSponsor] = useState<ClubSponsor | null>(null);
 
   const {
-    data: adminClubsData,
-    isLoading: clubsLoading,
-    isError: adminClubsQueryError,
-    error: adminClubsError,
-  } = useAdminClubs(!hasSuperAdminAccess);
-  const hasAdminClubsError =
-    !hasSuperAdminAccess && (adminClubsQueryError || adminClubsError !== null);
-  const selectedClub = (adminClubsData?.clubs ?? []).find((club) => club.id === clubId) ?? null;
-  const canAccessPage = hasSuperAdminAccess || selectedClub !== null;
-  const validatedClubId = canAccessPage ? (clubId ?? null) : null;
+    selectedClub,
+    validatedClubId,
+    clubsLoading,
+    hasAdminClubsError,
+    adminClubsError,
+  } = useClubPageAccess({
+    clubId,
+    hasSuperAdminAccess,
+  });
 
   const { data: sponsorsData, isLoading: sponsorsLoading } = useClubSponsors(validatedClubId);
   const deleteSponsor = useDeleteSponsor(validatedClubId);
+  const isPageLoading = clubsLoading || sponsorsLoading;
 
   const sponsors = sponsorsData?.sponsors ?? [];
   const canManageSponsors = sponsorsData?.subscription?.canManageSponsors === true;
-  const showPremiumBanner = !sponsorsLoading && sponsorsData?.subscription?.canManageSponsors === false;
+  const showPremiumBanner = !isPageLoading && sponsorsData?.subscription?.canManageSponsors === false;
 
   const handleAddSponsor = () => {
     setEditSponsor(null);
@@ -83,16 +82,6 @@ export default function ManageClubSponsorsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <InlineLoader />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (!isProfileComplete) return <Navigate to="/information" replace />;
   if (!clubId) return <Navigate to="/clubs/manage" replace />;
   if (hasAdminClubsError) {
     return (
@@ -141,7 +130,7 @@ export default function ManageClubSponsorsPage() {
           </div>
         </div>
 
-        {sponsorsLoading ? (
+        {isPageLoading ? (
           <div className="flex justify-center py-16">
             <InlineLoader />
           </div>

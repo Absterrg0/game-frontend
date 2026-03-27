@@ -20,7 +20,6 @@ import { ROLES } from "@/constants/roles";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
-import InlineLoader from "@/components/shared/InlineLoader";
 import { AddAdminOrganiserModal } from "@/pages/clubs/components/manage/AddAdminOrganiserModal";
 import { ManageClubHeader } from "@/pages/clubs/components/manage/ManageClubHeader";
 import { ManageClubSidebar } from "@/pages/clubs/components/manage/ManageClubSidebar";
@@ -45,8 +44,13 @@ import { isSubscriptionExpiredByLocalDay } from "@/utils/date";
 
 function deriveSubscriptionStatus(
   plan: "free" | "premium",
-  expiresAt: Date | null
+  expiresAt: Date | null,
+  renewalRequestedAt: Date | null | undefined
 ): ClubSubscriptionStatus {
+  if (renewalRequestedAt != null) {
+    return "requested";
+  }
+
   if (plan === "free") {
     return "nothing";
   }
@@ -61,7 +65,7 @@ function deriveSubscriptionStatus(
 export default function ManageClubPage() {
   const { t } = useTranslation();
   const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
-  const { user, isAuthenticated, isProfileComplete, loading } = useAuth();
+  const { user } = useAuth();
   const {
     data: adminClubsData,
     isLoading: clubsLoading,
@@ -143,7 +147,8 @@ export default function ManageClubPage() {
   } else {
     const resolvedStatus = deriveSubscriptionStatus(
       staffData.subscription.plan,
-      staffData.subscription.expiresAt
+      staffData.subscription.expiresAt,
+      staffData.subscription.renewalRequestedAt
     );
 
     clubsWithResolvedSubscription = clubsWithSubscriptionStatus.map((club) => {
@@ -286,17 +291,7 @@ export default function ManageClubPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <InlineLoader />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (!isProfileComplete) return <Navigate to="/information" replace />;
-  if (!clubsLoading && clubsError) {
+  if (!clubsLoading && clubsError && adminClubsData == null) {
     return (
       <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4">
         <p className="text-center text-sm text-destructive" role="alert">
@@ -326,6 +321,20 @@ export default function ManageClubPage() {
   return (
     <div className="flex min-h-[calc(100vh-60px)] justify-center bg-[#f8fbf8] px-6 py-[22px]">
       <div className="flex w-full max-w-[1088px] flex-col gap-[25px] lg:flex-row lg:gap-[34px]">
+        {!clubsLoading && clubsError && adminClubsData != null && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+            <p>{getErrorMessage(adminClubsQueryError) ?? t("settings.adminClubsLoadError")}</p>
+            <button
+              type="button"
+              disabled={adminClubsFetching}
+              onClick={() => void refetchAdminClubs()}
+              className="mt-2 font-medium underline disabled:opacity-50"
+            >
+              {adminClubsFetching ? t("common.loading") : t("settings.adminClubsRetry")}
+            </button>
+          </div>
+        )}
+
         {isSidebarDataLoading ? (
           <>
             <SidebarSkeleton />

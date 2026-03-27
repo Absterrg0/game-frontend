@@ -4,7 +4,7 @@ import { AuthProvider } from './contexts/auth'
 import { useAuth } from './pages/auth/hooks'
 import { Toaster } from '@/components/ui/sonner'
 import { MainLayout } from '@/layouts/MainLayout'
-import { ProtectedRoute } from '@/components/auth'
+import { ProfileCompleteRoute, ProtectedRoute } from '@/components/auth'
 import Loader from "@/components/shared/Loader"
 import { ROLES } from './constants/roles'
 
@@ -50,9 +50,13 @@ function App() {
             <Route index element={<UserInformation />} />
           </Route>
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route element={ <ProtectedRoute>
-      <MainLayout />
-    </ProtectedRoute>}>
+          <Route element={
+            <ProtectedRoute>
+              <ProfileCompleteRoute>
+                <MainLayout />
+              </ProfileCompleteRoute>
+            </ProtectedRoute>
+          }>
             <Route path="/profile" element={<SettingsPage />} />
             <Route path="/tournaments" element={<PlaceholderPage />} />
             <Route path="/tournaments/:id" element={<PlaceholderPage />} />
