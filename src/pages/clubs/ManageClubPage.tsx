@@ -5,6 +5,10 @@ import {
   useAdminClubs,
   useClubStaff,
   useUpdateClubSubscription,
+  useUpdateClubStaffRole,
+  useSetClubMainAdmin,
+  useRemoveClubStaff,
+  type ClubStaffMember,
 } from "@/pages/clubs/hooks";
 import {
   useClubSubscriptionsOverview,
@@ -26,6 +30,8 @@ import { UpdatePremiumExpiryModal } from "@/pages/clubs/components/manage/Update
 import { ManageClubInfoCard } from "@/pages/clubs/components/manage/ManageClubInfoCard";
 import { MainContentSkeleton } from "@/pages/clubs/components/manage/MainContentSkeleton";
 import { SidebarSkeleton } from "@/pages/clubs/components/manage/SidebarSkeleton";
+import { EditStaffRoleModal } from "@/pages/clubs/components/manage/EditStaffRoleModal";
+import { RemoveStaffDialog } from "@/pages/clubs/components/manage/RemoveStaffDialog";
 import type {
   ManageClubSidebarClub,
   SidebarStatusFilter,
@@ -62,6 +68,8 @@ export default function ManageClubPage() {
   const isSidebarDataLoading =
     clubsLoading || (hasSuperAdminAccess && subscriptionsLoading);
   const [statusFilter, setStatusFilter] = useState<SidebarStatusFilter>("all");
+  const [editingMember, setEditingMember] = useState<ClubStaffMember | null>(null);
+  const [removingMember, setRemovingMember] = useState<ClubStaffMember | null>(null);
 
   const clubs = adminClubsData?.clubs ?? [];
   const subscriptionsByClubId = new Map(
@@ -114,6 +122,9 @@ export default function ManageClubPage() {
     staffLoading &&
     staffData === undefined;
   const updateClubSubscription = useUpdateClubSubscription(effectiveClubId);
+  const updateClubStaffRole = useUpdateClubStaffRole();
+  const setClubMainAdmin = useSetClubMainAdmin();
+  const removeClubStaff = useRemoveClubStaff();
 
   let clubsWithResolvedSubscription: ManageClubSidebarClub[];
   if (!hasSuperAdminAccess || !effectiveClubId || !staffData?.subscription) {
@@ -147,6 +158,11 @@ export default function ManageClubPage() {
           (club) => (club.subscriptionStatus ?? "nothing") === statusFilter
         );
   const staff = staffData?.staff ?? [];
+  const currentMainAdminId =
+    staff.find((member) => member.role === "default_admin")?.id ?? null;
+  const canSetMainAdmin =
+    hasSuperAdminAccess ||
+    (user != null && currentMainAdminId != null && user.id === currentMainAdminId);
   const existingStaffIds = staff.map((s) => s.id);
   const showSubscriptionBanner = shouldShowSubscriptionBanner(staffData?.subscription);
   const showPremiumBanner =
@@ -180,6 +196,62 @@ export default function ManageClubPage() {
     // Notification-only: no API accepts this date yet for club-admin renewal requests.
     toast.success(t("manageClub.renewRequestSent"));
     setPremiumExpiryModalOpen(false);
+  };
+
+  const handleEditStaffRole = async (role: "admin" | "organiser") => {
+    if (!effectiveClubId || !editingMember) {
+      return;
+    }
+
+    try {
+      await updateClubStaffRole.mutateAsync({
+        clubId: effectiveClubId,
+        staffId: editingMember.id,
+        role,
+      });
+
+      toast.success(t("manageClub.editRoleSuccess"));
+      setEditingMember(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.editRoleError"));
+    }
+  };
+
+  const handleRemoveStaff = async () => {
+    if (!effectiveClubId || !removingMember) {
+      return;
+    }
+
+    try {
+      await removeClubStaff.mutateAsync({
+        clubId: effectiveClubId,
+        staffId: removingMember.id,
+      });
+
+      toast.success(t("manageClub.removeMemberSuccess"));
+      setRemovingMember(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.removeMemberError"));
+    }
+  };
+
+  const handleSetMainAdmin = async (newMainAdminId: string) => {
+    if (!effectiveClubId) {
+      return false;
+    }
+
+    try {
+      await setClubMainAdmin.mutateAsync({
+        clubId: effectiveClubId,
+        userId: newMainAdminId,
+      });
+
+      toast.success(t("manageClub.mainAdminUpdateSuccess"));
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.mainAdminUpdateError"));
+      return false;
+    }
   };
 
   if (loading) {
@@ -245,9 +317,20 @@ export default function ManageClubPage() {
 
                     <ManageClubStaffSection
                       staff={staff}
-                      staffLoading={staffLoading}
+                      staffLoading={isInitialClubDetailLoading}
                       canAddStaff={canAddStaff}
+                      canSetMainAdmin={canSetMainAdmin}
+                      currentMainAdminId={currentMainAdminId}
                       onOpenAddModal={() => setAddModalOpen(true)}
+                      onMainAdminChange={handleSetMainAdmin}
+                      onMenuAction={(action, member) => {
+                        if (action === "edit") {
+                          setEditingMember(member);
+                          return;
+                        }
+
+                        setRemovingMember(member);
+                      }}
                     />
 
                     <ManageClubSubscriptionBanners
@@ -280,6 +363,31 @@ export default function ManageClubPage() {
         onOpenChange={setAddModalOpen}
         clubId={effectiveClubId ?? ""}
         existingStaffIds={existingStaffIds}
+      />
+
+      <EditStaffRoleModal
+        key={editingMember?.id ?? "edit-staff-role-closed"}
+        open={editingMember !== null}
+        member={editingMember}
+        isSubmitting={updateClubStaffRole.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingMember(null);
+          }
+        }}
+        onConfirm={handleEditStaffRole}
+      />
+
+      <RemoveStaffDialog
+        open={removingMember !== null}
+        member={removingMember}
+        isRemoving={removeClubStaff.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRemovingMember(null);
+          }
+        }}
+        onConfirm={handleRemoveStaff}
       />
 
       {isClubAdminOrOrganiserOnly ? (

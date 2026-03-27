@@ -59,5 +59,8 @@ export function useClubStaff(clubId: string | null) {
       return fetchClubStaff(clubId);
     },
     enabled: !!clubId,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
