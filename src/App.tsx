@@ -4,7 +4,7 @@ import { AuthProvider } from './contexts/auth'
 import { useAuth } from './pages/auth/hooks'
 import { Toaster } from '@/components/ui/sonner'
 import { MainLayout } from '@/layouts/MainLayout'
-import { ProfileCompleteRoute, ProtectedRoute } from '@/components/auth'
+import { ProtectedRoute } from '@/components/auth'
 import Loader from "@/components/shared/Loader"
 import { ROLES } from './constants/roles'
 
@@ -51,10 +51,8 @@ function App() {
           </Route>
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route element={
-            <ProtectedRoute>
-              <ProfileCompleteRoute>
-                <MainLayout />
-              </ProfileCompleteRoute>
+            <ProtectedRoute requireProfileComplete>
+              <MainLayout />
             </ProtectedRoute>
           }>
             <Route path="/profile" element={<SettingsPage />} />
