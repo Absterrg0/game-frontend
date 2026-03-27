@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   useAdminClubs,
   useClubStaff,
+  useRequestClubSubscriptionRenewal,
   useUpdateClubSubscription,
   useUpdateClubStaffRole,
   useSetClubMainAdmin,
@@ -59,10 +60,9 @@ function deriveSubscriptionStatus(
 
 export default function ManageClubPage() {
   const { t } = useTranslation();
-  const hasAccess = useHasRoleOrAbove(ROLES.ORGANISER);
   const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
   const { user, isAuthenticated, isProfileComplete, loading } = useAuth();
-  const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(hasAccess);
+  const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(true);
   const { data: clubSubscriptionsData, isLoading: subscriptionsLoading } =
     useClubSubscriptionsOverview(hasSuperAdminAccess);
   const isSidebarDataLoading =
@@ -70,6 +70,7 @@ export default function ManageClubPage() {
   const [statusFilter, setStatusFilter] = useState<SidebarStatusFilter>("all");
   const [editingMember, setEditingMember] = useState<ClubStaffMember | null>(null);
   const [removingMember, setRemovingMember] = useState<ClubStaffMember | null>(null);
+  const [requestRenewalModalOpen, setRequestRenewalModalOpen] = useState(false);
 
   const clubs = adminClubsData?.clubs ?? [];
   const subscriptionsByClubId = new Map(
@@ -121,6 +122,8 @@ export default function ManageClubPage() {
     effectiveClubId !== null &&
     staffLoading &&
     staffData === undefined;
+  const requestClubSubscriptionRenewal =
+    useRequestClubSubscriptionRenewal(effectiveClubId);
   const updateClubSubscription = useUpdateClubSubscription(effectiveClubId);
   const updateClubStaffRole = useUpdateClubStaffRole();
   const setClubMainAdmin = useSetClubMainAdmin();
@@ -167,10 +170,11 @@ export default function ManageClubPage() {
   const showSubscriptionBanner = shouldShowSubscriptionBanner(staffData?.subscription);
   const showPremiumBanner =
     hasSuperAdminAccess && staffData?.subscription?.plan === "premium";
+  const isRenewalRequested = staffData?.subscription?.renewalRequestedAt != null;
   const canAddStaff =
     staffData != null && staffData.subscription?.plan !== "free";
   const isClubAdminOrOrganiserOnly =
-    user?.role === ROLES.CLUB_ADMIN || user?.role === ROLES.ORGANISER;
+    !hasSuperAdminAccess;
 
   const handleUpdateClubSubscription = async (selectedExpiryDate: Date) => {
     try {
@@ -189,13 +193,33 @@ export default function ManageClubPage() {
   };
 
   const openPremiumExpiryModal = () => {
+    if (!hasSuperAdminAccess) {
+      return;
+    }
+
     setPremiumExpiryModalOpen(true);
   };
 
-  const handleRequestSubscriptionRenewal = async (_selectedExpiryDate: Date) => {
-    // Notification-only: no API accepts this date yet for club-admin renewal requests.
-    toast.success(t("manageClub.renewRequestSent"));
-    setPremiumExpiryModalOpen(false);
+  const openRequestRenewalModal = () => {
+    if (hasSuperAdminAccess) {
+      return;
+    }
+
+    if (isRenewalRequested) {
+      return;
+    }
+
+    setRequestRenewalModalOpen(true);
+  };
+
+  const handleRequestSubscriptionRenewal = async () => {
+    try {
+      await requestClubSubscriptionRenewal.mutateAsync();
+      toast.success(t("manageClub.renewRequestSent"));
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.renewRequestError"));
+      throw error;
+    }
   };
 
   const handleEditStaffRole = async (role: "admin" | "organiser") => {
@@ -264,6 +288,9 @@ export default function ManageClubPage() {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isProfileComplete) return <Navigate to="/information" replace />;
+  if (!clubsLoading && !hasSuperAdminAccess && clubs.length === 0) {
+    return <Navigate to="/clubs" replace />;
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-60px)] justify-center bg-[#f8fbf8] px-6 py-[22px]">
@@ -342,7 +369,8 @@ export default function ManageClubPage() {
                       showPremiumBanner={showPremiumBanner}
                       showSubscriptionBanner={showSubscriptionBanner}
                       subscription={staffData?.subscription}
-                      onRenew={openPremiumExpiryModal}
+                      onRequestRenewal={openRequestRenewalModal}
+                      isRenewalRequested={isRenewalRequested}
                     />
                   </div>
 
@@ -390,13 +418,16 @@ export default function ManageClubPage() {
         onConfirm={handleRemoveStaff}
       />
 
-      {isClubAdminOrOrganiserOnly ? (
+      {isClubAdminOrOrganiserOnly && (
         <RequestSubscriptionRenewalModal
-          open={premiumExpiryModalOpen}
-          onOpenChange={setPremiumExpiryModalOpen}
+          open={requestRenewalModalOpen}
+          onOpenChange={setRequestRenewalModalOpen}
+          isSubmitting={requestClubSubscriptionRenewal.isPending}
           onConfirm={handleRequestSubscriptionRenewal}
         />
-      ) : (
+      )}
+
+      {hasSuperAdminAccess && (
         <UpdatePremiumExpiryModal
           open={premiumExpiryModalOpen}
           onOpenChange={setPremiumExpiryModalOpen}

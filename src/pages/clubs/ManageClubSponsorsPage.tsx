@@ -30,15 +30,16 @@ import {
 export default function ManageClubSponsorsPage() {
   const { t } = useTranslation();
   const { clubId } = useParams<{ clubId: string }>();
-  const hasAccess = useHasRoleOrAbove(ROLES.ORGANISER);
+  const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
   const { isAuthenticated, isProfileComplete, loading } = useAuth();
 
   const [addEditModalOpen, setAddEditModalOpen] = useState(false);
   const [editSponsor, setEditSponsor] = useState<ClubSponsor | null>(null);
   const [removeSponsor, setRemoveSponsor] = useState<ClubSponsor | null>(null);
 
-  const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(hasAccess);
+  const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(true);
   const selectedClub = (adminClubsData?.clubs ?? []).find((club) => club.id === clubId) ?? null;
+  const canAccessPage = hasSuperAdminAccess || selectedClub !== null;
 
   const { data: sponsorsData, isLoading: sponsorsLoading } = useClubSponsors(clubId ?? null);
   const deleteSponsor = useDeleteSponsor(clubId ?? null);
@@ -84,9 +85,8 @@ export default function ManageClubSponsorsPage() {
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isProfileComplete) return <Navigate to="/information" replace />;
-  if (!hasAccess) return <Navigate to="/profile" replace />;
   if (!clubId) return <Navigate to="/clubs/manage" replace />;
-  if (!clubsLoading && !selectedClub) return <Navigate to="/clubs/manage" replace />;
+  if (!clubsLoading && !canAccessPage) return <Navigate to="/clubs/manage" replace />;
 
   return (
     <div className="min-h-[calc(100vh-4rem)] bg-[#f8fbf8] px-4 py-6 sm:px-6 md:py-8">
