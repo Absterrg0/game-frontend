@@ -10,6 +10,7 @@ import {
   useSetClubMainAdmin,
   useRemoveClubStaff,
   type ClubStaffMember,
+  type ClubSubscription,
 } from "@/pages/clubs/hooks";
 import {
   useClubSubscriptionsOverview,
@@ -65,6 +66,20 @@ function deriveSubscriptionStatus(
   }
 
   return "subscribed";
+}
+
+function getSubscriptionExpiresAt(
+  subscription: ClubSubscription
+): Date | null {
+  if (!subscription.hasPremiumAccess) {
+    return null;
+  }
+
+  if (subscription.plan === "premium") {
+    return subscription.expiresAt;
+  }
+
+  return subscription.trialPremiumUntil;
 }
 
 export default function ManageClubPage() {
@@ -165,11 +180,7 @@ export default function ManageClubPage() {
       return {
         ...club,
         subscriptionStatus: resolvedStatus,
-        subscriptionExpiresAt: staffData.subscription.hasPremiumAccess
-          ? (staffData.subscription.plan === "premium"
-              ? staffData.subscription.expiresAt
-              : staffData.subscription.trialPremiumUntil)
-          : null,
+        subscriptionExpiresAt: getSubscriptionExpiresAt(staffData.subscription),
       };
     });
   }
