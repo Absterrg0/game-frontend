@@ -89,6 +89,17 @@ function getDaysLeftDisplay(expiresAt: Date | null) {
   return { daysLabel, daysClass };
 }
 
+function requestedTrialHint(
+  status: ClubSubscriptionStatus,
+  trialPremiumUntil: Date | null
+): string | null {
+  if (status !== "requested" || !trialPremiumUntil) {
+    return null;
+  }
+
+  return `Trial active until ${format(trialPremiumUntil, "dd MMM, yyyy")}`;
+}
+
 export default function ClubSubscriptionsOverviewPage() {
   const hasAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
   const { isAuthenticated, isProfileComplete, loading } = useAuth();
@@ -182,6 +193,16 @@ export default function ClubSubscriptionsOverviewPage() {
                   <div className="space-y-3 p-4 md:hidden">
                     {filteredRows.map((row) => {
                       const isPremium = row.subscription.plan === "premium";
+                      const hasPremiumAccess = row.subscription.hasPremiumAccess;
+                      const subscriptionLabel = isPremium
+                        ? "Premium"
+                        : hasPremiumAccess
+                          ? "Trial"
+                          : "Free";
+                      const trialHint = requestedTrialHint(
+                        row.subscription.status,
+                        row.subscription.trialPremiumUntil
+                      );
                       const { daysLabel, daysClass } = getDaysLeftDisplay(row.subscription.expiresAt);
 
                       return (
@@ -213,22 +234,29 @@ export default function ClubSubscriptionsOverviewPage() {
                                   "inline-flex h-7 items-center rounded-[5px] px-2 text-[13px] font-medium",
                                   isPremium
                                     ? "bg-brand-accent/20 text-amber-700"
-                                    : "bg-muted text-muted-foreground"
+                                    : hasPremiumAccess
+                                      ? "bg-blue-500/12 text-blue-600"
+                                      : "bg-muted text-muted-foreground"
                                 )}
                               >
-                                {isPremium ? "Premium" : "Free"}
+                                {subscriptionLabel}
                               </span>
                             </div>
                             <div className="flex items-center justify-between text-[14px]">
                               <span className="text-foreground/75">Status</span>
-                              <span
-                                className={cn(
-                                  "inline-flex h-7 items-center rounded-[5px] px-2 text-[13px] font-medium",
-                                  statusClassName(row.subscription.status)
-                                )}
-                              >
-                                {statusLabel(row.subscription.status)}
-                              </span>
+                              <div className="flex min-w-0 flex-col items-end gap-1">
+                                <span
+                                  className={cn(
+                                    "inline-flex h-7 items-center rounded-[5px] px-2 text-[13px] font-medium",
+                                    statusClassName(row.subscription.status)
+                                  )}
+                                >
+                                  {statusLabel(row.subscription.status)}
+                                </span>
+                                {trialHint ? (
+                                  <span className="text-[11px] text-blue-700/90">{trialHint}</span>
+                                ) : null}
+                              </div>
                             </div>
                             <div className="flex items-center justify-between text-[14px]">
                               <span className="text-foreground/75">Days Left</span>
@@ -264,6 +292,16 @@ export default function ClubSubscriptionsOverviewPage() {
                     <TableBody>
                       {filteredRows.map((row) => {
                         const isPremium = row.subscription.plan === "premium";
+                        const hasPremiumAccess = row.subscription.hasPremiumAccess;
+                        const subscriptionLabel = isPremium
+                          ? "Premium"
+                          : hasPremiumAccess
+                            ? "Trial"
+                            : "Free";
+                        const trialHint = requestedTrialHint(
+                          row.subscription.status,
+                          row.subscription.trialPremiumUntil
+                        );
                         const { daysLabel, daysClass } = getDaysLeftDisplay(row.subscription.expiresAt);
 
                         return (
@@ -286,21 +324,28 @@ export default function ClubSubscriptionsOverviewPage() {
                                   "inline-flex h-6 items-center rounded-md px-2 text-xs font-medium",
                                   isPremium
                                     ? "bg-brand-accent/20 text-amber-800"
-                                    : "bg-muted text-muted-foreground"
+                                    : hasPremiumAccess
+                                      ? "bg-blue-500/12 text-blue-600"
+                                      : "bg-muted text-muted-foreground"
                                 )}
                               >
-                                {isPremium ? "Premium" : "Free"}
+                                {subscriptionLabel}
                               </span>
                             </TableCell>
                             <TableCell className="px-4 py-3">
-                              <span
-                                className={cn(
-                                  "inline-flex h-6 items-center rounded-md px-2 text-xs font-medium",
-                                  statusClassName(row.subscription.status)
-                                )}
-                              >
-                                {statusLabel(row.subscription.status)}
-                              </span>
+                              <div className="flex min-w-0 flex-col gap-1">
+                                <span
+                                  className={cn(
+                                    "inline-flex h-6 w-fit items-center rounded-md px-2 text-xs font-medium",
+                                    statusClassName(row.subscription.status)
+                                  )}
+                                >
+                                  {statusLabel(row.subscription.status)}
+                                </span>
+                                {trialHint ? (
+                                  <span className="text-[11px] text-blue-700/90">{trialHint}</span>
+                                ) : null}
+                              </div>
                             </TableCell>
                             <TableCell className="px-4 py-3 text-sm text-foreground">
                               {formatExpiryDate(row.subscription.expiresAt)}

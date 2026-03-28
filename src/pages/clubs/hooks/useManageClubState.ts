@@ -6,9 +6,22 @@ import {
 } from "@/utils/date";
 
 export function shouldShowSubscriptionBanner(
-  subscription: { plan: string; expiresAt: Date | null } | undefined
+  subscription:
+    | {
+        plan: string;
+        expiresAt: Date | null;
+        hasPremiumAccess?: boolean;
+        renewalRequestedAt?: Date | null;
+      }
+    | undefined
 ): boolean {
   if (!subscription) return false;
+  if (subscription.renewalRequestedAt != null) {
+    return true;
+  }
+  if (subscription.hasPremiumAccess === true) {
+    return false;
+  }
   if (subscription.plan === "free") return true;
   if (subscription.plan !== "premium") return false;
 

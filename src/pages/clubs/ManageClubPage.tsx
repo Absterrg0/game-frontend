@@ -44,11 +44,16 @@ import { isSubscriptionExpiredByLocalDay } from "@/utils/date";
 
 function deriveSubscriptionStatus(
   plan: "free" | "premium",
+  hasPremiumAccess: boolean,
   expiresAt: Date | null,
   renewalRequestedAt: Date | null | undefined
 ): ClubSubscriptionStatus {
   if (renewalRequestedAt != null) {
     return "requested";
+  }
+
+  if (hasPremiumAccess) {
+    return "subscribed";
   }
 
   if (plan === "free") {
@@ -147,6 +152,7 @@ export default function ManageClubPage() {
   } else {
     const resolvedStatus = deriveSubscriptionStatus(
       staffData.subscription.plan,
+      staffData.subscription.hasPremiumAccess,
       staffData.subscription.expiresAt,
       staffData.subscription.renewalRequestedAt
     );
@@ -159,10 +165,11 @@ export default function ManageClubPage() {
       return {
         ...club,
         subscriptionStatus: resolvedStatus,
-        subscriptionExpiresAt:
-          staffData.subscription.plan === "premium"
-            ? staffData.subscription.expiresAt
-            : null,
+        subscriptionExpiresAt: staffData.subscription.hasPremiumAccess
+          ? (staffData.subscription.plan === "premium"
+              ? staffData.subscription.expiresAt
+              : staffData.subscription.trialPremiumUntil)
+          : null,
       };
     });
   }
@@ -182,10 +189,10 @@ export default function ManageClubPage() {
   const existingStaffIds = staff.map((s) => s.id);
   const showSubscriptionBanner = shouldShowSubscriptionBanner(staffData?.subscription);
   const showPremiumBanner =
-    hasSuperAdminAccess && staffData?.subscription?.plan === "premium";
+    hasSuperAdminAccess && staffData?.subscription?.hasPremiumAccess === true;
   const isRenewalRequested = staffData?.subscription?.renewalRequestedAt != null;
   const canAddStaff =
-    staffData != null && staffData.subscription?.plan !== "free";
+    staffData != null && staffData.subscription?.hasPremiumAccess === true;
   const isClubAdminOrOrganiserOnly =
     !hasSuperAdminAccess;
 
@@ -375,7 +382,7 @@ export default function ManageClubPage() {
                   <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-5">
                     <ManageClubHeader
                       selectedClub={selectedClub}
-                      showClubCrown={staffData?.subscription?.plan === "premium"}
+                      showClubCrown={staffData?.subscription?.hasPremiumAccess === true}
                       canUpdateExpiry={hasSuperAdminAccess}
                       canAddStaff={canAddStaff}
                       onOpenExpiryModal={openPremiumExpiryModal}

@@ -16,6 +16,8 @@ export interface ClubSubscriptionOverviewItem {
   subscription: {
     plan: "free" | "premium";
     expiresAt: Date | null;
+    trialPremiumUntil: Date | null;
+    hasPremiumAccess: boolean;
     status: ClubSubscriptionStatus;
     renewalRequestedAt?: Date | null;
   };
@@ -28,6 +30,8 @@ interface ClubSubscriptionOverviewApiItem {
   subscription: {
     plan: "free" | "premium";
     expiresAt: string | null;
+    trialPremiumUntil: string | null;
+    hasPremiumAccess: boolean;
     status: ClubSubscriptionStatus;
     renewalRequestedAt?: string | null;
   };
@@ -50,6 +54,7 @@ async function fetchClubSubscriptionsOverview(): Promise<ClubSubscriptionsOvervi
       subscription: {
         ...club.subscription,
         expiresAt: parseIsoDateSafely(club.subscription.expiresAt),
+        trialPremiumUntil: parseIsoDateSafely(club.subscription.trialPremiumUntil),
         renewalRequestedAt: parseIsoDateSafely(club.subscription.renewalRequestedAt),
       },
     })),

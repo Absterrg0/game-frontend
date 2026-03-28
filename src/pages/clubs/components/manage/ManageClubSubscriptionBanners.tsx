@@ -26,6 +26,7 @@ export function ManageClubSubscriptionBanners({
 }: ManageClubSubscriptionBannersProps) {
   const { t, i18n } = useTranslation();
   const locale = getDateFnsLocale(i18n.language);
+  const hasPendingUpgradeRequest = isRenewalRequested;
 
   let subscriptionBannerCopy: {
     key: "manageClub.subscriptionBannerUnknownExpiry" | "manageClub.subscriptionBannerExpiredOn" | "manageClub.subscriptionBannerExpiresOn",
@@ -80,7 +81,9 @@ export function ManageClubSubscriptionBanners({
             <div className="min-w-0">
               <p className="text-[14px] font-medium">{t("manageClub.subscriptionBannerTitle")}</p>
               <p className="mt-2 text-[13px] leading-[1.25]">
-                {subscriptionBannerCopy.date === undefined
+                {hasPendingUpgradeRequest
+                  ? t("manageClub.subscriptionRequestPending")
+                  : subscriptionBannerCopy.date === undefined
                   ? t(subscriptionBannerCopy.key)
                   : t(subscriptionBannerCopy.key, { date: subscriptionBannerCopy.date })}
               </p>
@@ -96,7 +99,7 @@ export function ManageClubSubscriptionBanners({
             >
               {isRenewalRequested
                 ? t("manageClub.statusRequested")
-                : t("manageClub.requestRenewal")}
+                : t("manageClub.upgradeToPremium")}
             </Button>
           )}
         </div>

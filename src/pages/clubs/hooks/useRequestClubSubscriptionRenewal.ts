@@ -7,6 +7,7 @@ interface RequestClubSubscriptionRenewalApiResponse {
     id: string;
     plan: "free" | "premium";
     expiresAt: string | null;
+    trialPremiumUntil: string | null;
     renewalRequestedAt: string | null;
   };
 }
