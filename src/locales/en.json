@@ -20,7 +20,7 @@
     "dashboardDescription": "Super Admin dashboard. Coming soon.",
     "subscriptionManagementCta": "Subscription Management",
     "nav": {
-      "admin": "Admin"
+      "admin": "Super Admin"
     },
     "clubSubscription": {
       "bannerTitleActive": "All Premium Features Active",
