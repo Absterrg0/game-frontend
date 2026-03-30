@@ -1,47 +1,50 @@
-import { useState, useEffect, useCallback } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { AuthContext, type AuthContextValue, type AuthUser } from "./context";
 
+async function fetchMe(): Promise<AuthUser | null> {
+  try {
+    const res = await api.get<{ user: AuthUser | null }>("/api/auth/me");
+    return res.data.user ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const checkAuth = useCallback(async (): Promise<AuthUser | null> => {
-    setLoading(true);
-
-    try {
-      const res = await api.get<{ user: AuthUser }>("/api/auth/me");
-      const nextUser = res.data.user;
-      setUser(nextUser);
-      return nextUser;
-    } catch {
-      setUser(null);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void checkAuth();
-  }, [checkAuth]);
+  const { data: user, isLoading } = useQuery<AuthUser | null>({
+    queryKey: ["auth", "me"],
+    queryFn: fetchMe,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const logout = useCallback(async () => {
     try {
       await api.post("/api/auth/logout");
     } catch {
-      // no-op; we still clear local auth state below
+      // ignore network errors; still clear client state
     }
-    setUser(null);
-  }, []);
 
-  const isProfileComplete = !!(user?.alias?.trim() && user?.name?.trim());
+    queryClient.setQueryData(["auth", "me"], null);
+    queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+  }, [queryClient]);
+
+  const checkAuth = useCallback(async () => {
+    return queryClient.fetchQuery<AuthUser | null>({
+      queryKey: ["auth", "me"],
+      queryFn: fetchMe,
+    });
+  }, [queryClient]);
 
   const value: AuthContextValue = {
-    user,
-    loading,
+    user: user ?? null,
+    loading: isLoading,
     isAuthenticated: !!user,
-    isProfileComplete,
+    isProfileComplete: !!(user?.alias?.trim() && user?.name?.trim()),
     checkAuth,
     logout,
   };

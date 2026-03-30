@@ -275,9 +275,15 @@ export default function ManageClubPage() {
     const isMainAdmin = user != null && user.id === currentMainAdminId;
 
     if (!isSuperAdmin && !isMainAdmin) {
+      let errorKey = "manageClub.onlyMainAdminCanRemoveAdmins";
+      if (removingMember.role === "default_admin") {
+        errorKey = "manageClub.onlySuperCanRemoveDefaultAdmin";
+      } else if (removingMember.role === "organiser") {
+        errorKey = "manageClub.onlyClubAdminsCanRemoveOrganisers";
+      }
+
       toast.error(
-        t("manageClub.onlyMainAdminCanRemoveAdmins") ||
-          "Only the main admin can remove members"
+        t(errorKey) || "Only the main admin can remove members"
       );
       return;
     }

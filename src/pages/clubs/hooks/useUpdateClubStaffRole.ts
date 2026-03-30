@@ -2,7 +2,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { useAuth } from "@/pages/auth/hooks";
-import type { ClubStaffResponse } from "@/pages/clubs/hooks/useClubStaff";
+import type {
+  ClubStaffResponse,
+} from "@/pages/clubs/hooks/useClubStaff";
 
 export type EditableClubStaffRole = "admin" | "organiser";
 
@@ -43,70 +45,85 @@ export function useUpdateClubStaffRole() {
 
   return useMutation({
     mutationFn: updateClubStaffRole,
+    mutationKey: ["club", "updateStaffRole"],
+
     onMutate: async (variables) => {
       const key = queryKeys.club.staff(variables.clubId);
+
       await queryClient.cancelQueries({ queryKey: key });
 
       const previous = queryClient.getQueryData<ClubStaffResponse>(key);
-      if (!previous) {
-        return { previous, key };
-      }
+      if (!previous) return;
 
-      const nextStaff = previous.staff.map((member) => {
-        if (member.id !== variables.staffId) {
-          return member;
-        }
+      const targetMember = previous.staff.find(
+        (m) => m.id === variables.staffId
+      );
 
-        return {
-          ...member,
-          role: variables.role,
-          roleLabel: variables.role === "admin" ? "Admin" : "Organiser",
-        };
-      });
+      if (!targetMember) return;
+
+      const previousRole = targetMember.role;
+      const previousRoleLabel = targetMember.roleLabel;
 
       queryClient.setQueryData<ClubStaffResponse>(key, {
         ...previous,
-        staff: nextStaff,
-      });
-
-      return { previous, key };
-    },
-    onError: (_error, _variables, context) => {
-      if (!context?.previous || !context.key) {
-        return;
-      }
-
-      queryClient.setQueryData(context.key, context.previous);
-    },
-    onSuccess: async (data, variables) => {
-      const key = queryKeys.club.staff(variables.clubId);
-      const current = queryClient.getQueryData<ClubStaffResponse>(key);
-      if (current) {
-        const nextStaff = current.staff.map((member) => {
-          if (member.id !== data.staff.id) {
-            return member;
-          }
+        staff: previous.staff.map((member) => {
+          if (member.id !== variables.staffId) return member;
 
           return {
             ...member,
-            role: data.staff.role,
-            roleLabel: data.staff.roleLabel,
+            role: variables.role,
           };
-        });
+        }),
+      });
 
-        queryClient.setQueryData<ClubStaffResponse>(key, {
+      return {
+        key,
+        staffId: variables.staffId,
+        previousRole,
+        previousRoleLabel,
+      };
+    },
+
+    // 🔴 Granular rollback (no snapshot overwrite)
+    onError: (_error, _variables, context) => {
+      if (!context?.key) return;
+
+      queryClient.setQueryData<ClubStaffResponse>(context.key, (current) => {
+        if (!current) return current;
+
+        return {
           ...current,
-          staff: nextStaff,
-        });
-      }
+          staff: current.staff.map((member) => {
+            if (member.id !== context.staffId) return member;
 
+            return {
+              ...member,
+              role: context.previousRole,
+              roleLabel: context.previousRoleLabel,
+            };
+          }),
+        };
+      });
+    },
+
+    // ✅ Auth edge case (self role change)
+    onSuccess: async (_data, variables) => {
       if (user?.id === variables.staffId) {
         await checkAuth();
-        queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
+
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.auth.me(),
+        });
       }
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({
+
+    // 🔄 Always sync with server
+    onSettled: (_data, _error, variables) => {
+      void queryClient.invalidateQueries({
+        queryKey: queryKeys.club.staff(variables.clubId),
+      });
+
+      void queryClient.invalidateQueries({
         queryKey: queryKeys.user.adminClubs(),
       });
     },
