@@ -216,7 +216,6 @@ export function FavoriteClubsSection() {
                   {isHome && (
                     <House
                       size={16}
-                     
                       className="text-[#067429]"
                       aria-label={t("settings.favoriteClubsHomeAria")}
                     />

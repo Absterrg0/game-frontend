@@ -50,9 +50,9 @@ function classesForTone(
     case "white":
       return ["brightness-0 invert", className].filter(Boolean).join(" ");
     case "danger":
-      return ["brightness-0 hue-rotate-[330deg] saturate-[2] brightness-90", className].filter(Boolean).join(" ");
+      return ["hue-rotate-[330deg] saturate-[2] brightness-90", className].filter(Boolean).join(" ");
     case "success":
-      return ["brightness-0 hue-rotate-[80deg] saturate-[1.5] brightness-95", className].filter(Boolean).join(" ");
+      return ["hue-rotate-[80deg] saturate-[1.5] brightness-95", className].filter(Boolean).join(" ");
     case "custom":
       return className ?? "";
     default:

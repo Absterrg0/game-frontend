@@ -41,8 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.setQueryData(["auth", "me"], null);
   
     queryClient.removeQueries({ queryKey: queryKeys.user.all });
-  
-    queryClient.removeQueries({ queryKey: queryKeys.club.all });
+
+    // Only evict admin/auth-sensitive club-related caches. Do not remove
+    // public club caches (list/detail/sponsors) which use the `club` prefix.
+    queryClient.removeQueries({ queryKey: queryKeys.admin.all });
+    queryClient.removeQueries({ queryKey: queryKeys.user.adminClubs(), exact: true });
   
     void queryClient.invalidateQueries({
       queryKey: ["auth", "me"],
