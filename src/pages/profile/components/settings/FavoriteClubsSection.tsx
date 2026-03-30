@@ -211,7 +211,7 @@ export function FavoriteClubsSection() {
                       name: club.name,
                     })}
                   >
-                    <Delete01Icon size={16} className="sm:size-[18px]" />
+                    <Delete01Icon className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
                   </button>
                   {isHome && (
                     <House

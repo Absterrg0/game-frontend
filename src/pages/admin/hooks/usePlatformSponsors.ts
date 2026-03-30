@@ -58,19 +58,20 @@ export function usePlatformSponsors(enabled: boolean) {
 }
 
 export function useCreatePlatformSponsor() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidatePlatformSponsors();
+
   return useMutation({
     mutationFn: async (input: UpsertPlatformSponsorInput) => {
       const data = await createPlatformSponsor(input);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.platformSponsors() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.sponsors.all });
       return data;
     },
+    onSuccess: invalidate,
   });
 }
 
 export function useUpdatePlatformSponsor() {
-  const queryClient = useQueryClient();
+  const invalidate = useInvalidatePlatformSponsors();
+
   return useMutation({
     mutationFn: async ({
       sponsorId,
@@ -80,10 +81,9 @@ export function useUpdatePlatformSponsor() {
       input: UpsertPlatformSponsorInput;
     }) => {
       const data = await updatePlatformSponsor(sponsorId, input);
-      await queryClient.invalidateQueries({ queryKey: queryKeys.admin.platformSponsors() });
-      await queryClient.invalidateQueries({ queryKey: queryKeys.sponsors.all });
       return data;
     },
+    onSuccess: invalidate,
   });
 }
 

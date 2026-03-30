@@ -26,7 +26,7 @@ export function ManageClubHeader({
   showClubCrown,
   canUpdateExpiry,
   canAddStaff,
-  showSponsorsButton = true,
+  showSponsorsButton = false,
   onOpenExpiryModal,
   onOpenAddModal,
 }: ManageClubHeaderProps) {

@@ -1,5 +1,8 @@
 import * as React from "react";
-import FigmaIcon, { toneFromClass, type FigmaIconTone } from "@/icons/FigmaIcon";
+import FigmaIcon from "@/icons/FigmaIcon";
+import { toneFromClass, type FigmaIconTone } from "./figma-icon-utils";
+import Apple from "@/assets/icons/Apple";
+import Google from "@/assets/icons/Google";
 
 /**
  * Figma-backed icons: one component per asset, with optional CSS transform for arrows.
@@ -105,7 +108,7 @@ export const IconUserStar = createIcon("userStar01");
 
 export const IconChevronDown = createIcon("chevronDown", { defaultTone: "muted" });
 export const IconChevronRight = createIcon("chevronRight", { defaultTone: "muted" });
-export const IconChevronLeft = createIcon("chevronRight", { defaultTone: "muted" });
+export const IconChevronLeft = createIcon("chevronRight", { defaultTone: "muted",transform: "scaleX(-1)" });
 export const IconArrowRight = createIcon("arrowRightGreen");
 
 export const IconCalendarDays = createIcon("calendarDays", { defaultTone: "muted" });
@@ -150,8 +153,8 @@ export const Settings01Icon = createIcon("setting2Bold");
 export const ShieldIcon = createIcon("shieldTickBold");
 export const InformationCircleIcon = createIcon("infoCircleBold");
 export const ArrowDown01Icon = createIcon("chevronDown");
-export const ArrowUp01Icon = createIcon("chevronDown", { transform: "rotate(180deg)" });
-export const ArrowLeft01Icon = createIcon("chevronRight", { transform: "scaleX(-1)" });
+export const ArrowUp01Icon = createIcon("arrowRightGreen", { transform: "rotate(180deg)" });
+export const ArrowLeft01Icon = createIcon("arrowRightGreen", { transform: "scaleX(-1)" });
 export const ArrowRight01Icon = createIcon("arrowRightGreen");
 export const UserIcon = createIcon("userStar01");
 export const Logout01Icon = createIcon("archiveRestore");
@@ -185,7 +188,7 @@ export const ChevronRight = IconChevronRight;
 
 export const ChevronLeftIcon = IconChevronLeft;
 export const ChevronLeft = IconChevronLeft;
-export const ChevronUp = IconChevronDown;
+export const ChevronUp = createIcon("chevronDown",{ defaultTone: "muted", transform: "rotate(180deg)"});
 
 export const Trash2 = IconTrash;
 export const CalendarDays = IconCalendarDays;
@@ -233,8 +236,8 @@ export const TriangleAlertIcon = IconInfo;
 /* Former react-icons specific exports used by app                             */
 /* -------------------------------------------------------------------------- */
 
-export const FcGoogle = IconSearch;
-export const SiApple = IconUserStar;
+export const FcGoogle = Google;
+export const SiApple = Apple;
 
 /* -------------------------------------------------------------------------- */
 /* Dynamic map                                                                  */

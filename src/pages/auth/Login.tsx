@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 import { ArrowLeft01Icon } from "@/icons/figma-icons";
-import { FcGoogle } from "@/icons/figma-icons";
-import { SiApple } from "@/icons/figma-icons";
+import Google from "@/assets/icons/Google";
+import Apple from "@/assets/icons/Apple";
 import { getBackendUrl } from "@/lib/api";
 
 const Login = () => {
@@ -30,7 +30,7 @@ const Login = () => {
             href={googleAuthUrl}
             className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-[#333333] bg-white w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
           >
-            <FcGoogle size={22} className="mr-2 shrink-0" />
+            <Google width={22} height={22} className="mr-2 shrink-0" />
             {t("auth.signInWithGoogle")}
           </a>
         ) : (
@@ -39,7 +39,7 @@ const Login = () => {
             disabled
             className="font-semibold border rounded-lg border-[#C6C4D5] text-[#333333] bg-white w-full mt-6 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
           >
-            <FcGoogle size={22} className="mr-2 shrink-0" />
+            <Google width={22} height={22} className="mr-2 shrink-0" />
             {t("auth.signInWithGoogle")}
           </button>
         )}
@@ -48,7 +48,7 @@ const Login = () => {
             href={appleAuthUrl}
             className="font-semibold border rounded-lg border-[#C6C4D5] active:animate-jerk text-[#333333] bg-white w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm hover:bg-white flex justify-center items-center gap-2 no-underline"
           >
-            <SiApple size={22} className="mr-2 shrink-0 text-[#000000]" />
+            <Apple width={22} height={22} className="mr-2 shrink-0 text-[#000000]" />
             {t("auth.signInWithApple")}
           </a>
         ) : (
@@ -57,7 +57,7 @@ const Login = () => {
             disabled
             className="font-semibold border rounded-lg border-[#C6C4D5] text-[#333333] bg-white w-full mt-4 md:h-[48px] h-[40px] font-primary md:text-base text-sm flex justify-center items-center gap-2 opacity-50 cursor-not-allowed"
           >
-            <SiApple size={22} className="mr-2 shrink-0 text-[#000000]" />
+            <Apple width={22} height={22} className="mr-2 shrink-0 text-[#000000]" />
             {t("auth.signInWithApple")}
           </button>
         )}
@@ -87,7 +87,7 @@ const Login = () => {
         <div className="border-l-4 border-brand-primary pl-4 space-y-4">
           <div>
             <div className="flex items-center gap-2">
-              <SiApple size={16} className="shrink-0 text-[#000000]" />
+              <Apple width={16} height={16} className="shrink-0 text-[#000000]" />
               <h3 className="font-semibold text-[#333333]">{t("auth.appleSupport")}</h3>
             </div>
             <a
@@ -105,7 +105,7 @@ const Login = () => {
 
           <div>
             <div className="flex items-center gap-2">
-              <FcGoogle size={16} className="shrink-0" />
+              <Google width={16} height={16} className="shrink-0" />
               <h3 className="font-semibold text-[#333333]">{t("auth.signInWithGoogleTitle")}</h3>
             </div>
             <a

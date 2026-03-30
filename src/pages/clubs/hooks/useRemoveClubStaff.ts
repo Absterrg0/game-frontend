@@ -46,28 +46,48 @@ export function useRemoveClubStaff() {
 
       if (!removedMember) return;
 
+      const originalIndex = previous.staff.findIndex(
+        (m) => m.id === variables.staffId
+      );
+
       queryClient.setQueryData<ClubStaffResponse>(key, {
         ...previous,
         staff: previous.staff.filter((m) => m.id !== variables.staffId),
       });
 
-      return { key, removedMember };
+      return { key, removedMember, originalIndex };
     },
 
-    onError: (_error, _variables, context) => {
+    onError: (_error, _variables, context: any) => {
       if (!context?.key) return;
 
       queryClient.setQueryData<ClubStaffResponse>(context.key, (current) => {
         if (!current) return current;
 
         const member = context.removedMember;
+        const originalIndex: number | undefined = context.originalIndex;
+
+        if (!member) return current;
 
         const exists = current.staff.some((m) => m.id === member.id);
         if (exists) return current;
 
+        // If originalIndex is invalid, append; otherwise insert at originalIndex
+        if (typeof originalIndex !== "number" || originalIndex === -1) {
+          return {
+            ...current,
+            staff: [...current.staff, member],
+          };
+        }
+
+        const idx = Math.max(0, Math.min(originalIndex, current.staff.length));
         return {
           ...current,
-          staff: [...current.staff, member],
+          staff: [
+            ...current.staff.slice(0, idx),
+            member,
+            ...current.staff.slice(idx),
+          ],
         };
       });
     },

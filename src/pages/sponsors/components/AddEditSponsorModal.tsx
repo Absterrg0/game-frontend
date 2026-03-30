@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SponsorLogoUploadZone } from "@/components/shared/SponsorLogoUploadZone";
-import { getErrorMessage } from "@/lib/errors";
+import { getErrorMessage, getHttpStatus } from "@/lib/errors";
 import { useCreateSponsor, useUpdateSponsor, type ClubSponsor } from "@/pages/sponsors/hooks";
 import { toast } from "sonner";
 
@@ -77,10 +77,7 @@ export function AddEditSponsorModal({
       }
       onOpenChange(false);
     } catch (err: unknown) {
-      const status =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { status?: number } }).response?.status
-          : undefined;
+      const status = getHttpStatus(err);
       if (status === 409) {
         toast.error(t("sponsors.duplicateName"));
         return;

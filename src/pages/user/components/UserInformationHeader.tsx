@@ -13,7 +13,7 @@ export function UserInformationHeader() {
         <p className="mt-1 text-sm text-muted-foreground">{t("signup.subtitle")}</p>
       </div>
       <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-[#fef9c3] text-[#854d0e]">
-        <UserIcon size={20} className="text-muted-foreground" />
+        <UserIcon size={20} className="text-current" />
       </div>
     </div>
   );

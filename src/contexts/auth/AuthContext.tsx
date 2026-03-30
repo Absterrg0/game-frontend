@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, queryKeys } from "@/lib/api";
 import { AuthContext, type AuthContextValue, type AuthUser } from "./context";
 
 async function fetchMe(): Promise<AuthUser | null> {
@@ -33,10 +33,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore network errors; still clear client state
     }
 
-    await queryClient.cancelQueries({ queryKey: ["auth", "me"] });
+    await queryClient.cancelQueries();
 
     queryClient.setQueryData(["auth", "me"], null);
-
+  
+    queryClient.removeQueries({ queryKey: queryKeys.user.all });
+  
+    queryClient.removeQueries({ queryKey: queryKeys.club.all });
+  
     void queryClient.invalidateQueries({
       queryKey: ["auth", "me"],
       refetchType: "none",

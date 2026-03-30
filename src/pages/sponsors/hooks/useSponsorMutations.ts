@@ -44,11 +44,13 @@ export function useCreateSponsor(clubId: string | null) {
   return useMutation({
     mutationFn: async (input: CreateSponsorInput) => {
       const data = await createSponsor(requireClubId(clubId), input);
-      if (clubId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });
-        await queryClient.invalidateQueries({ queryKey: queryKeys.sponsors.all });
-      }
       return data;
+    },
+    onSuccess: () => {
+      if (clubId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sponsors.all });
+      }
     },
   });
 }
@@ -64,11 +66,13 @@ export function useUpdateSponsor(clubId: string | null) {
       input: UpdateSponsorInput;
     }) => {
       const data = await updateSponsor(requireClubId(clubId), sponsorId, input);
-      if (clubId) {
-        await queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });
-        await queryClient.invalidateQueries({ queryKey: queryKeys.sponsors.all });
-      }
       return data;
+    },
+    onSuccess: () => {
+      if (clubId) {
+        queryClient.invalidateQueries({ queryKey: queryKeys.club.sponsors(clubId) });
+        queryClient.invalidateQueries({ queryKey: queryKeys.sponsors.all });
+      }
     },
   });
 }
