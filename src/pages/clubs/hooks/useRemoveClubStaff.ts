@@ -44,10 +44,6 @@ export function useRemoveClubStaff() {
         // Replace with proper logging if available (e.g., Sentry)
         console.error("checkAuth failed after self-removal", err);
       }
-
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.auth.me(),
-      });
     },
 
     onSettled: async (_data, _error, variables) => {
