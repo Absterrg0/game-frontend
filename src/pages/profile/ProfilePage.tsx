@@ -1,17 +1,17 @@
 import { useNavigate, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { format, parseISO, isValid } from "date-fns";
-import { useAuth } from "@/hooks/auth";
+import { format } from "date-fns";
+import { useAuth } from "@/pages/auth/hooks";
 import { Button } from "@/components/ui/button";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
   UserIcon,
   Mail01Icon,
   Calendar03Icon,
   Logout01Icon,
-} from "@hugeicons/core-free-icons";
-import { ProfileRow } from "@/components/profile";
+} from "@/icons/figma-icons";
+import { ProfileRow } from "@/pages/profile/components/ProfileRow";
 import InlineLoader from "@/components/shared/InlineLoader";
+import { parseIsoDateSafely } from "@/utils/date";
 
 export default function ProfilePage() {
   const { t } = useTranslation();
@@ -47,8 +47,8 @@ export default function ProfilePage() {
 
   const displayDate = (() => {
     if (!user?.dateOfBirth) return "—";
-    const parsed = parseISO(String(user.dateOfBirth));
-    return isValid(parsed) ? format(parsed, "PPP") : "—";
+    const parsed = parseIsoDateSafely(String(user.dateOfBirth));
+    return parsed ? format(parsed, "PPP") : "—";
   })();
 
   const genderKeyMap: Record<string, string> = {
@@ -107,38 +107,38 @@ export default function ProfilePage() {
         <div className="overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-auth-pop-shadow backdrop-blur-sm">
           <div className="divide-y divide-border/60 px-6 py-6 sm:px-8 sm:py-7">
             <ProfileRow
-              icon={UserIcon}
+              icon={<UserIcon size={18} className="text-muted-foreground" />}
               label={t("profile.id")}
               value={user?.id ?? "—"}
               mono
             />
             <ProfileRow
-              icon={Mail01Icon}
+              icon={<Mail01Icon size={18} className="text-muted-foreground" />}
               label={t("signup.emailAddress")}
               value={user?.email ?? "—"}
             />
             <ProfileRow
-              icon={UserIcon}
+              icon={<UserIcon size={18} className="text-muted-foreground" />}
               label={t("signup.name")}
               value={user?.name ?? "—"}
             />
             <ProfileRow
-              icon={UserIcon}
+              icon={<UserIcon size={18} className="text-muted-foreground" />}
               label={t("signup.alias")}
               value={user?.alias ?? "—"}
             />
             <ProfileRow
-              icon={Calendar03Icon}
+              icon={<Calendar03Icon size={18} className="text-muted-foreground" />}
               label={t("signup.dateOfBirth")}
               value={displayDate}
             />
             <ProfileRow
-              icon={UserIcon}
+              icon={<UserIcon size={18} className="text-muted-foreground" />}
               label={t("signup.gender")}
               value={displayGender}
             />
             <ProfileRow
-              icon={UserIcon}
+              icon={<UserIcon size={18} className="text-muted-foreground" />}
               label={t("profile.userType.label")}
               value={displayUserType}
             />
@@ -151,7 +151,7 @@ export default function ProfilePage() {
               variant="outline"
               className="h-11 w-full gap-2 text-sm text-destructive transition-colors hover:bg-destructive/10 hover:text-destructive hover:border-destructive/40"
             >
-              <HugeiconsIcon icon={Logout01Icon} size={18} />
+              <Logout01Icon size={18} className="text-destructive" />
               {t("common.logout")}
             </Button>
           </div>

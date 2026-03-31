@@ -1,263 +1,490 @@
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/api/queryKeys";
 import { useTranslation } from "react-i18next";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  PlusSignIcon,
-  CrownIcon,
-  InformationCircleIcon,
-  ArrowLeft01Icon,
-  SparklesIcon,
-} from "@hugeicons/core-free-icons";
-import { useAdminClubs, useClubStaff } from "@/hooks/club";
-import { useAuth, useHasRoleOrAbove } from "@/hooks/auth";
+  useAdminClubs,
+  useClubStaff,
+  useRequestClubSubscriptionRenewal,
+  useUpdateClubSubscription,
+  useUpdateClubStaffRole,
+  useSetClubMainAdmin,
+  useRemoveClubStaff,
+  type ClubStaffMember,
+} from "@/pages/clubs/hooks";
+import {
+  useClubSubscriptionsOverview,
+  type ClubSubscriptionStatus,
+} from "@/pages/admin/hooks";
+import { useAuth, useHasRoleOrAbove } from "@/pages/auth/hooks";
 import { ROLES } from "@/constants/roles";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { StaffRow } from "@/components/clubs/StaffRow";
-import { AddAdminOrganiserModal } from "@/components/clubs/AddAdminOrganiserModal";
-import { RequestSubscriptionRenewalModal } from "@/components/clubs/RequestSubscriptionRenewalModal";
-import InlineLoader from "@/components/shared/InlineLoader";
+import { getErrorMessage } from "@/lib/errors";
+import { AddAdminOrganiserModal } from "@/pages/clubs/components/manage/AddAdminOrganiserModal";
+import { ManageClubHeader } from "@/pages/clubs/components/manage/ManageClubHeader";
+import { ManageClubSidebar } from "@/pages/clubs/components/manage/ManageClubSidebar";
+import { ManageClubStaffSection } from "@/pages/clubs/components/manage/ManageClubStaffSection";
+import { ManageClubSubscriptionBanners } from "@/pages/clubs/components/manage/ManageClubSubscriptionBanners";
+import { RequestSubscriptionRenewalModal } from "@/pages/clubs/components/manage/RequestSubscriptionRenewalModal";
+import { UpdatePremiumExpiryModal } from "@/pages/clubs/components/manage/UpdatePremiumExpiryModal";
+import { ManageClubInfoCard } from "@/pages/clubs/components/manage/ManageClubInfoCard";
+import { MainContentSkeleton } from "@/pages/clubs/components/manage/MainContentSkeleton";
+import { SidebarSkeleton } from "@/pages/clubs/components/manage/SidebarSkeleton";
+import { EditStaffRoleModal } from "@/pages/clubs/components/manage/EditStaffRoleModal";
+import { RemoveStaffDialog } from "@/pages/clubs/components/manage/RemoveStaffDialog";
+import type {
+  ManageClubSidebarClub,
+  SidebarStatusFilter,
+} from "@/pages/clubs/components/manage/ManageClubSidebar";
+import {
+  shouldShowSubscriptionBanner,
+  useManageClubState,
+} from "@/pages/clubs/hooks/useManageClubState";
+import { isSubscriptionExpiredByLocalDay } from "@/utils/date";
 
-/** Show banner when status is renewal_needed or when expires within 7 days */
-function shouldShowSubscriptionBanner(
-  subscription: { plan: string; expiresAt: string | null; subscriptionStatus: string } | undefined
-): boolean {
-  if (!subscription) return false;
-  if (subscription.subscriptionStatus === "renewal_needed") return true;
-  if (!subscription.expiresAt) return false;
-  const expiresAt = new Date(subscription.expiresAt);
-  const now = new Date();
-  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  return expiresAt <= sevenDaysFromNow;
+function deriveSubscriptionStatus(
+  plan: "free" | "premium",
+  expiresAt: Date | null,
+  renewalRequestedAt: Date | null | undefined
+): ClubSubscriptionStatus {
+  if (renewalRequestedAt != null) {
+    return "requested";
+  }
+
+  if (plan === "free") {
+    return "nothing";
+  }
+
+  if (!expiresAt || isSubscriptionExpiredByLocalDay(expiresAt)) {
+    return "renewal_needed";
+  }
+
+  return "subscribed";
 }
 
 export default function ManageClubPage() {
   const { t } = useTranslation();
-  const hasAccess = useHasRoleOrAbove(ROLES.CLUB_ADMIN);
-  const { isAuthenticated, isProfileComplete, loading } = useAuth();
-  const { data: adminClubsData, isLoading: clubsLoading } = useAdminClubs(hasAccess);
-
-  const [selectedClubId, setSelectedClubId] = useState<string | null>(null);
-  const [addModalOpen, setAddModalOpen] = useState(false);
-  const [renewModalOpen, setRenewModalOpen] = useState(false);
-  /** On mobile: 'clubs' = show club list, 'staff' = show staff list. Desktop always shows both. */
-  const [mobileView, setMobileView] = useState<"clubs" | "staff">("clubs");
+  const queryClient = useQueryClient();
+  const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
+  const { user } = useAuth();
+  const {
+    data: adminClubsData,
+    isLoading: clubsLoading,
+    isFetching: adminClubsFetching,
+    isError: clubsError,
+    isSuccess: clubsSuccess,
+    error: adminClubsQueryError,
+    refetch: refetchAdminClubs,
+  } = useAdminClubs(true);
+  const { data: clubSubscriptionsData, isLoading: subscriptionsLoading } =
+    useClubSubscriptionsOverview(hasSuperAdminAccess);
+  const isSidebarDataLoading =
+    clubsLoading || (hasSuperAdminAccess && subscriptionsLoading);
+  const [statusFilter, setStatusFilter] = useState<SidebarStatusFilter>("all");
+  const [editingMember, setEditingMember] = useState<ClubStaffMember | null>(null);
+  const [removingMember, setRemovingMember] = useState<ClubStaffMember | null>(null);
+  const [requestRenewalModalOpen, setRequestRenewalModalOpen] = useState(false);
 
   const clubs = adminClubsData?.clubs ?? [];
-  const selectedClub = clubs.find((c) => c.id === selectedClubId) ?? null;
-  const effectiveClubId = selectedClub?.id ?? selectedClubId;
+  const subscriptionsByClubId = new Map(
+    (clubSubscriptionsData?.clubs ?? []).map((club) => [
+      club.id,
+      {
+        status: club.subscription.status,
+        expiresAt: club.subscription.expiresAt,
+      },
+    ])
+  );
 
-  const { data: staffData, isLoading: staffLoading } = useClubStaff(effectiveClubId);
+  let clubsWithSubscriptionStatus: ManageClubSidebarClub[];
+  if (!hasSuperAdminAccess) {
+    clubsWithSubscriptionStatus = clubs;
+  } else {
+    clubsWithSubscriptionStatus = clubs.map((club) => {
+      const subscription = subscriptionsByClubId.get(club.id);
+
+      return {
+        id: club.id,
+        name: club.name,
+        membersCount: club.membersCount,
+        eventsCount: club.eventsCount,
+        courtCount: club.courtCount,
+        subscriptionStatus: subscription?.status,
+        subscriptionExpiresAt: subscription?.expiresAt ?? null,
+      };
+    });
+  }
+
+  const {
+    selectedClub,
+    effectiveClubId,
+    mobileView,
+    setMobileView,
+    setSelectedClubId,
+    addModalOpen,
+    setAddModalOpen,
+    premiumExpiryModalOpen,
+    setPremiumExpiryModalOpen,
+  } = useManageClubState(isSidebarDataLoading ? [] : clubsWithSubscriptionStatus);
+
+  const { data: staffData, isLoading: staffLoading } = useClubStaff(
+    isSidebarDataLoading ? null : effectiveClubId
+  );
+  const isInitialClubDetailLoading =
+    !isSidebarDataLoading &&
+    effectiveClubId !== null &&
+    staffLoading &&
+    staffData === undefined;
+  const requestClubSubscriptionRenewal =
+    useRequestClubSubscriptionRenewal(effectiveClubId);
+  const updateClubSubscription = useUpdateClubSubscription(effectiveClubId);
+  const updateClubStaffRole = useUpdateClubStaffRole();
+  const setClubMainAdmin = useSetClubMainAdmin();
+  const removeClubStaff = useRemoveClubStaff();
+
+  let clubsWithResolvedSubscription: ManageClubSidebarClub[];
+  if (!hasSuperAdminAccess || !effectiveClubId || !staffData?.subscription) {
+    clubsWithResolvedSubscription = clubsWithSubscriptionStatus;
+  } else {
+    const resolvedStatus = deriveSubscriptionStatus(
+      staffData.subscription.plan,
+      staffData.subscription.expiresAt,
+      staffData.subscription.renewalRequestedAt
+    );
+
+    clubsWithResolvedSubscription = clubsWithSubscriptionStatus.map((club) => {
+      if (club.id !== effectiveClubId) {
+        return club;
+      }
+
+      return {
+        ...club,
+        subscriptionStatus: resolvedStatus,
+        subscriptionExpiresAt:
+          staffData.subscription.plan === "premium"
+            ? staffData.subscription.expiresAt
+            : null,
+      };
+    });
+  }
+
+  const visibleClubs =
+    !hasSuperAdminAccess || statusFilter === "all"
+      ? clubsWithResolvedSubscription
+      : clubsWithResolvedSubscription.filter(
+          (club) => (club.subscriptionStatus ?? "nothing") === statusFilter
+        );
   const staff = staffData?.staff ?? [];
+  const currentMainAdminId =
+    staff.find((member) => member.role === "default_admin")?.id ?? null;
+  const canSetMainAdmin =
+    hasSuperAdminAccess ||
+    (user != null && currentMainAdminId != null && user.id === currentMainAdminId);
   const existingStaffIds = staff.map((s) => s.id);
   const showSubscriptionBanner = shouldShowSubscriptionBanner(staffData?.subscription);
-  const showUpgradeBanner =
-    staffData?.subscription?.plan === "free" && !showSubscriptionBanner;
+  const showPremiumBanner =
+    hasSuperAdminAccess && staffData?.subscription?.plan === "premium";
+  const isRenewalRequested = staffData?.subscription?.renewalRequestedAt != null;
   const canAddStaff =
     staffData != null && staffData.subscription?.plan !== "free";
+  const isClubAdminOrOrganiserOnly =
+    !hasSuperAdminAccess;
 
-  if (loading) {
+  const handleUpdateClubSubscription = async (selectedExpiryDate: Date) => {
+    try {
+      await updateClubSubscription.mutateAsync({
+        plan: "premium",
+        expiresAt: selectedExpiryDate,
+      });
+      toast.success(t("manageClub.premiumExpiryUpdated"));
+      return true;
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error) || t("manageClub.premiumExpiryUpdateError")
+      );
+      return false;
+    }
+  };
+
+  const openPremiumExpiryModal = () => {
+    if (!hasSuperAdminAccess) {
+      return;
+    }
+
+    setPremiumExpiryModalOpen(true);
+  };
+
+  const openRequestRenewalModal = () => {
+    if (hasSuperAdminAccess) {
+      return;
+    }
+
+    if (isRenewalRequested) {
+      return;
+    }
+
+    setRequestRenewalModalOpen(true);
+  };
+
+  const handleRequestSubscriptionRenewal = async () => {
+    try {
+      await requestClubSubscriptionRenewal.mutateAsync();
+      toast.success(t("manageClub.renewRequestSent"));
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.renewRequestError"));
+      throw error;
+    }
+  };
+
+  const handleEditStaffRole = async (role: "admin" | "organiser") => {
+    if (!effectiveClubId || !editingMember) {
+      return;
+    }
+
+    // Only super admin or the current main admin may edit roles
+    const isSuperAdmin = hasSuperAdminAccess;
+    const isMainAdmin = user != null && user.id === currentMainAdminId;
+    if (!isSuperAdmin && !isMainAdmin) {
+      toast.error(
+        t("manageClub.onlyMainAdminCanEditRoles") ||
+          "Only the main admin can edit member roles"
+      );
+      return;
+    }
+
+    try {
+      await updateClubStaffRole.mutateAsync({
+        clubId: effectiveClubId,
+        staffId: editingMember.id,
+        role,
+      });
+
+      toast.success(t("manageClub.editRoleSuccess"));
+      setEditingMember(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.editRoleError"));
+    }
+  };
+
+  const handleRemoveStaff = async () => {
+    if (!effectiveClubId || !removingMember) {
+      return;
+    }
+    // Role-specific removal permissions:
+    // - removing default_admin: only super admin
+    // - removing organiser: super admin OR club admins (main admin or other club admins)
+    // - other roles: super admin OR main admin
+    const isSuperAdmin = hasSuperAdminAccess;
+    const isMainAdmin = user != null && user.id === currentMainAdminId;
+    const isClubAdmin =
+      user != null &&
+      staff.some((s) => s.id === user.id && (s.role === "default_admin" || s.role === "admin"));
+
+    if (removingMember.role === "default_admin") {
+      if (!isSuperAdmin) {
+        toast.error(
+          t("manageClub.onlySuperCanRemoveDefaultAdmin") ||
+            "Only a super admin can remove the main admin"
+        );
+        return;
+      }
+    } else if (removingMember.role === "organiser") {
+      if (!(isSuperAdmin || isClubAdmin)) {
+        toast.error(
+          t("manageClub.onlyClubAdminsCanRemoveOrganisers") ||
+            "Only club admins can remove organisers"
+        );
+        return;
+      }
+    } else {
+      if (!(isSuperAdmin || isMainAdmin)) {
+        toast.error(
+          t("manageClub.onlyMainAdminCanRemoveAdmins") ||
+            "Only the main admin can remove members"
+        );
+        return;
+      }
+    }
+
+    try {
+      await removeClubStaff.mutateAsync({
+        clubId: effectiveClubId,
+        staffId: removingMember.id,
+      });
+
+      toast.success(t("manageClub.removeMemberSuccess"));
+      setRemovingMember(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.removeMemberError"));
+    }
+  };
+
+  const handleSetMainAdmin = async (
+    newMainAdminId: string,
+    orderedIds?: string[]
+  ) => {
+    if (!effectiveClubId) {
+      return false;
+    }
+
+    try {
+      await setClubMainAdmin.mutateAsync({
+        clubId: effectiveClubId,
+        userId: newMainAdminId,
+        orderedIds,
+      });
+
+      toast.success(t("manageClub.mainAdminUpdateSuccess"));
+      return true;
+    } catch (error) {
+      toast.error(getErrorMessage(error) || t("manageClub.mainAdminUpdateError"));
+      return false;
+    }
+  };
+
+  if (!clubsLoading && clubsError && adminClubsData == null) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <InlineLoader />
+      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4">
+        <p className="text-center text-sm text-destructive" role="alert">
+          {getErrorMessage(adminClubsQueryError) ?? t("settings.adminClubsLoadError")}
+        </p>
+        <button
+          type="button"
+          disabled={adminClubsFetching}
+          onClick={() => void refetchAdminClubs()}
+          className="text-sm font-medium text-primary underline disabled:opacity-50"
+        >
+          {adminClubsFetching ? t("common.loading") : t("settings.adminClubsRetry")}
+        </button>
       </div>
     );
   }
-
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (!isProfileComplete) return <Navigate to="/information" replace />;
+  if (
+    !clubsLoading &&
+    clubsSuccess &&
+    !clubsError &&
+    !hasSuperAdminAccess &&
+    clubs.length === 0
+  ) {
+    return <Navigate to="/clubs" replace />;
+  }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] justify-center bg-gray-50">
-      <div className="flex w-full max-w-6xl flex-col lg:flex-row">
-        {/* Sidebar - on mobile: hidden when showing staff view */}
-        <aside
-          className={cn(
-            "w-full border-b border-border bg-muted/30 p-4 lg:w-80 lg:border-b-0 lg:border-r",
-            mobileView === "staff" && "hidden lg:block"
-          )}
-        >
-        <h2 className="text-lg font-semibold text-foreground">{t("manageClub.allClubs")}</h2>
-        <p className="mb-4 text-sm text-muted-foreground">{t("manageClub.selectClub")}</p>
-
-        {clubsLoading ? (
-          <div className="flex justify-center py-8">
-            <InlineLoader />
-          </div>
-        ) : clubs.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("manageClub.noClubs")}</p>
-        ) : (
-          <div className="space-y-2">
-            {clubs.map((club) => {
-              const isSelected = club.id === effectiveClubId;
-              return (
-                <button
-                  key={club.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedClubId(club.id);
-                    setMobileView("staff");
-                  }}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors",
-                    isSelected
-                      ? "border-brand-primary bg-brand-primary/5 ring-1 ring-brand-primary"
-                      : "border-border bg-card hover:bg-muted/50"
-                  )}
-                >
-                  <div
-                    className={cn(
-                      "h-3 w-3 shrink-0 rounded-full",
-                      isSelected ? "bg-brand-primary" : "bg-muted-foreground/40"
-                    )}
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-foreground truncate">{club.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("manageClub.membersCount", { count: 0 })} ·{" "}
-                      {t("manageClub.eventsCount", { count: 0 })}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
+    <div className="flex min-h-[calc(100vh-60px)] justify-center bg-[#f8fbf8] px-6 py-[22px]">
+      <div className="flex w-full max-w-[1088px] flex-col gap-[25px] lg:flex-row lg:gap-[34px]">
+        {!clubsLoading && clubsError && adminClubsData != null && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
+            <p>{getErrorMessage(adminClubsQueryError) ?? t("settings.adminClubsLoadError")}</p>
+            <button
+              type="button"
+              disabled={adminClubsFetching}
+              onClick={() => void refetchAdminClubs()}
+              className="mt-2 font-medium underline disabled:opacity-50"
+            >
+              {adminClubsFetching ? t("common.loading") : t("settings.adminClubsRetry")}
+            </button>
           </div>
         )}
 
-        <div className="mt-6 flex gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900/50 dark:bg-blue-950/30">
-          <HugeiconsIcon icon={InformationCircleIcon} size={20} className="shrink-0 text-blue-600 dark:text-blue-400" />
-          <div className="text-sm">
-            <p className="font-medium text-foreground">{t("manageClub.adminManagement")}</p>
-            <ul className="mt-1 list-disc space-y-0.5 pl-4 text-muted-foreground">
-              <li>{t("manageClub.ruleDrag")}</li>
-              <li>{t("manageClub.ruleDefault")}</li>
-              <li>{t("manageClub.ruleExpiry")}</li>
-              <li>{t("manageClub.ruleReactivate")}</li>
-            </ul>
-          </div>
-        </div>
-        </aside>
-
-        {/* Main content - on mobile: hidden when showing clubs view */}
-        <main
-          className={cn(
-            "flex-1 p-4 lg:p-6",
-            mobileView === "clubs" && "hidden lg:block"
-          )}
-        >
-        {!effectiveClubId ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-muted-foreground">{t("manageClub.selectClubToManage")}</p>
-          </div>
+        {isSidebarDataLoading ? (
+          <>
+            <SidebarSkeleton />
+            <main className="flex-1">
+              <MainContentSkeleton />
+            </main>
+          </>
         ) : (
           <>
-            {/* Back button - mobile only, returns to club list */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mb-4 -ml-2 lg:hidden"
-              onClick={() => setMobileView("clubs")}
+            <ManageClubSidebar
+              clubs={visibleClubs}
+              clubsLoading={false}
+              effectiveClubId={effectiveClubId}
+              mobileView={mobileView}
+              isSuperAdminView={hasSuperAdminAccess}
+              statusFilter={statusFilter}
+              onStatusFilterChange={setStatusFilter}
+              onClubSelect={(clubId) => {
+                setSelectedClubId(clubId);
+                setMobileView("staff");
+                void queryClient.invalidateQueries({
+                  queryKey: queryKeys.user.adminClubs(),
+                });
+                void queryClient.invalidateQueries({
+                  queryKey: queryKeys.club.staff(clubId),
+                });
+              }}
+            />
+
+            <main
+              className={cn(
+                "flex-1",
+                mobileView === "clubs" && "hidden lg:block"
+              )}
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} size={16} className="mr-1" />
-              {t("manageClub.backToClubs")}
-            </Button>
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="flex items-center gap-2 text-xl font-semibold text-foreground">
-                  {selectedClub?.name}
-                  <HugeiconsIcon icon={CrownIcon} size={20} className="text-brand-primary" aria-hidden />
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {t("manageClub.manageAdminsSubtitle")}
-                </p>
-              </div>
-              <Button
-                className="shrink-0 bg-brand-primary hover:bg-brand-primary-hover"
-                onClick={() => setAddModalOpen(true)}
-                disabled={!canAddStaff}
-                title={!canAddStaff ? t("manageClub.addMemberDisabledHint") : undefined}
-              >
-                <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
-                {t("manageClub.addMember")}
-              </Button>
-            </div>
-
-            {staffLoading ? (
-              <div className="flex justify-center py-12">
-                <InlineLoader />
-              </div>
-            ) : staff.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border bg-muted/20 py-12 text-center">
-                <p className="text-muted-foreground">{t("manageClub.noStaff")}</p>
-                <Button
-                  variant="outline"
-                  className="mt-4"
-                  onClick={() => setAddModalOpen(true)}
-                  disabled={!canAddStaff}
-                  title={!canAddStaff ? t("manageClub.addMemberDisabledHint") : undefined}
-                >
-                  <HugeiconsIcon icon={PlusSignIcon} size={16} className="mr-2" />
-                  {t("manageClub.addMember")}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {staff.map((member) => (
-                  <StaffRow
-                    key={member.id}
-                    member={member}
-                    onMenuAction={(action, id) => {
-                      // Placeholder - logic to be implemented later
-                      console.log(action, id);
-                    }}
-                  />
-                ))}
-              </div>
-            )}
-
-            {showSubscriptionBanner && (
-              <div className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <HugeiconsIcon icon={InformationCircleIcon} size={20} className="shrink-0 text-amber-600 dark:text-amber-400" />
-                  <p className="text-sm text-foreground">
-                    {t("manageClub.subscriptionBannerText")}
-                  </p>
+              {!effectiveClubId ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <p className="text-muted-foreground">{t("manageClub.selectClubToManage")}</p>
                 </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="shrink-0 bg-gray-800 text-white hover:bg-gray-700"
-                  onClick={() => setRenewModalOpen(true)}
-                >
-                  {t("manageClub.renewNow")}
-                </Button>
-              </div>
-            )}
+              ) : isInitialClubDetailLoading ? (
+                <MainContentSkeleton />
+              ) : (
+                <>
+                  <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-5">
+                    <ManageClubHeader
+                      clubId={effectiveClubId}
+                      selectedClub={selectedClub}
+                      showClubCrown={staffData?.subscription?.plan === "premium"}
+                      canUpdateExpiry={hasSuperAdminAccess}
+                      canAddStaff={canAddStaff}
+                      showSponsorsButton={!hasSuperAdminAccess}
+                      onOpenExpiryModal={openPremiumExpiryModal}
+                      onOpenAddModal={() => setAddModalOpen(true)}
+                    />
 
-            {showUpgradeBanner && (
-              <div className="mt-6 flex items-center justify-between gap-4 rounded-lg border border-brand-primary/30 bg-brand-primary/5 px-4 py-3 dark:border-brand-primary/40 dark:bg-brand-primary/10">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <HugeiconsIcon icon={SparklesIcon} size={20} className="shrink-0 text-brand-primary" />
-                  <p className="text-sm text-muted-foreground">
-                    {t("manageClub.upgradeBannerBenefits")}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  className="shrink-0 bg-brand-primary hover:bg-brand-primary-hover"
-                  onClick={() => {
-                    // TODO: Navigate to upgrade / contact flow
-                  }}
-                >
-                  {t("manageClub.upgradeToPremium")}
-                </Button>
-              </div>
-            )}
+                    <ManageClubStaffSection
+                      staff={staff}
+                      staffLoading={isInitialClubDetailLoading}
+                      canAddStaff={canAddStaff}
+                      canSetMainAdmin={canSetMainAdmin}
+                      currentMainAdminId={currentMainAdminId}
+                      onOpenAddModal={() => setAddModalOpen(true)}
+                      onMainAdminChange={handleSetMainAdmin}
+                      onMenuAction={(action, member) => {
+                        if (action === "edit") {
+                          setEditingMember(member);
+                          return;
+                        }
+
+                        setRemovingMember(member);
+                      }}
+                    />
+
+                    <ManageClubSubscriptionBanners
+                      roleMode={
+                        hasSuperAdminAccess
+                          ? "super_admin"
+                          : "club_admin_or_organiser"
+                      }
+                      showPremiumBanner={showPremiumBanner}
+                      showSubscriptionBanner={showSubscriptionBanner}
+                      subscription={staffData?.subscription}
+                      onRequestRenewal={openRequestRenewalModal}
+                      isRenewalRequested={isRenewalRequested}
+                    />
+                  </div>
+
+                  {mobileView === "staff" && (
+                    <div className="mt-[25px] lg:hidden">
+                      <ManageClubInfoCard />
+                    </div>
+                  )}
+                </>
+              )}
+            </main>
           </>
         )}
-        </main>
       </div>
 
       <AddAdminOrganiserModal
@@ -267,14 +494,49 @@ export default function ManageClubPage() {
         existingStaffIds={existingStaffIds}
       />
 
-      <RequestSubscriptionRenewalModal
-        open={renewModalOpen}
-        onOpenChange={setRenewModalOpen}
-        onConfirm={() => {
-          // TODO: Call API to submit renewal request
-          toast.success(t("manageClub.renewRequestSent"));
+      <EditStaffRoleModal
+        key={editingMember?.id ?? "edit-staff-role-closed"}
+        open={editingMember !== null}
+        member={editingMember}
+        isSubmitting={updateClubStaffRole.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setEditingMember(null);
+          }
         }}
+        onConfirm={handleEditStaffRole}
       />
+
+      <RemoveStaffDialog
+        open={removingMember !== null}
+        member={removingMember}
+        isRemoving={removeClubStaff.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRemovingMember(null);
+          }
+        }}
+        onConfirm={handleRemoveStaff}
+      />
+
+      {isClubAdminOrOrganiserOnly && (
+        <RequestSubscriptionRenewalModal
+          open={requestRenewalModalOpen}
+          onOpenChange={setRequestRenewalModalOpen}
+          isSubmitting={requestClubSubscriptionRenewal.isPending}
+          onConfirm={handleRequestSubscriptionRenewal}
+        />
+      )}
+
+      {hasSuperAdminAccess && (
+        <UpdatePremiumExpiryModal
+          open={premiumExpiryModalOpen}
+          onOpenChange={setPremiumExpiryModalOpen}
+          currentExpiryDate={staffData?.subscription?.expiresAt}
+          isSubmitting={updateClubSubscription.isPending}
+          onConfirm={handleUpdateClubSubscription}
+        />
+      )}
     </div>
   );
 }
