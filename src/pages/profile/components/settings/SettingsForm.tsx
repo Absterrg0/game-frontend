@@ -17,7 +17,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { useAuth } from "@/pages/auth/hooks";
 import { type AuthUser } from "@/contexts/auth";
 import { useUpdateProfile } from "@/pages/profile/hooks";
 import InlineLoader from "@/components/shared/InlineLoader";
@@ -40,13 +39,8 @@ function getInitialInputs(user: AuthUser) {
 
 export function SettingsForm({ user }: { user: AuthUser }) {
   const { t } = useTranslation();
-  const { checkAuth } = useAuth();
   const [inputs, setInputs] = useState(() => getInitialInputs(user));
-  const { updateProfile, isLoading } = useUpdateProfile({
-    onSuccess: () => {
-      void checkAuth();
-    },
-  });
+  const { updateProfile, isLoading } = useUpdateProfile();
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
