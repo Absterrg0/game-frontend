@@ -284,7 +284,7 @@ export default function ManageClubPage() {
 
     if (removingMember.role === "default_admin") {
       toast.error(
-        t("manageClub.onlySuperCanRemoveDefaultAdmin") ||
+        t("manageClub.reassignBeforeRemovingDefaultAdmin") ||
           "Assign a new main admin first, then remove this user"
       );
       return;

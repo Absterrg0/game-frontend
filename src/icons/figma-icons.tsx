@@ -11,7 +11,7 @@ import chevronDownIcon from "@/assets/icons/figma/lucide/chevron-down.svg?react"
 import chevronRightIcon from "@/assets/icons/figma/lucide/chevron-right.svg?react";
 import circlePlusIcon from "@/assets/icons/figma/lucide/circle-plus.svg?react";
 import cloudUploadIcon from "@/assets/icons/figma/lucide/cloud-upload.svg?react";
-import crownIconUrl from "@/assets/icons/figma/lucide/crown.svg";
+import crownIcon from "@/assets/icons/figma/lucide/crown.svg?react";
 import ellipsisVerticalIcon from "@/assets/icons/figma/lucide/ellipsis-vertical.svg?react";
 import gripVerticalIcon from "@/assets/icons/figma/lucide/grip-vertical.svg?react";
 import houseIcon from "@/assets/icons/figma/lucide/house.svg?react";
@@ -63,9 +63,9 @@ const TONE_CLASS: Record<IconTone, string> = {
   success: "text-emerald-600",
 };
 
-function toCssSize(size: Size | undefined): string {
-  const safeSize = size ?? 16;
-  return typeof safeSize === "number" ? `${safeSize}px` : safeSize;
+function toCssSize(size: Size | undefined): string | undefined {
+  if (size === undefined) return undefined;
+  return typeof size === "number" ? `${size}px` : size;
 }
 
 function defineSvgIcon(component: SvgIconComponent, options?: Omit<IconDefinition, "component" | "imageSrc">): IconDefinition {
@@ -114,7 +114,7 @@ const ICONS = {
   cloudUpload: defineSvgIcon(cloudUploadIcon, { defaultTone: "muted" }),
   circlePlus: defineSvgIcon(circlePlusIcon, { defaultTone: "muted" }),
   plus: defineSvgIcon(plusIcon, { defaultTone: "muted" }),
-  crown: defineImageIcon(crownIconUrl, { defaultTone: "muted", nativeColor: true }),
+  crown: defineSvgIcon(crownIcon, { defaultTone: "muted" }),
 
   ellipsisVertical: defineSvgIcon(ellipsisVerticalIcon, { defaultTone: "muted" }),
   gripVertical: defineSvgIcon(gripVerticalIcon, { defaultTone: "muted" }),
@@ -161,8 +161,7 @@ function createIcon(name: IconKey, override?: { defaultTone?: IconTone; transfor
           .filter(Boolean)
           .join(" ")}
         style={{
-          width: iconSize,
-          height: iconSize,
+          ...(iconSize !== undefined ? { width: iconSize, height: iconSize } : {}),
           lineHeight: 0,
           ...style,
         }}
