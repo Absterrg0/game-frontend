@@ -58,7 +58,7 @@ export function ClubSubscriptionForm({ club, onSave, isSaving }: ClubSubscriptio
 
   const formatLongDate = (date: Date | null): string => {
     if (!date) return t("admin.clubSubscription.dateUnknown");
-    return format(date, "MMMM d, yyyy", { locale: dateFnsLocale });
+    return format(date, "PPP", { locale: dateFnsLocale });
   };
 
   const membersText = t("admin.clubSubscription.membersCount", {
@@ -170,11 +170,23 @@ export function ClubSubscriptionForm({ club, onSave, isSaving }: ClubSubscriptio
                 )}
               >
                 <div className="mb-[25px] flex items-start justify-between">
-                  <StartUpIcon className="size-6" />
+                  <StartUpIcon
+                    className="size-6"
+                    aria-hidden
+                    focusable={false}
+                  />
                   {selectedPlan === "free" ? (
-                    <Ellipse10Icon className="size-[18px]" />
+                    <Ellipse10Icon
+                      className="size-[18px]"
+                      aria-hidden
+                      focusable={false}
+                    />
                   ) : (
-                    <Ellipse9Icon className="size-[18px]" />
+                    <Ellipse9Icon
+                      className="size-[18px]"
+                      aria-hidden
+                      focusable={false}
+                    />
                   )}
                 </div>
                 <p className="text-[16px] font-medium text-[#010a04]">
@@ -198,9 +210,17 @@ export function ClubSubscriptionForm({ club, onSave, isSaving }: ClubSubscriptio
                 <div className="mb-[25px] flex items-start justify-between">
                   <CrownPlanIcon className="size-6" />
                   {selectedPlan === "premium" ? (
-                    <Ellipse10Icon className="size-[18px]" />
+                    <Ellipse10Icon
+                      className="size-[18px]"
+                      aria-hidden
+                      focusable={false}
+                    />
                   ) : (
-                    <Ellipse9Icon className="size-[18px]" />
+                    <Ellipse9Icon
+                      className="size-[18px]"
+                      aria-hidden
+                      focusable={false}
+                    />
                   )}
                 </div>
                 <p className="text-[16px] font-medium text-[#010a04]">
@@ -306,7 +326,11 @@ export function ClubSubscriptionForm({ club, onSave, isSaving }: ClubSubscriptio
               ) : (
                 <X className="mt-px size-4 shrink-0 text-[#d92100]" />
               )}
-              <span>{t("admin.clubSubscription.meaningSponsorsHidden")}</span>
+              <span>
+                {isPremiumActive
+                  ? t("admin.clubSubscription.meaningSponsorsVisible")
+                  : t("admin.clubSubscription.meaningSponsorsHidden")}
+              </span>
             </li>
             <li className="flex items-start gap-[8px] text-[13px] text-[#010a04]/80">
               <CheckIcon className="mt-px size-4 shrink-0" />

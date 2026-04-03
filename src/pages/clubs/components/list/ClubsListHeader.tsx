@@ -31,9 +31,13 @@ export function ClubsListHeader({
               onChange={(event) => onQueryChange(event.target.value)}
               placeholder={t("clubs.searchPlaceholder")}
               className={showSearchingHint ? "h-9 pr-9" : "h-9"}
+              aria-busy={showSearchingHint}
             />
             {showSearchingHint && (
-              <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground">
+              <span
+                className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              >
                 <InlineLoader size="sm" />
               </span>
             )}

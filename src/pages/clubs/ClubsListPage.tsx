@@ -35,6 +35,7 @@ export default function ClubsListPage() {
             clubs={clubs}
             query={debouncedQuery}
             isSearching={isSearching}
+            isLoading={isLoading}
             onClearSearch={() => setQuery("")}
           />
           {!isSearching && pagination.totalCount > 0 && (
