@@ -322,6 +322,7 @@ export function AppNavbar() {
               side="right"
               className="w-[min(90vw,22rem)] min-w-[18rem] border-0 bg-brand-primary p-0"
               showCloseButton={true}
+              closeButtonClassName="text-white opacity-90 hover:opacity-100 data-[state=open]:bg-transparent hover:bg-white/15 focus:ring-white/50 focus:ring-offset-brand-primary"
             >
               <SheetHeader className="border-b border-white/20 px-4 py-4">
                 <SheetTitle className="text-lg font-semibold text-white">
