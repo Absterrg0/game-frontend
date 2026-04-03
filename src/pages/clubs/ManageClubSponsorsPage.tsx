@@ -165,7 +165,7 @@ export default function ManageClubSponsorsPage() {
                             href={safeLink}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="mt-1 block truncate text-sm text-[#4A90E2] underline"
+                            className="mt-1 block truncate text-sm text-blue-600 underline"
                           >
                             {safeLink}
                           </a>
@@ -216,7 +216,7 @@ export default function ManageClubSponsorsPage() {
                           href={safeLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#4A90E2] underline"
+                          className="text-blue-600 underline"
                         >
                           {safeLink}
                         </a>
