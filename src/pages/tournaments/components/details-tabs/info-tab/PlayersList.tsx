@@ -29,29 +29,38 @@ function getPlayersContent({
   if (isPlayersListExpanded || !isPlayersCollapsible) {
     return (
       <div className="grid grid-cols-2 gap-[10px] sm:gap-[14px]">
-        {participants.map((participant) => (
-          <div
-            key={participant.id}
-            className="flex items-center gap-3 rounded-[12px] border border-[#010a04]/[0.08] bg-white px-3 py-2.5 sm:gap-5 sm:px-[15px] sm:py-3"
-          >
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[20px] border-[1.5px] border-[#010a04] bg-[#dddddd]/60 sm:h-10 sm:w-10">
-              <UserCircle2 size={30} className="text-[#010a04]" />
+        {participants.map((participant) => {
+          const nameTrimmed = participant.name?.trim() ?? "";
+          const aliasTrimmed = participant.alias?.trim() ?? "";
+          return (
+            <div
+              key={participant.id}
+              className="flex items-center gap-3 rounded-[12px] border border-[#010a04]/[0.08] bg-white px-3 py-2.5 sm:gap-5 sm:px-[15px] sm:py-3"
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[20px] border-[1.5px] border-[#010a04] bg-[#dddddd]/60 sm:h-10 sm:w-10">
+                <UserCircle2 size={30} className="text-[#010a04]" />
+              </div>
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <p className="truncate text-[14px] leading-5 text-[#010a04] sm:text-[16px]">
+                  {nameTrimmed || aliasTrimmed || t("tournaments.unknownPlayer")}
+                </p>
+                <p className="truncate text-[14px] leading-[18px] text-[#6a6a6a]">
+                  {aliasTrimmed ? aliasTrimmed : t("tournaments.participantNoAlias")}
+                </p>
+              </div>
             </div>
-            <div className="flex min-w-0 flex-col gap-1.5">
-              <p className="truncate text-[14px] leading-5 text-[#010a04] sm:text-[16px]">
-                {participant.name ?? participant.alias ?? t("tournaments.unknownPlayer")}
-              </p>
-              <p className="truncate text-[14px] leading-[18px] text-[#6a6a6a]">
-                {participant.alias?.trim() ? participant.alias : t("tournaments.participantNoAlias")}
-              </p>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     );
   }
 
-  return <p className="text-[14px] leading-5 text-[#010a04]">{`${participantSummary.slice(0, UI_LIMITS.DESCRIPTION_PREVIEW)}…`}</p>;
+  const preview = participantSummary.slice(0, UI_LIMITS.DESCRIPTION_PREVIEW);
+  return (
+    <p className="text-[14px] leading-5 text-[#010a04]">
+      {participantSummary.length > UI_LIMITS.DESCRIPTION_PREVIEW ? `${preview}…` : preview}
+    </p>
+  );
 }
 
 export function PlayersList({

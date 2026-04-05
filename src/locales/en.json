@@ -592,7 +592,7 @@
     "noSponsorForTournament": "No sponsor selected for this tournament.",
     "clubSponsors": "Club Sponsors",
     "noClubSponsors": "This club has no sponsors yet.",
-    "viewSponsorDetails": "View Details",
+    "viewSponsorDetails": "View Details: {{name}}",
     "getDirection": "Get Direction",
     "time": "Time",
     "timeRange": "{{start}} – {{end}}",

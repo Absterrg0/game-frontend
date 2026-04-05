@@ -2,7 +2,8 @@ import type { Locale } from "date-fns";
 import type { TournamentDetail } from "@/models/tournament/types";
 import { formatDateOrFallback } from "@/utils/date";
 import { formatTimeTo12Hour } from "@/utils/time";
-import type { DerivedMatch, MatchCounts, MatchStatus, TournamentMatchOutcome } from "./types";
+import { getMockMatchOutcomes } from "../shared/mockMatchOutcomes";
+import type { DerivedMatch, MatchCounts, MatchStatus } from "./types";
 
 function participantName(name: string | null, alias: string | null, fallback: string) {
   return name || alias || fallback;
@@ -32,32 +33,6 @@ export function statusClassName(status: MatchStatus) {
   if (status === "completed") return "bg-green-100 text-green-700";
   if (status === "inProgress") return "bg-blue-100 text-blue-700";
   return "bg-gray-100 text-gray-500";
-}
-
-/**
- * Mock: builds bracket pairings from participant order and assigns {@link MatchStatus} by index
- * (not from API data). Pairing order is shared with the matches tab; {@link TournamentDetail}
- * does not yet expose per-match status on {@link TournamentMatchOutcome}.
- *
- * Used by deriveMatches and deriveResults so standings reflect the same schedule as long as
- * both rely on this mock.
- */
-export function getMockMatchOutcomes(tournament: TournamentDetail): TournamentMatchOutcome[] {
-  const participants = tournament.participants;
-  const out: TournamentMatchOutcome[] = [];
-
-  for (let index = 0; index < participants.length; index += 2) {
-    const first = participants[index];
-    const second = participants[index + 1];
-    if (!first) continue;
-
-    // TODO: Replace with real match status from backend
-    // (TournamentDetail → per-match fields; map into TournamentMatchOutcome.status as MatchStatus.)
-    const status: MatchStatus = index % 6 === 0 ? "completed" : index % 6 === 2 ? "inProgress" : "scheduled";
-    out.push({ playerAId: first.id, playerBId: second?.id ?? null, status });
-  }
-
-  return out;
 }
 
 export function deriveMatches(

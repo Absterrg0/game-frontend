@@ -26,9 +26,6 @@ export function Sidebar({
 }: SidebarProps) {
   const canJoin = tournament.permissions.canJoin;
   const isParticipant = tournament.permissions.isParticipant;
-  const clampedSpotPercentage = Number.isFinite(spotPercentage)
-    ? Math.max(0, Math.min(100, spotPercentage))
-    : 0;
 
   return (
     <aside className={["xl:sticky xl:top-7", className].filter(Boolean).join(" ")}>
@@ -44,13 +41,13 @@ export function Sidebar({
                   total: tournament.progress.spotsTotal,
                 })}
               </p>
-              <p className="text-[#010a04]/60">{clampedSpotPercentage}%</p>
+              <p className="text-[#010a04]/60">{spotPercentage}%</p>
             </div>
 
             <div className="h-[15px] rounded-[111px] bg-[#d9d9d9]/40">
               <div
                 className="h-[15px] rounded-[111px] bg-[#D96D00] transition-[width]"
-                style={{ width: `${clampedSpotPercentage}%` }}
+                style={{ width: `${spotPercentage}%` }}
               />
             </div>
           </div>

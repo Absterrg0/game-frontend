@@ -53,6 +53,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
     isDescriptionExpanded,
   });
 
+  const club = tournament.club;
 
   return (
     <TabsContent value="info" className="mt-6 sm:mt-[30px]">
@@ -70,13 +71,13 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
             />
 
             <ClubInfo
-              clubName={tournament.club?.name ?? t("tournaments.unknownClub")}
+              clubName={club?.name ?? t("tournaments.unknownClub")}
               canEdit={tournament.permissions.canEdit}
               onEdit={() => setIsEditModalOpen(true)}
               onGetDirection={
-                tournament.club
+                club
                   ? () => {
-                      const q = encodeURIComponent(tournament.club!.name);
+                      const q = encodeURIComponent(club.name);
                       window.open(
                         `https://www.google.com/maps/search/?api=1&query=${q}`,
                         "_blank",

@@ -1,5 +1,5 @@
 import type { TournamentDetail } from "@/models/tournament/types";
-import { getMockMatchOutcomes } from "../matches-tab/deriveMatches";
+import { getMockMatchOutcomes } from "../shared/mockMatchOutcomes";
 import type { ParticipantResult } from "./types";
 
 function participantDisplayName(name: string | null, alias: string | null, fallback: string) {

@@ -1,11 +1,6 @@
-export type MatchStatus = "completed" | "inProgress" | "scheduled";
+import type { MatchStatus } from "../shared/types";
 
-/** Pairing + status shared with results aggregation (same rules as deriveMatches). */
-export interface TournamentMatchOutcome {
-  playerAId: string;
-  playerBId: string | null;
-  status: MatchStatus;
-}
+export type { MatchStatus, TournamentMatchOutcome } from "../shared/types";
 
 export interface DerivedMatch {
   id: string;
