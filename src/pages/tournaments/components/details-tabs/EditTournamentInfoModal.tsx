@@ -109,7 +109,9 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
       ? clubs
       : [{ id: selectedClubId, name: tournament.club?.name ?? t("tournaments.unknownClub"), courtCount: 0 }, ...clubs];
 
-  const { data: sponsorsData, isLoading: isSponsorsLoading } = useClubSponsors(selectedClubId || null);
+  const { data: sponsorsData, isLoading: isSponsorsLoading } = useClubSponsors(
+    open ? (selectedClubId || null) : null,
+  );
   const sponsors = sponsorsData?.sponsors ?? [];
   const activeSponsors = sponsors.filter((sponsor) => sponsor.status === "active");
   const selectedInActiveSponsors =
@@ -188,7 +190,13 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         className="max-w-[513px] gap-0 overflow-hidden rounded-[12px] border border-[rgba(1,10,4,0.08)] bg-white p-0 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] [&_[aria-label='Close']]:right-4 [&_[aria-label='Close']]:top-[18px] [&_[aria-label='Close']]:text-[#010a04]/70"
-        showCloseButton={true}
+        showCloseButton={!isMutating}
+        onEscapeKeyDown={(e) => {
+          if (isMutating) e.preventDefault();
+        }}
+        onPointerDownOutside={(e) => {
+          if (isMutating) e.preventDefault();
+        }}
       >
         <div className="px-[15px] pt-5">
           <DialogHeader className="pb-[18px]">
