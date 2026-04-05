@@ -1,7 +1,14 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
-import type { CreateTournamentInput, TournamentPlayMode } from "@/models/tournament/types";
-import { BREAK_OPTIONS, DURATION_OPTIONS, PLAY_MODES } from "@/constants/tournament";
-import { TabsContent } from "@/components/ui/tabs";
+import type {
+  CreateTournamentInput,
+  TournamentPlayMode,
+} from "@/models/tournament/types";
+import {
+  BREAK_OPTIONS,
+  DURATION_OPTIONS,
+  PLAY_MODES,
+} from "@/constants/tournament";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -19,16 +26,38 @@ interface DetailsTabProps {
 
 export function DetailsTab({ form, update }: DetailsTabProps) {
   const { t } = useTranslation();
+  const uid = useId();
+  const playModeLabelId = `${uid}-play-mode-label`;
+  const playModeTriggerId = `${uid}-play-mode-trigger`;
+  const durationLabelId = `${uid}-duration-label`;
+  const durationTriggerId = `${uid}-duration-trigger`;
+  const breakLabelId = `${uid}-break-label`;
+  const breakTriggerId = `${uid}-break-trigger`;
+  const entryFeeId = `${uid}-entry-fee`;
+  const minPlayersId = `${uid}-min-players`;
+  const maxPlayersId = `${uid}-max-players`;
+  const foodDrinksId = `${uid}-food-drinks`;
 
   return (
-    <TabsContent value="details" className="mt-0">
-      <div className="space-y-4">
-        <div>
-          <Label className="text-[14px] font-medium text-[#111827]">
+    <div className="space-y-4 sm:space-y-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+        <div className="space-y-2 sm:space-y-[10px]">
+          <Label
+            id={playModeLabelId}
+            htmlFor={playModeTriggerId}
+            className="text-[13px] font-medium text-[#010a04] sm:text-[15px]"
+          >
             {t("tournaments.gameMode")} *
           </Label>
-          <Select value={form.playMode} onValueChange={(v: TournamentPlayMode) => update({ playMode: v })}>
-            <SelectTrigger className="mt-1 h-10 w-full rounded-lg border-[#e5e7eb] text-[14px] font-normal">
+          <Select
+            value={form.playMode}
+            onValueChange={(v: TournamentPlayMode) => update({ playMode: v })}
+          >
+            <SelectTrigger
+              id={playModeTriggerId}
+              aria-labelledby={playModeLabelId}
+              className="h-[38px] w-full rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-[14px] font-medium text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[16px]"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -41,13 +70,83 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
           </Select>
         </div>
 
-        <div>
-          <Label className="text-[14px] font-medium text-[#111827]">
+        <div className="space-y-2 sm:space-y-[10px]">
+          <Label
+            id={durationLabelId}
+            htmlFor={durationTriggerId}
+            className="text-[15px] font-medium text-[#010a04]"
+          >
+            {t("tournaments.matchDuration")}
+          </Label>
+          <Select
+            value={form.duration}
+            onValueChange={(v) => update({ duration: v })}
+          >
+            <SelectTrigger
+              id={durationTriggerId}
+              aria-labelledby={durationLabelId}
+              className="h-[38px] w-full rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-[14px] font-medium text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[16px]"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {DURATION_OPTIONS.map((d) => (
+                <SelectItem key={d.value} value={d.value}>
+                  {t(d.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+        <div className="space-y-2 sm:space-y-[10px]">
+          <Label
+            id={breakLabelId}
+            htmlFor={breakTriggerId}
+            className="text-[15px] font-medium text-[#010a04]"
+          >
+            {t("tournaments.breakTime")}
+          </Label>
+          <Select
+            value={form.breakDuration}
+            onValueChange={(v) => update({ breakDuration: v })}
+          >
+            <SelectTrigger
+              id={breakTriggerId}
+              aria-labelledby={breakLabelId}
+              className="h-[38px] w-full rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-[14px] font-medium text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[16px]"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {BREAK_OPTIONS.map((b) => (
+                <SelectItem key={b.value} value={b.value}>
+                  {t(b.labelKey)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="hidden sm:block" aria-hidden="true" />
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+        <div className="space-y-2 sm:space-y-[10px]">
+          <Label
+            htmlFor={entryFeeId}
+            className="text-[15px] font-medium text-[#010a04]"
+          >
             {t("tournaments.entryFee")}
           </Label>
-          <div className="mt-1 flex h-10 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3">
-            <span className="text-[14px] text-[#9ca3af]">$</span>
+          <div className="flex h-[38px] items-center gap-2 rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] px-3 sm:h-[46px] sm:rounded-[12px] sm:px-[15px]">
+            <span className="text-[16px] leading-none text-[#010a04]/40 sm:text-[22px]">
+              $
+            </span>
             <Input
+              id={entryFeeId}
               type="number"
               min={0}
               placeholder="00"
@@ -57,97 +156,73 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
                 const n = v === "" ? 0 : parseFloat(v);
                 update({ entryFee: Number.isFinite(n) ? n : 0 });
               }}
-              className="h-auto border-0 p-0 text-[14px] shadow-none focus-visible:ring-0"
+              className="h-auto border-0 bg-transparent p-0 text-[13px] font-normal text-[#010a04] shadow-none focus-visible:ring-0 sm:text-[16px]"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-[14px] font-medium text-[#111827]">
-              {t("tournaments.matchDuration")}
-            </Label>
-            <Select value={form.duration} onValueChange={(v) => update({ duration: v })}>
-              <SelectTrigger className="mt-1 h-10 w-full rounded-lg border-[#e5e7eb] text-[14px] font-normal">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DURATION_OPTIONS.map((d) => (
-                  <SelectItem key={d.value} value={d.value}>
-                    {t(d.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <Label className="text-[14px] font-medium text-[#111827]">
-              {t("tournaments.breakTime")}
-            </Label>
-            <Select value={form.breakDuration} onValueChange={(v) => update({ breakDuration: v })}>
-              <SelectTrigger className="mt-1 h-10 w-full rounded-lg border-[#e5e7eb] text-[14px] font-normal">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {BREAK_OPTIONS.map((b) => (
-                  <SelectItem key={b.value} value={b.value}>
-                    {t(b.labelKey)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label className="text-[14px] font-medium text-[#111827]">
-              {t("tournaments.minPlayers")}
-            </Label>
-            <Input
-              type="number"
-              min={1}
-              value={form.minMember}
-              onChange={(e) => {
-                const v = e.target.value;
-                const n = v === "" ? 1 : parseFloat(v);
-                update({ minMember: Number.isFinite(n) ? n : 1 });
-              }}
-              className="mt-1 h-10 rounded-lg border-[#e5e7eb] text-[14px]"
-            />
-          </div>
-
-          <div>
-            <Label className="text-[14px] font-medium text-[#111827]">
-              {t("tournaments.maxPlayers")}
-            </Label>
-            <Input
-              type="number"
-              min={1}
-              value={form.maxMember}
-              onChange={(e) => {
-                const v = e.target.value;
-                const n = v === "" ? 1 : parseFloat(v);
-                update({ maxMember: Number.isFinite(n) ? n : 1 });
-              }}
-              className="mt-1 h-10 rounded-lg border-[#e5e7eb] text-[14px]"
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label className="text-[14px] font-medium text-[#111827]">
-            {t("tournaments.foodDrinks")}
+        <div className="space-y-2 sm:space-y-[10px]">
+          <Label
+            htmlFor={minPlayersId}
+            className="text-[15px] font-medium text-[#010a04]"
+          >
+            {t("tournaments.minPlayers")}
           </Label>
-          <textarea
-            placeholder={t("tournaments.foodDrinksPlaceholder")}
-            value={form.foodInfo ?? ""}
-            onChange={(e) => update({ foodInfo: e.target.value })}
-            className="mt-1 min-h-[106px] w-full rounded-lg border border-[#e5e7eb] bg-[#f3f4f6] px-3 py-2 text-[14px] placeholder:text-[#9ca3af]"
+          <Input
+            id={minPlayersId}
+            type="number"
+            min={1}
+            value={form.minMember}
+            onChange={(e) => {
+              const v = e.target.value;
+              const n = v === "" ? 1 : parseFloat(v);
+              update({ minMember: Number.isFinite(n) ? n : 1 });
+            }}
+            className="h-[38px] rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-[13px] font-normal text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[16px]"
           />
         </div>
       </div>
-    </TabsContent>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+        <div className="space-y-2 sm:space-y-[10px]">
+          <Label
+            htmlFor={maxPlayersId}
+            className="text-[15px] font-medium text-[#010a04]"
+          >
+            {t("tournaments.maxPlayers")}
+          </Label>
+          <Input
+            id={maxPlayersId}
+            type="number"
+            min={1}
+            value={form.maxMember}
+            onChange={(e) => {
+              const v = e.target.value;
+              const n = v === "" ? 1 : parseFloat(v);
+              update({ maxMember: Number.isFinite(n) ? n : 1 });
+            }}
+            className="h-[38px] rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-[13px] font-normal text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[16px]"
+          />
+        </div>
+
+        <div className="hidden sm:block" aria-hidden="true" />
+      </div>
+
+      <div className="space-y-2 sm:space-y-[10px]">
+        <Label
+          htmlFor={foodDrinksId}
+          className="text-[15px] font-medium text-[#010a04]"
+        >
+          {t("tournaments.foodDrinks")}
+        </Label>
+        <textarea
+          id={foodDrinksId}
+          placeholder={t("tournaments.foodDrinksPlaceholder")}
+          value={form.foodInfo ?? ""}
+          onChange={(e) => update({ foodInfo: e.target.value })}
+          className="min-h-[74px] w-full rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] px-3 py-3 text-[13px] font-normal text-[#010a04] placeholder:text-[#010a04]/50 sm:min-h-[106px] sm:rounded-[12px] sm:px-[15px] sm:py-[15px] sm:text-[16px]"
+        />
+      </div>
+    </div>
   );
 }
