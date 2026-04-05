@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, Circle } from "@/icons/figma-icons";
 import { toast } from "sonner";
 import { useAdminClubs } from "@/pages/clubs/hooks";
 import { useClubSponsors } from "@/pages/sponsors/hooks";
@@ -22,6 +21,15 @@ interface EditTournamentInfoModalProps {
   onOpenChange: (open: boolean) => void;
   tournament: TournamentDetail;
 }
+
+/** Snapshot of chosen club/sponsor so labels stay stable if list queries briefly omit an id. */
+type TournamentInfoSelection = {
+  clubId: string;
+  clubName: string | null;
+  sponsorId: string;
+  sponsorName: string | null;
+  sponsorLogoUrl: string | null;
+};
 
 function SponsorIndicator({ selected }: { selected: boolean }) {
   return (
@@ -89,25 +97,33 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
   const updateTournament = useUpdateTournament();
   const { data: adminClubsData } = useAdminClubs(open);
 
-  const initialSelection = {
+  const initialSelection: TournamentInfoSelection = {
     clubId: tournament.club?.id ?? "",
+    clubName: tournament.club?.name ?? null,
     sponsorId: tournament.sponsor?.id ?? "",
+    sponsorName: tournament.sponsor?.name ?? null,
+    sponsorLogoUrl: tournament.sponsor?.logoUrl ?? null,
   };
 
-  const [selection, setSelection] = useState<{
-    clubId: string;
-    sponsorId: string;
-  } | null>(null);
+  const [selection, setSelection] = useState<TournamentInfoSelection | null>(null);
 
-  const selectedClubId = selection?.clubId ?? initialSelection.clubId;
-  const selectedSponsorId = selection?.sponsorId ?? initialSelection.sponsorId;
+  const effective = selection ?? initialSelection;
+  const selectedClubId = effective.clubId;
+  const selectedSponsorId = effective.sponsorId;
 
   const clubs = adminClubsData?.clubs ?? [];
   const clubsWithFallback = !selectedClubId
     ? clubs
     : clubs.some((club) => club.id === selectedClubId)
       ? clubs
-      : [{ id: selectedClubId, name: tournament.club?.name ?? t("tournaments.unknownClub"), courtCount: 0 }, ...clubs];
+      : [
+          {
+            id: selectedClubId,
+            name: effective.clubName ?? t("tournaments.unknownClub"),
+            courtCount: 0,
+          },
+          ...clubs,
+        ];
 
   const { data: sponsorsData, isLoading: isSponsorsLoading } = useClubSponsors(
     open ? (selectedClubId || null) : null,
@@ -123,16 +139,23 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
   // (`selectedInActiveSponsors` is false). Build `fallbackSponsor` from `sponsorFromList` or
   // `sponsorFromTournament` so the UI still shows the assignment. Do not use a fallback while
   // `isSponsorsLoading`, or when `selectedClubId` / `selectedSponsorId` is empty.
+  const hasPersistedSponsorDisplay =
+    Boolean(selectedSponsorId) && (effective.sponsorName != null || effective.sponsorLogoUrl != null);
   const fallbackSponsor =
     !isSponsorsLoading &&
     selectedClubId &&
     selectedSponsorId &&
     !selectedInActiveSponsors &&
-    (sponsorFromList || sponsorFromTournament)
+    (sponsorFromList || sponsorFromTournament || hasPersistedSponsorDisplay)
       ? {
           id: selectedSponsorId,
-          name: sponsorFromList?.name ?? sponsorFromTournament?.name ?? t("tournaments.unknownSponsor"),
-          logoUrl: sponsorFromList?.logoUrl ?? sponsorFromTournament?.logoUrl ?? null,
+          name:
+            sponsorFromList?.name ??
+            sponsorFromTournament?.name ??
+            effective.sponsorName ??
+            t("tournaments.unknownSponsor"),
+          logoUrl:
+            sponsorFromList?.logoUrl ?? sponsorFromTournament?.logoUrl ?? effective.sponsorLogoUrl ?? null,
         }
       : null;
 
@@ -162,7 +185,18 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
 
   const handleClubChange = (clubId: string) => {
     if (isMutating) return;
-    setSelection({ clubId, sponsorId: "" });
+    const fromList = clubs.find((c) => c.id === clubId);
+    const name =
+      fromList?.name ??
+      (tournament.club?.id === clubId ? tournament.club.name : null) ??
+      t("tournaments.unknownClub");
+    setSelection({
+      clubId,
+      clubName: name,
+      sponsorId: "",
+      sponsorName: null,
+      sponsorLogoUrl: null,
+    });
   };
 
   const handleSave = async () => {
@@ -246,7 +280,15 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
                 disabled={isMutating}
                 onClick={() => {
                   if (isMutating) return;
-                  setSelection((prev) => ({ ...(prev ?? initialSelection), sponsorId: "" }));
+                  setSelection((prev) => {
+                    const base = prev ?? initialSelection;
+                    return {
+                      ...base,
+                      sponsorId: "",
+                      sponsorName: null,
+                      sponsorLogoUrl: null,
+                    };
+                  });
                 }}
                 compact
               />
@@ -289,7 +331,15 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
                         disabled={isMutating}
                         onClick={() => {
                           if (isMutating) return;
-                          setSelection((prev) => ({ ...(prev ?? initialSelection), sponsorId: sponsor.id }));
+                          setSelection((prev) => {
+                            const base = prev ?? initialSelection;
+                            return {
+                              ...base,
+                              sponsorId: sponsor.id,
+                              sponsorName: sponsor.name,
+                              sponsorLogoUrl: sponsor.logoUrl,
+                            };
+                          });
                         }}
                         logoUrl={sponsor.logoUrl}
                       />
