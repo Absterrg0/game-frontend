@@ -13,7 +13,7 @@ import { BasicInfoTab } from "@/pages/tournaments/components/create-modal/BasicI
 import { DetailsTab } from "@/pages/tournaments/components/create-modal/DetailsTab";
 import { SponsorTab } from "@/pages/tournaments/components/create-modal/SponsorTab";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -179,9 +179,15 @@ export function CreateTournamentModal({
           </TabsList>
 
           <div className="py-5">
-            <BasicInfoTab form={form} clubs={clubs} update={update} />
-            <DetailsTab form={form} update={update} />
-            <SponsorTab form={form} sponsors={sponsors} update={update} />
+            <TabsContent value="basic" className="mt-0">
+              <BasicInfoTab form={form} clubs={clubs} update={update} />
+            </TabsContent>
+            <TabsContent value="details" className="mt-0">
+              <DetailsTab form={form} update={update} />
+            </TabsContent>
+            <TabsContent value="sponsor" className="mt-0">
+              <SponsorTab form={form} sponsors={sponsors} update={update} />
+            </TabsContent>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

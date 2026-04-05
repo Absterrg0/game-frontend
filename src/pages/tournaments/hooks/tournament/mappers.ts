@@ -18,11 +18,12 @@ export function mapBackendTournamentDetail(data: BackendTournamentDetail): Tourn
 }
 
 export function toBackendCreateInput(data: CreateTournamentInput): BackendCreateTournamentInput {
+  const sponsorTrimmed = data.sponsor?.trim();
   return backendCreateTournamentInputSchema.parse({
     club: data.club,
     name: data.name,
     status: data.status,
-    sponsor: data.sponsor && data.sponsor.trim() !== "" ? data.sponsor : undefined,
+    sponsor: sponsorTrimmed !== "" ? sponsorTrimmed : undefined,
     logo: data.logo,
     date: data.date ?? undefined,
     startTime: data.startTime ?? undefined,
@@ -41,13 +42,14 @@ export function toBackendCreateInput(data: CreateTournamentInput): BackendCreate
 }
 
 export function toBackendUpdateInput(data: UpdateTournamentInput): BackendUpdateTournamentInput {
+  const sponsorTrimmed = typeof data.sponsor === "string" ? data.sponsor.trim() : undefined;
   return backendUpdateTournamentInputSchema.parse({
     club: data.club,
     sponsor:
       data.sponsor === null
         ? null
-        : typeof data.sponsor === "string" && data.sponsor.trim() !== ""
-          ? data.sponsor
+        : sponsorTrimmed !== ""
+          ? sponsorTrimmed
           : undefined,
     name: data.name,
     logo: data.logo,

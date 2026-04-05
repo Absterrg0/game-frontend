@@ -42,6 +42,17 @@ export function TournamentTable({
 }: TournamentTableProps) {
   const { t } = useTranslation();
 
+  const STATUS_LABELS: Record<TournamentStatus, string> = {
+    active: t("tournaments.statusActive"),
+    draft: t("tournaments.statusDraft"),
+    inactive: t("tournaments.statusInactive"),
+  };
+  const STATUS_DOTS: Record<TournamentStatus, string> = {
+    active: "bg-emerald-500",
+    draft: "bg-amber-400",
+    inactive: "bg-muted-foreground/50",
+  };
+
   return (
     <div className="overflow-x-auto border-y border-black/10">
       <Table className="min-w-[860px] table-fixed">
@@ -67,18 +78,8 @@ export function TournamentTable({
         <TableBody>
           {tournaments.map((tournament, idx) => {
             const { canEditDraft, canPublishDraft } = getRowPermissions(tournament.status);
-            const statusLabel =
-              tournament.status === "active"
-                ? t("tournaments.statusActive")
-                : tournament.status === "draft"
-                  ? t("tournaments.statusDraft")
-                  : t("tournaments.statusInactive");
-            const statusDotClass =
-              tournament.status === "active"
-                ? "bg-emerald-500"
-                : tournament.status === "draft"
-                  ? "bg-amber-400"
-                  : "bg-muted-foreground/50";
+            const statusLabel = STATUS_LABELS[tournament.status] || STATUS_LABELS.inactive;
+            const statusDotClass = STATUS_DOTS[tournament.status] || STATUS_DOTS.inactive;
 
             return (
               <TableRow

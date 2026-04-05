@@ -48,7 +48,8 @@ function SponsorOption({
   title: string;
   subtitle?: string;
   selected: boolean;
-  onClick: () => void;
+  /** Omitted when the row is display-only (e.g. disabled fallback sponsor). */
+  onClick?: () => void;
   logoUrl?: string | null;
   compact?: boolean;
   disabled?: boolean;
@@ -117,6 +118,10 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
   const sponsorFromList = sponsors.find((s) => s.id === selectedSponsorId);
   const sponsorFromTournament =
     tournament.sponsor?.id === selectedSponsorId ? tournament.sponsor : null;
+  // Edge case: `selectedSponsorId` is set but that sponsor is missing from `activeSponsors`
+  // (`selectedInActiveSponsors` is false). Build `fallbackSponsor` from `sponsorFromList` or
+  // `sponsorFromTournament` so the UI still shows the assignment. Do not use a fallback while
+  // `isSponsorsLoading`, or when `selectedClubId` / `selectedSponsorId` is empty.
   const fallbackSponsor =
     !isSponsorsLoading &&
     selectedClubId &&
@@ -256,7 +261,6 @@ export function EditTournamentInfoModal({ open, onOpenChange, tournament }: Edit
                       subtitle={t("tournaments.officialSponsor")}
                       selected
                       disabled
-                      onClick={() => {}}
                       logoUrl={fallbackSponsor.logoUrl}
                     />
                   ) : null}

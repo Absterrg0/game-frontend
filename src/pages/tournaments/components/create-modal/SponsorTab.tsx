@@ -1,8 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { ClubSponsor } from "@/pages/sponsors/hooks";
 import type { CreateTournamentInput } from "@/models/tournament/types";
-import { TabsContent } from "@/components/ui/tabs";
-
 interface SponsorTabProps {
   form: CreateTournamentInput;
   sponsors: ClubSponsor[];
@@ -48,9 +46,13 @@ function SponsorCard({
           )
         ) : null}
         <div>
-          <p className="text-[16px] font-medium leading-[1.2] text-[#010a04]">{title}</p>
+          <p className="text-[16px] font-medium leading-[1.2] text-[#010a04]">
+            {title}
+          </p>
           {subtitle ? (
-            <p className="mt-[5px] text-[14px] leading-tight text-[#010a04]/70">{subtitle}</p>
+            <p className="mt-[5px] text-[14px] leading-tight text-[#010a04]/70">
+              {subtitle}
+            </p>
           ) : null}
         </div>
       </div>
@@ -74,39 +76,41 @@ export function SponsorTab({ form, sponsors, update }: SponsorTabProps) {
   const activeSponsors = sponsors.filter((s) => s.status === "active");
 
   return (
-    <TabsContent value="sponsor" className="mt-0">
-      <div className="space-y-[14px]">
-        <h3 className="text-[18px] font-medium leading-[1.3] text-[#010a04]">
-          {t("tournaments.selectSponsor")}
-        </h3>
-        <p className="max-w-[540px] text-[14px] leading-[1.4] text-[#010a04]/60">
-          {t("tournaments.selectSponsorHint")}
+    <div className="space-y-[14px]">
+      <h3 className="text-[18px] font-medium leading-[1.3] text-[#010a04]">
+        {t("tournaments.selectSponsor")}
+      </h3>
+      <p className="max-w-[540px] text-[14px] leading-[1.4] text-[#010a04]/60">
+        {t("tournaments.selectSponsorHint")}
+      </p>
+
+      {!form.club ? (
+        <p className="text-[14px] text-[#010a04]/60">
+          {t("tournaments.selectClubFirst")}
         </p>
+      ) : (
+        <div className="space-y-2">
+          <SponsorCard
+            selected={form.sponsor == null || form.sponsor === ""}
+            title={t("tournaments.noSponsor")}
+            hideAvatar
+            onClick={() => update({ sponsor: null })}
+          />
 
-        {!form.club ? (
-          <p className="text-[14px] text-[#010a04]/60">{t("tournaments.selectClubFirst")}</p>
-        ) : (
-          <div className="space-y-2">
+          {activeSponsors.map((sponsor) => (
             <SponsorCard
-              selected={form.sponsor == null || form.sponsor === ""}
-              title={t("tournaments.noSponsor")}
-              hideAvatar
-              onClick={() => update({ sponsor: null })}
+              key={sponsor.id}
+              selected={form.sponsor === sponsor.id}
+              title={sponsor.name}
+              subtitle={
+                sponsor.description?.trim() || t("tournaments.officialSponsor")
+              }
+              logoUrl={sponsor.logoUrl}
+              onClick={() => update({ sponsor: sponsor.id })}
             />
-
-            {activeSponsors.map((sponsor) => (
-              <SponsorCard
-                key={sponsor.id}
-                selected={form.sponsor === sponsor.id}
-                title={sponsor.name}
-                subtitle={sponsor.description?.trim() || t("tournaments.officialSponsor")}
-                logoUrl={sponsor.logoUrl}
-                onClick={() => update({ sponsor: sponsor.id })}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </TabsContent>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
