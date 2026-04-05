@@ -15,13 +15,15 @@ export function ClubInfo({ clubName, canEdit, onEdit, onGetDirection, t }: ClubI
   return (
     <div className="mt-[30px] border-t border-[#dddddd] pt-[25px]">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-[12px] bg-[#010a04]/[0.04] px-[15px] py-3">
-        <div className="flex items-center gap-[15px]">
-          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[20px] bg-[#dddddd]">
+        <div className="flex min-w-0 items-center gap-[15px]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-[20px] bg-[#dddddd]">
             <UserCircle2 size={30} className="text-[#010a04]" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <p className="text-[16px] font-medium leading-5 text-[#010a04]">{clubName}</p>
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
+              <p className="min-w-0 break-words text-[16px] font-medium leading-5 text-[#010a04]">
+                {clubName}
+              </p>
               {canEdit && (
                 <button
                   type="button"

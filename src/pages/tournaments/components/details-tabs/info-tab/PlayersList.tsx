@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import type { TFunction } from "i18next";
 import { ChevronDown, ChevronUp, UserCircle2 } from "@/icons/figma-icons";
 import type { TournamentParticipant } from "@/models/tournament/types";
@@ -63,6 +63,10 @@ export function PlayersList({
   onToggle,
   t,
 }: PlayersListProps) {
+  const id = useId();
+  const headingId = `${id}-heading`;
+  const contentId = `${id}-content`;
+
   const playersContent = getPlayersContent({
     participants,
     participantSummary,
@@ -75,7 +79,7 @@ export function PlayersList({
   return (
     <section className="py-4 sm:py-5">
       <div className="mb-5 flex items-center justify-between">
-        <h3 className="text-[20px] font-semibold text-[#010a04]" id="tournament-current-players-heading">
+        <h3 className="text-[20px] font-semibold text-[#010a04]" id={headingId}>
           {t("tournaments.currentPlayers")}
         </h3>
         {isPlayersCollapsible ? (
@@ -83,7 +87,7 @@ export function PlayersList({
             type="button"
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[6px] border border-[#010a04]/25 text-[#010a04] transition-colors hover:bg-[#010a04]/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#010a04]/25"
             aria-expanded={isPlayersListExpanded}
-            aria-controls="tournament-current-players-content"
+            aria-controls={contentId}
             aria-label={
               isPlayersListExpanded ? t("tournaments.collapsePlayerList") : t("tournaments.expandPlayerList")
             }
@@ -98,7 +102,7 @@ export function PlayersList({
         ) : null}
       </div>
 
-      <div id="tournament-current-players-content" aria-labelledby="tournament-current-players-heading">
+      <div id={contentId} aria-labelledby={headingId}>
         {playersContent}
       </div>
     </section>

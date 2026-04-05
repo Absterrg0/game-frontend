@@ -1,5 +1,5 @@
 import type { TournamentDetail } from "@/models/tournament/types";
-import { getTournamentMatchOutcomes } from "../matches-tab/deriveMatches";
+import { getMockMatchOutcomes } from "../matches-tab/deriveMatches";
 import type { ParticipantResult } from "./types";
 
 function participantDisplayName(name: string | null, alias: string | null, fallback: string) {
@@ -14,7 +14,7 @@ export function deriveResults(tournament: TournamentDetail, unknownLabel: string
   const participants = tournament.participants;
   if (participants.length === 0) return [];
 
-  const outcomes = getTournamentMatchOutcomes(tournament);
+  const outcomes = getMockMatchOutcomes(tournament);
   const winsById = new Map<string, number>();
   const advantageById = new Map<string, number>();
 

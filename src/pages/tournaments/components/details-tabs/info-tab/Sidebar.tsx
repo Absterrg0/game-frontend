@@ -79,7 +79,7 @@ export function Sidebar({
             <Button
               className="h-[42px] w-full rounded-[8px] bg-gradient-to-r from-[#0a6925] via-[#0c7b2c] to-[#0f8d33] text-[16px] font-medium text-white hover:opacity-95"
               onClick={onJoin}
-              disabled={isJoinPending || !canJoin}
+              disabled={isJoinPending || !canJoin || isParticipant}
             >
               {isJoinPending
                 ? t("common.loading")

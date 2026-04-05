@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { TournamentDetail } from "@/models/tournament/types";
 import { TabsContent } from "@/components/ui/tabs";
@@ -25,12 +25,10 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
   const playersExpansion = useExpandable(true);
   const {
     expanded: isDescriptionExpanded,
-    setExpanded: setDescriptionExpanded,
     toggle: toggleDescriptionExpanded,
   } = descriptionExpansion;
   const {
     expanded: isPlayersExpanded,
-    setExpanded: setPlayersExpanded,
     toggle: togglePlayersExpanded,
   } = playersExpansion;
 

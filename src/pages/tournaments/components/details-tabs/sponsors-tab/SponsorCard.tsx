@@ -34,8 +34,8 @@ export function SponsorCard({ sponsor, t }: SponsorCardProps) {
             rel="noreferrer noopener"
             className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-[#0a9f43] hover:underline"
           >
-            {t("tournaments.viewSponsorDetails")}
-            <ExternalLink className="size-4" />
+            {`${t("tournaments.viewSponsorDetails")}: ${sponsor.name}`}
+            <ExternalLink className="size-4" aria-hidden />
           </a>
         ) : null}
       </div>
