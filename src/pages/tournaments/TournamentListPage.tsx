@@ -51,8 +51,8 @@ function TournamentListContent() {
     totalPages: 0,
   };
 
-  const isEditModal = modal?.type === "edit";
-  const editTournamentId = isEditModal ? modal.id : null;
+  const isEditModal = false;
+  const editTournamentId = null;
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-brand-primary/[0.03]">
