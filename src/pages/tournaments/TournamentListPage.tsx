@@ -22,12 +22,12 @@ export default function TournamentListPage() {
 }
 
 
-const DEFAULT_PAGINATION =  {
+const DEFAULT_PAGINATION = {
   total: 0,
   page: 1,
   limit: 10,
   totalPages: 0,
-}
+} as const;
 
 function TournamentListContent() {
   const { t, i18n } = useTranslation();
@@ -114,6 +114,15 @@ function TournamentListContent() {
             </div>
           </div>
 
+          {isFetching && !isPending ? (
+            <div className="px-4 pb-2 sm:px-5">
+              <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
+                <InlineLoader size="sm" />
+                {t("common.loading")}
+              </div>
+            </div>
+          ) : null}
+
           {isPending ? (
             <TournamentTableSkeleton />
           ) : showFullPageLoadError ? (
@@ -183,15 +192,6 @@ function TournamentListContent() {
               )}
             </>
           )}
-
-          {isFetching && !isPending ? (
-            <div className="border-t border-black/10 px-4 py-2">
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <InlineLoader size="sm" />
-                {t("common.loading")}
-              </div>
-            </div>
-          ) : null}
 
           <PaginationBar
             pagination={pagination}

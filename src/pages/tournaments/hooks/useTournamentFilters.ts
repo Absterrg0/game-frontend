@@ -38,8 +38,9 @@ function parsePersistedState(rawValue: string) {
       };
     }
 
-    const q = typeof filtersRaw.q === "string" && filtersRaw.q.trim().length > 0
-    ? filtersRaw.q.trim()
+    const q =
+      typeof filtersRaw.q === "string" && filtersRaw.q.trim().length > 0
+        ? filtersRaw.q.trim()
       : undefined;
 
     const when =
