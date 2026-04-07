@@ -50,7 +50,6 @@ function TournamentListContent() {
   } = useTournamentFilters({ isOrganiserOrAbove, userId: user?.id ?? undefined });
   const { isDraftTab } = useTournamentPermissions({
     activeTab,
-    isOrganiserOrAbove,
   });
 
   const { data, error, isPending, isFetching, refetch } = useTournaments(effectiveFilters());

@@ -204,7 +204,7 @@ export function TournamentFilters({
                       setClubSearch("");
                     }}
                     className="shrink-0 leading-none text-brand-primary/60 hover:text-brand-primary"
-                    aria-label="Remove club filter"
+                    aria-label={t("tournaments.removeClubFilter")}
                   >
                     ×
                   </button>

@@ -50,15 +50,15 @@ export function useTournamentActions({
     }
 
     try {
-      const payload = buildTournamentPayload(form, "draft");
-
       if (validTournamentId) {
+        const updatePayload = buildDraftUpdatePayload(form);
         await updateTournament.mutateAsync({
           id: validTournamentId,
-          data: payload,
+          data: updatePayload,
         });
       } else {
-        await createTournament.mutateAsync(payload);
+        const createPayload = buildTournamentPayload(form, "draft");
+        await createTournament.mutateAsync(createPayload);
       }
 
       toast.success(t("tournaments.draftSaved"));

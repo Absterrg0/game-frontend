@@ -50,8 +50,6 @@ interface TimePickerProps {
   id?: string;
   "aria-labelledby"?: string;
   "aria-describedby"?: string;
-  /** When true, sets aria-required on the trigger (custom control, not a native required input). */
-  required?: boolean;
 }
 
 type Meridian = "AM" | "PM";
@@ -79,7 +77,6 @@ export function TimePicker({
   id,
   "aria-labelledby": ariaLabelledBy,
   "aria-describedby": ariaDescribedBy,
-  required,
 }: TimePickerProps) {
   const { t } = useTranslation();
 
@@ -87,7 +84,6 @@ export function TimePicker({
     () => resolveTimeBoundsMinutes(minTime, maxTime, { minExclusive, maxExclusive }),
     [minTime, maxTime, minExclusive, maxExclusive]
   );
-  const hasValidRange = hasNonEmptyTimeBounds(bounds);
   const effectivePlaceholder = placeholder ?? placeholderLabel ?? t("timepicker.placeholder");
   const effectiveTitle = titleLabel ?? t("timepicker.title");
   const effectiveHourLabel = hourLabel ?? t("timepicker.hour");
@@ -138,27 +134,34 @@ export function TimePicker({
   const [hourInput, setHourInput] = useState(hourDisplay);
   const [minuteInput, setMinuteInput] = useState(minuteDisplay);
 
-  const proposeTime = useCallback(
-    (next: string | null): boolean => {
-      if (next === null) {
-        onChange(null);
-        return true;
-      }
-      const m = time24ToMinutes(next);
-      if (m === null) return false;
-      if (hasValidRange && !isMinutesWithinTimeBounds(m, bounds)) {
-        return false;
-      }
-      onChange(minutesToTime24(m));
-      return true;
-    },
-    [onChange, bounds, hasValidRange]
-  );
-
   const rejectAndSyncInputs = useCallback(() => {
     setHourInput(String(selectedHour).padStart(2, "0"));
     setMinuteInput(String(selectedMinute).padStart(2, "0"));
   }, [selectedHour, selectedMinute]);
+
+  const hasSelectableTime = hasNonEmptyTimeBounds(bounds);
+
+  const proposeTime = useCallback(
+    (next: string | null): boolean => {
+      if (next === null) {
+        onChange(null);
+        rejectAndSyncInputs();
+        return true;
+      }
+      const m = time24ToMinutes(next);
+      if (m === null) return false;
+      if (!hasSelectableTime) {
+        return false;
+      }
+      if (!isMinutesWithinTimeBounds(m, bounds)) {
+        return false;
+      }
+      onChange(minutesToTime24(m));
+      rejectAndSyncInputs();
+      return true;
+    },
+    [onChange, bounds, hasSelectableTime, rejectAndSyncInputs]
+  );
 
   const setHour = (hour: number) => {
     const ok = proposeTime(formatTime(to24Hour(hour, selectedMeridian), selectedMinute));
@@ -177,13 +180,21 @@ export function TimePicker({
   };
 
   const setNow = () => {
+    if (!hasSelectableTime) {
+      rejectAndSyncInputs();
+      return;
+    }
+
     const now = new Date();
     const minute = Math.floor(now.getMinutes() / stepMinutes) * stepMinutes;
     let m = now.getHours() * 60 + minute;
-    if (hasValidRange && !isMinutesWithinTimeBounds(m, bounds)) {
+    if (!isMinutesWithinTimeBounds(m, bounds)) {
       if (bounds.minMinutes !== null && m < bounds.minMinutes) m = bounds.minMinutes;
       else if (bounds.maxMinutes !== null && m > bounds.maxMinutes) m = bounds.maxMinutes;
-      if (!isMinutesWithinTimeBounds(m, bounds)) return;
+      if (!isMinutesWithinTimeBounds(m, bounds)) {
+        rejectAndSyncInputs();
+        return;
+      }
     }
     const ok = proposeTime(minutesToTime24(m));
     if (!ok) rejectAndSyncInputs();
@@ -270,7 +281,6 @@ export function TimePicker({
           disabled={disabled}
           aria-labelledby={ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
-          aria-required={required ? true : undefined}
           className={cn(
             "h-[38px] w-full justify-between rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-left text-[13px] font-normal text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[14px]",
             !formatted && "text-[#010a04]/50"
@@ -391,7 +401,10 @@ export function TimePicker({
             type="button"
             variant="outline"
             className="h-8 flex-1 rounded-md text-[12px]"
-            onClick={() => proposeTime(null)}
+            onClick={() => {
+              const ok = proposeTime(null);
+              if (!ok) rejectAndSyncInputs();
+            }}
           >
             {effectiveClearLabel}
           </Button>

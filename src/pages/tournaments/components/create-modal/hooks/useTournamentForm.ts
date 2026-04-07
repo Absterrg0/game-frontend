@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useClubSponsors } from "@/pages/sponsors/hooks";
 import { useTournamentById } from "@/pages/tournaments/hooks";
 import type { CreateTournamentInput } from "@/models/tournament/types";
@@ -26,32 +26,52 @@ export function useTournamentForm({ mode, tournamentId = null, open }: UseTourna
 
   const initialForm = useMemo((): CreateTournamentInput | null => {
     if (isEditMode) {
-      return tournamentData?.tournament
-        ? mapTournamentDetailToForm(tournamentData.tournament)
-        : null;
+      if (!tournamentData?.tournament) {
+        return null;
+      }
+      const mapped = mapTournamentDetailToForm(tournamentData.tournament);
+      const mappedDefined = Object.fromEntries(
+        Object.entries(mapped).filter(([, value]) => value !== undefined)
+      ) as Partial<CreateTournamentInput>;
+      return {
+        ...DEFAULT_CREATE_TOURNAMENT_FORM,
+        ...mappedDefined,
+      };
     }
     return DEFAULT_CREATE_TOURNAMENT_FORM;
   }, [isEditMode, tournamentData]);
 
   const [form, setForm] = useState<CreateTournamentInput>(DEFAULT_CREATE_TOURNAMENT_FORM);
+  const hasUserEditedRef = useRef(false);
+  const previousOpenRef = useRef(open);
+  const previousInitialFormRef = useRef<CreateTournamentInput | null>(null);
 
   useEffect(() => {
+    const justOpened = open && !previousOpenRef.current;
+    previousOpenRef.current = open;
+
     if (!open) {
+      hasUserEditedRef.current = false;
       return;
     }
     if (isEditMode && (isTournamentLoading || initialForm === null)) {
       return;
     }
-    if (initialForm !== null) {
+    const initialChanged = previousInitialFormRef.current !== initialForm;
+    if (initialForm !== null && (justOpened || (!hasUserEditedRef.current && initialChanged))) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setForm(initialForm);
     }
+    previousInitialFormRef.current = initialForm;
   }, [open, isEditMode, isTournamentLoading, initialForm]);
 
-  const { data: sponsorsData, isLoading: isSponsorsLoading } = useClubSponsors(form.club || null);
+  const { data: sponsorsData, isLoading: isSponsorsLoading } = useClubSponsors(
+    open ? form.club || null : null
+  );
   const sponsors = sponsorsData?.sponsors ?? [];
 
   const update = useCallback((updates: Partial<CreateTournamentInput>) => {
+    hasUserEditedRef.current = true;
     setForm((prev) => ({ ...prev, ...updates }));
   }, []);
 

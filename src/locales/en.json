@@ -467,6 +467,7 @@
     "filterClubSearchPlaceholder": "Search clubs...",
     "filterClubNoResults": "No clubs found.",
     "filterClubSelected": "Selected: {{name}}",
+    "removeClubFilter": "Remove club filter",
     "allStatuses": "All statuses",
     "allClubs": "All clubs",
     "tournamentName": "Tournament",
