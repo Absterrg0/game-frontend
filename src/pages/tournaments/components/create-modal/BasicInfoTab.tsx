@@ -191,7 +191,6 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
                 <TimePicker
                   id="create-tournament-basic-start"
                   aria-labelledby="create-tournament-basic-start-label"
-                  required
                   value={form.startTime ?? null}
                   onChange={(time) => update({ startTime: time })}
                   maxTime={form.endTime ?? undefined}
@@ -213,7 +212,6 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
                 <TimePicker
                   id="create-tournament-basic-end"
                   aria-labelledby="create-tournament-basic-end-label"
-                  required
                   value={form.endTime ?? null}
                   onChange={(time) => update({ endTime: time })}
                   minTime={form.startTime ?? undefined}
