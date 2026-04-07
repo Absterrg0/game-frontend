@@ -29,7 +29,7 @@ export function TournamentDetailsTabs({
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <div className="mt-0.5 w-full border-b border-[#dddddd] pb-6 sm:mt-1 sm:pb-7">
         <TabsList
-          className="grid h-auto w-full rounded-[10px] bg-[rgba(1,10,4,0.05)] p-1 sm:inline-flex sm:w-fit"
+          className="grid h-auto w-full max-w-full rounded-[10px] bg-[rgba(1,10,4,0.05)] p-1 sm:inline-flex sm:w-fit"
           style={{
             gridTemplateColumns: `repeat(${Math.max(1, tabOptions.length)}, minmax(0, 1fr))`,
           }}

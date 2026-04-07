@@ -94,7 +94,6 @@ export const tournamentsResponseSchema = z.object({
 export const backendTournamentDetailSchema = z.object({
   id: z.string(),
   name: z.string(),
-  logo: z.string().nullable(),
   club: tournamentClubSchema.nullable(),
   sponsor: tournamentSponsorSchema.nullable(),
   clubSponsors: z.array(tournamentSponsorSchema),
@@ -106,8 +105,8 @@ export const backendTournamentDetailSchema = z.object({
   entryFee: z.number(),
   minMember: memberCountSchema,
   maxMember: memberCountSchema,
-  duration: z.string(),
-  breakDuration: z.string(),
+  duration: z.string().nullable(),
+  breakDuration: z.string().nullable(),
   courts: z.array(tournamentCourtSchema),
   foodInfo: z.string(),
   descriptionInfo: z.string(),
@@ -125,7 +124,6 @@ export const backendTournamentDetailResponseSchema = z.object({
 
 const tournamentInputBaseSchema = z.object({
   sponsor: z.string().nullable(),
-  logo: z.string().nullable().optional(),
   date: z.string().nullable().optional(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),
@@ -172,7 +170,6 @@ export const backendCreateTournamentInputSchema = z.object({
   name: z.string(),
   status: z.enum(["draft", "active"]),
   sponsor: z.string().optional(),
-  logo: z.string().nullable().optional(),
   date: z.string().nullable().optional(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),
@@ -193,7 +190,6 @@ export const backendUpdateTournamentInputSchema = z
     club: z.string(),
     sponsor: z.string().nullable(),
     name: z.string(),
-    logo: z.string().nullable(),
     date: z.string().nullable(),
     startTime: z.string().nullable(),
     endTime: z.string().nullable(),
@@ -225,8 +221,8 @@ const createTournamentSummarySchema = z.object({
   name: z.string(),
   club: z.string(),
   status: z.string(),
-  date: z.string().optional(),
-  createdAt: z.string().optional(),
+  date: z.string().nullable().optional(),
+  createdAt: z.string().nullable().optional(),
 });
 
 const updateTournamentSummarySchema = z.object({
@@ -234,8 +230,8 @@ const updateTournamentSummarySchema = z.object({
   name: z.string(),
   club: z.string(),
   status: z.string(),
-  date: z.string().optional(),
-  updatedAt: z.string().optional(),
+  date: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
 });
 
 const publishTournamentSummarySchema = z.object({

@@ -33,7 +33,6 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
   } = playersExpansion;
 
   const {
-    feeValue,
     feeText,
     foodInfoTrimmed,
     hasFoodInfo,
@@ -57,7 +56,7 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
 
   return (
     <TabsContent value="info" className="mt-6 sm:mt-[30px]">
-      <div className="grid gap-7 xl:grid-cols-[577px_368px] xl:items-start xl:gap-12">
+      <div className="grid gap-7 xl:grid-cols-[577px_368px] xl:items-start xl:justify-center xl:gap-12">
         <div className="order-2 min-w-0 xl:order-1">
           <section className="border-b border-[#dddddd] pb-[25px] sm:pb-[30px]">
             <DescriptionSection
@@ -124,7 +123,6 @@ export function InfoTab({ tournament, onJoin, isJoinPending }: InfoTabProps) {
         <Sidebar
           className="order-1 xl:order-2"
           tournament={tournament}
-          feeValue={feeValue}
           spotPercentage={spotPercentage}
           onJoin={onJoin}
           isJoinPending={isJoinPending}

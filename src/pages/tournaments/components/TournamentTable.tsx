@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -34,6 +34,7 @@ export function TournamentTable({
   language,
 }: TournamentTableProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   function getStatusLabel(status: TournamentStatus, t: TFunction) {
     switch (status) {
@@ -45,10 +46,6 @@ export function TournamentTable({
         return "";
     }
   }
-
-  
- 
-
 
   return (
     <div className="overflow-x-auto border-y border-black/10">
@@ -75,19 +72,43 @@ export function TournamentTable({
             const statusLabel = getStatusLabel(tournament.status, t);
             const statusDotClass = STATUS_DOTS[tournament.status];
 
+            const rowPath = `/tournaments/${tournament.id}`;
+
+            const openRow = (e: React.MouseEvent<HTMLTableRowElement>) => {
+              if (e.defaultPrevented) return;
+              if (e.button !== 0) return;
+              if (e.ctrlKey || e.metaKey) {
+                window.open(rowPath, "_blank", "noopener,noreferrer");
+                return;
+              }
+              void navigate(rowPath);
+            };
+
             return (
               <TableRow
                 key={tournament.id}
-                className="h-[45px] border-black/10 bg-card hover:bg-black/[0.015]"
+                tabIndex={0}
+                className="h-[45px] cursor-pointer border-black/10 bg-card hover:bg-black/[0.015] focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                aria-label={t("tournaments.openTournamentRow", { name: tournament.name })}
+                onClick={openRow}
+                onAuxClick={(e) => {
+                  if (e.button === 1) {
+                    e.preventDefault();
+                    window.open(rowPath, "_blank", "noopener,noreferrer");
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    void navigate(rowPath);
+                  }
+                }}
               >
                 <TableCell className="px-4 py-0 text-xs text-foreground/90">
                   {(pagination.page - 1) * pagination.limit + idx + 1}
                 </TableCell>
                 <TableCell className="px-3 py-0">
-                  <Link
-                    to={`/tournaments/${tournament.id}`}
-                    className="flex items-center gap-2 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60"
-                  >
+                  <div className="flex items-center gap-2">
                     <span
                       className="h-[22px] w-[22px] shrink-0 rounded-[5px] bg-black/15"
                       aria-hidden="true"
@@ -99,7 +120,7 @@ export function TournamentTable({
                       aria-label={statusLabel}
                       title={statusLabel}
                     />
-                  </Link>
+                  </div>
                 </TableCell>
                 <TableCell className="px-3 py-0">
                   <div className="flex items-center gap-2">

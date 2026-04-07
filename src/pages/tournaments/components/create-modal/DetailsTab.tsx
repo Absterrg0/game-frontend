@@ -9,6 +9,7 @@ import {
   DURATION_OPTIONS,
   PLAY_MODES,
 } from "@/constants/tournament";
+import { getMemberRangeErrorKey } from "@/lib/tournament/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -40,8 +41,8 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
   const foodDrinksId = `${uid}-food-drinks`;
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+    <div className="min-w-0 max-w-full space-y-4 overflow-x-clip sm:space-y-5">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
         <div className="space-y-2 sm:space-y-[10px]">
           <Label
             id={playModeLabelId}
@@ -103,7 +104,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
         <div className="space-y-2 sm:space-y-[10px]">
           <Label
             id={breakLabelId}
@@ -136,7 +137,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
         <div className="hidden sm:block" aria-hidden="true" />
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
         <div className="space-y-2 sm:space-y-[10px]">
           <Label
             htmlFor={entryFeeId}
@@ -194,7 +195,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
+      <div className="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-[14px]">
         <div className="space-y-2 sm:space-y-[10px]">
           <Label
             htmlFor={maxPlayersId}
@@ -225,13 +226,30 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
         <div className="hidden sm:block" aria-hidden="true" />
       </div>
 
-      <div className="space-y-2 sm:space-y-[10px]">
-        <Label
-          htmlFor={foodDrinksId}
-          className="text-[15px] font-medium text-[#010a04]"
+      {getMemberRangeErrorKey(form) ? (
+        <p
+          className="text-[13px] font-medium leading-snug text-destructive sm:text-sm"
+          role="alert"
         >
-          {t("tournaments.foodDrinks")}
-        </Label>
+          {t("tournaments.invalidMemberRange")}
+        </p>
+      ) : null}
+
+      <div className="min-w-0 space-y-2 sm:space-y-[10px]">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 gap-y-0">
+          <Label
+            htmlFor={foodDrinksId}
+            className="text-[13px] font-medium text-[#010a04] sm:text-[15px]"
+          >
+            {t("tournaments.foodDrinks")}
+          </Label>
+          <span
+            className="text-[11px] font-normal tabular-nums text-[#010a04]/40 sm:text-[12px] sm:text-[#010a04]/38"
+            aria-live="polite"
+          >
+            {(form.foodInfo ?? "").length}/500
+          </span>
+        </div>
         <Textarea
           id={foodDrinksId}
           placeholder={t("tournaments.foodDrinksPlaceholder")}

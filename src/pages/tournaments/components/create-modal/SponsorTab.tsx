@@ -32,7 +32,7 @@ function SponsorCard({
   return (
     <RadioGroupCardItem
       value={value}
-      className={`flex w-full items-center justify-between rounded-[12px] border px-[13px] py-3 text-left transition-colors data-[state=checked]:border-[1.5px] data-[state=checked]:border-brand-primary data-[state=checked]:bg-brand-primary/[0.05] data-[state=unchecked]:border-[#e1e3e8] data-[state=unchecked]:bg-[#f9fafc] data-[state=unchecked]:hover:bg-[#f4f7fb]`}
+      className={`flex w-full min-w-0 max-w-full items-center justify-between overflow-x-clip rounded-[12px] border px-[13px] py-3 text-left transition-colors data-[state=checked]:border-[1.5px] data-[state=checked]:border-brand-primary data-[state=checked]:bg-brand-primary/[0.05] data-[state=unchecked]:border-[#e1e3e8] data-[state=unchecked]:bg-[#f9fafc] data-[state=unchecked]:hover:bg-[#f4f7fb]`}
     >
       <div className="flex min-w-0 items-center gap-3">
         {!hideAvatar ? (
@@ -47,11 +47,11 @@ function SponsorCard({
           )
         ) : null}
         <div>
-          <p className="text-[16px] font-medium leading-[1.2] text-[#010a04]">
+          <p className="min-w-0 break-words text-[16px] font-medium leading-[1.2] text-[#010a04] [overflow-wrap:anywhere]">
             {title}
           </p>
           {subtitle ? (
-            <p className="mt-[5px] text-[14px] leading-tight text-[#010a04]/70">
+            <p className="mt-[5px] min-w-0 break-words text-[14px] leading-tight text-[#010a04]/70 [overflow-wrap:anywhere]">
               {subtitle}
             </p>
           ) : null}
@@ -73,18 +73,21 @@ export function SponsorTab({ form, sponsors, update, loading = false }: SponsorT
   const activeSponsors = sponsors.filter((s) => s.status === "active");
 
   return (
-    <div className="space-y-[14px]">
-      <h3 className="text-[18px] font-medium leading-[1.3] text-[#010a04]">
+    <div className="min-w-0 max-w-full space-y-[14px] overflow-x-clip">
+      <h3 className="break-words text-[18px] font-medium leading-[1.3] text-[#010a04] [overflow-wrap:anywhere]">
         {t("tournaments.selectSponsor")}
       </h3>
-      <p className="max-w-[540px] text-[14px] leading-[1.4] text-[#010a04]/60">
+      <p className="max-w-full break-words text-[14px] leading-[1.4] text-[#010a04]/60 [overflow-wrap:anywhere] sm:max-w-[540px]">
         {t("tournaments.selectSponsorHint")}
       </p>
 
       {!form.club ? (
-        <p className="text-[14px] text-[#010a04]/60">
+        <div
+          className="break-words rounded-[12px] border border-black/12 bg-black/[0.04] px-[13px] py-3 text-[14px] font-semibold leading-snug text-[#010a04] [overflow-wrap:anywhere]"
+          role="status"
+        >
           {t("tournaments.selectClubFirst")}
-        </p>
+        </div>
       ) : loading ? (
         <div className="flex justify-center py-10">
           <InlineLoader />
