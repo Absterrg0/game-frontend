@@ -192,7 +192,9 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
                   value={form.startTime ?? null}
                   onChange={(time) => update({ startTime: time })}
                   maxTime={form.endTime ?? undefined}
-                  maxExclusive
+                  maxExclusive={
+                    form.endTime != null && form.startTime !== form.endTime
+                  }
                 />
               </div>
             </div>
@@ -213,7 +215,9 @@ export function BasicInfoTab({ form, clubs, update }: BasicInfoTabProps) {
                   value={form.endTime ?? null}
                   onChange={(time) => update({ endTime: time })}
                   minTime={form.startTime ?? undefined}
-                  minExclusive
+                  minExclusive={
+                    form.startTime != null && form.startTime !== form.endTime
+                  }
                 />
               </div>
             </div>

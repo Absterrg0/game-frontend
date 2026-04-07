@@ -83,6 +83,13 @@ export function TournamentFilters({
   const [draftClubId, setDraftClubId] = useState<string | undefined>(clubId);
   const [selectedClubState, setSelectedClubState] = useState<{ id: string; name: string } | null>(null);
 
+  const { data: clubsData, isLoading: clubsLoading } = useAllClubs({
+    page: 1,
+    limit: 200,
+    q: clubSearch.trim().length > 0 ? clubSearch : undefined,
+    enabled: open || clubSearch.trim().length > 0,
+  });
+
   const handlePopoverOpenChange = (nextOpen: boolean) => {
     if (nextOpen) {
       setDraftWhen(when ?? "all");
@@ -96,13 +103,6 @@ export function TournamentFilters({
     if (!nextOpen) setClubSearchOpen(false);
     onOpenChange(nextOpen);
   };
-
-  const { data: clubsData, isLoading: clubsLoading } = useAllClubs({
-    page: 1,
-    limit: 200,
-    q: clubSearch.trim().length > 0 ? clubSearch : undefined,
-    enabled: open || clubSearch.trim().length > 0,
-  });
 
   const clubs = clubsData?.clubs ?? [];
   const selectedClub =

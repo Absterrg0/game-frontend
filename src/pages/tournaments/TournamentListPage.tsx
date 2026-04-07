@@ -117,7 +117,12 @@ function TournamentListContent() {
           {isPending ? (
             <TournamentTableSkeleton />
           ) : showFullPageLoadError ? (
-            <div className="space-y-4 px-6 py-12 text-center">
+            <div
+              className="space-y-4 px-6 py-12 text-center"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
               <p className="text-muted-foreground">{t("tournaments.listLoadError")}</p>
               {loadErrorDetail ? (
                 <p className="text-sm text-muted-foreground/90">{loadErrorDetail}</p>
@@ -135,7 +140,12 @@ function TournamentListContent() {
           ) : (
             <>
               {showRefetchErrorBanner ? (
-                <div className="flex flex-col gap-2 border-b border-destructive/20 bg-destructive/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                <div
+                  className="flex flex-col gap-2 border-b border-destructive/20 bg-destructive/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
                   <p className="text-sm text-muted-foreground">
                     {t("tournaments.listLoadError")}
                     {loadErrorDetail ? (

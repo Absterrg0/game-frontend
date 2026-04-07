@@ -1,4 +1,5 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 import {
   DEFAULT_TOURNAMENT_FILTERS_STATE,
   filtersReducer,
@@ -14,6 +15,7 @@ interface UseTournamentFiltersOptions {
 }
 
 const TOURNAMENT_FILTERS_STORAGE_PREFIX = "tournament:list:filters:";
+const QUERY_DEBOUNCE_MS = 200;
 
 function getStorageKey(userId: string) {
   return `${TOURNAMENT_FILTERS_STORAGE_PREFIX}${userId}`;
@@ -72,8 +74,35 @@ export function useTournamentFilters({ isOrganiserOrAbove, userId }: UseTourname
   const [state, dispatch] = useReducer(filtersReducer, DEFAULT_TOURNAMENT_FILTERS_STATE);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const isHydratedRef = useRef(false);
+  const prevDebouncedQRef = useRef<string | undefined>();
 
-  const effectiveFilters = () => shapeTournamentFilters(state, isOrganiserOrAbove);
+  const debouncedQ = useDebouncedValue(state.filters.q, QUERY_DEBOUNCE_MS);
+
+  const effectiveFilters = useCallback(
+    () =>
+      shapeTournamentFilters(
+        {
+          ...state,
+          filters: {
+            ...state.filters,
+            q: debouncedQ,
+          },
+        },
+        isOrganiserOrAbove
+      ),
+    [state, debouncedQ, isOrganiserOrAbove]
+  );
+
+  useEffect(() => {
+    if (prevDebouncedQRef.current === undefined) {
+      prevDebouncedQRef.current = debouncedQ;
+      return;
+    }
+    if (prevDebouncedQRef.current !== debouncedQ) {
+      prevDebouncedQRef.current = debouncedQ;
+      dispatch({ type: "SET_PAGE", payload: 1 });
+    }
+  }, [debouncedQ]);
 
   const setTab = (tab: TournamentListTab) => {
     dispatch({ type: "SET_TAB", payload: tab });
@@ -112,6 +141,8 @@ export function useTournamentFilters({ isOrganiserOrAbove, userId }: UseTourname
     });
   };
 
+  // isOrganiserOrAbove is read once at hydrate time; omit from deps to avoid
+  // re-applying persisted state over in-session edits when role resolves.
   useEffect(() => {
     if (!userId || typeof window === "undefined") {
       isHydratedRef.current = true;
@@ -131,9 +162,13 @@ export function useTournamentFilters({ isOrganiserOrAbove, userId }: UseTourname
 
     dispatch({
       type: "HYDRATE",
-      payload: persisted,
+      payload: {
+        activeTab: isOrganiserOrAbove ? persisted.activeTab : "published",
+        filters: persisted.filters,
+      },
     });
     isHydratedRef.current = true;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   useEffect(() => {
