@@ -471,6 +471,7 @@
     "allStatuses": "Alle Status",
     "allClubs": "Alle Vereine",
     "tournamentName": "Turnier",
+    "openTournamentRow": "Turnier öffnen: {{name}}",
     "club": "Verein",
     "date": "Datum",
     "action": "Aktion",

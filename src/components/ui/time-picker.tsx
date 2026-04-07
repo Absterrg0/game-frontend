@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Clock } from "@/icons/figma-icons";
 import { cn } from "@/lib/utils";
 import {
@@ -95,7 +96,6 @@ export function TimePicker({
   const effectiveConfirmLabel = confirmLabel ?? t("timepicker.confirm");
 
   const [open, setOpen] = useState(false);
-  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const hourInputRef = useRef<HTMLInputElement | null>(null);
   const minuteInputRef = useRef<HTMLInputElement | null>(null);
@@ -150,6 +150,13 @@ export function TimePicker({
 
   const hasSelectableTime = hasNonEmptyTimeBounds(bounds);
 
+  const notifyTimeConstraint = useCallback(() => {
+    toast.warning(t("tournaments.invalidTimeRange"), {
+      id: "tournament-time-constraint",
+      duration: 3800,
+    });
+  }, [t]);
+
   const proposeTime = useCallback(
     (next: string | null): boolean => {
       if (next === null) {
@@ -158,18 +165,23 @@ export function TimePicker({
         return true;
       }
       const m = time24ToMinutes(next);
-      if (m === null) return false;
+      if (m === null) {
+        notifyTimeConstraint();
+        return false;
+      }
       if (!hasSelectableTime) {
+        notifyTimeConstraint();
         return false;
       }
       if (!isMinutesWithinTimeBounds(m, bounds)) {
+        notifyTimeConstraint();
         return false;
       }
       onChange(minutesToTime24(m));
       syncInputsToTotalMinutes(m);
       return true;
     },
-    [onChange, bounds, hasSelectableTime, syncInputsToTotalMinutes]
+    [onChange, bounds, hasSelectableTime, notifyTimeConstraint, syncInputsToTotalMinutes]
   );
 
   const setHour = (hour: number) => {
@@ -225,10 +237,6 @@ export function TimePicker({
     if (nextOpen) {
       setHourInput(hourDisplay);
       setMinuteInput(minuteDisplay);
-      const dialogContent = triggerRef.current?.closest("[data-slot='dialog-content']");
-      setPortalContainer(dialogContent instanceof HTMLElement ? dialogContent : null);
-    } else {
-      setPortalContainer(null);
     }
     setOpen(nextOpen);
   };
@@ -291,18 +299,21 @@ export function TimePicker({
           aria-labelledby={ariaLabelledBy}
           aria-describedby={ariaDescribedBy}
           className={cn(
-            "h-[38px] w-full justify-between rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-left text-[13px] font-normal text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[14px]",
+            "h-[38px] w-full min-w-0 max-w-full justify-between overflow-hidden rounded-[10px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-left text-[13px] font-normal text-[#010a04] sm:h-[46px] sm:rounded-[12px] sm:px-[15px] sm:text-[14px]",
             !formatted && "text-[#010a04]/50"
           )}
         >
-          <span>{formatted || effectivePlaceholder}</span>
+          <span className="min-w-0 truncate">{formatted || effectivePlaceholder}</span>
           <Clock className="h-4 w-4 shrink-0 text-[#010a04]/65 sm:h-5 sm:w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-[320px] rounded-xl border border-[#e5e7eb] p-0"
+        className="z-[100] w-[min(100vw-1.5rem,320px)] max-w-[320px] rounded-xl border border-[#e5e7eb] p-0"
         align={popoverAlign}
-        container={portalContainer}
+        side="bottom"
+        sideOffset={6}
+        collisionPadding={12}
+        sticky="partial"
       >
         <div className="border-b border-[#e5e7eb] p-4">
           <div className="mb-3 flex items-center justify-between gap-3">

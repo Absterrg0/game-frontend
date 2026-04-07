@@ -472,6 +472,7 @@
     "allStatuses": "All statuses",
     "allClubs": "All clubs",
     "tournamentName": "Tournament",
+    "openTournamentRow": "Open tournament: {{name}}",
     "club": "Club",
     "date": "Date",
     "action": "Action",
