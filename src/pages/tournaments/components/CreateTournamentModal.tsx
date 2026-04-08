@@ -44,7 +44,14 @@ export function CreateTournamentModal({
     update,
   } = useTournamentForm({ mode, tournamentId, open });
 
-  const { isMutating, handleClose, handleSaveDraft, handlePublish } =
+  const {
+    isMutating,
+    isPublishing,
+    isSavingDraft,
+    handleClose,
+    handleSaveDraft,
+    handlePublish,
+  } =
     useTournamentActions({
       form,
       validTournamentId,
@@ -118,9 +125,9 @@ export function CreateTournamentModal({
             <Button
               className="w-full min-w-0 bg-brand-primary text-white shadow-sm shadow-brand-primary/20 hover:bg-brand-primary-hover focus-visible:ring-brand-primary/40 sm:flex-1"
               onClick={handlePublish}
-              disabled={isMutating || Boolean(publishValidationError)}
+              disabled={isPublishing || Boolean(publishValidationError)}
             >
-              {isMutating ? (
+              {isPublishing ? (
                 <InlineLoader size="sm" />
               ) : (
                 t("tournaments.publish")
@@ -130,9 +137,9 @@ export function CreateTournamentModal({
             <Button
               className="w-full min-w-0 bg-brand-accent text-brand-black shadow-sm hover:bg-brand-accent-hover focus-visible:ring-brand-primary/30 sm:flex-1"
               onClick={handleSaveDraft}
-              disabled={isMutating || Boolean(draftValidationError)}
+              disabled={isSavingDraft || Boolean(draftValidationError)}
             >
-              {isMutating ? (
+              {isSavingDraft ? (
                 <InlineLoader size="sm" />
               ) : isEditMode ? (
                 t("settings.saveChanges")

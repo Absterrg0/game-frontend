@@ -43,11 +43,17 @@ function parsePersistedState(rawValue: string) {
     const activeTab: TournamentListTab =
       activeTabRaw === "drafts" ? "drafts" : "published";
 
+    const updatedAt =
+      typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt)
+        ? parsed.updatedAt
+        : 0;
+
     const filtersRaw = parsed.filters;
     if (!filtersRaw || typeof filtersRaw !== "object") {
       return {
         activeTab,
         filters: {},
+        updatedAt,
       };
     }
 
@@ -72,11 +78,6 @@ function parsePersistedState(rawValue: string) {
       filtersRaw.clubId.trim().length > 0
         ? filtersRaw.clubId
         : undefined;
-
-    const updatedAt =
-      typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt)
-        ? parsed.updatedAt
-        : 0;
 
     return {
       activeTab,
@@ -128,7 +129,10 @@ export function useTournamentFilters({
           ...state,
           filters: {
             ...state.filters,
-            q: debouncedQ,
+            q:
+              typeof debouncedQ === "string" && debouncedQ.trim().length > 0
+                ? debouncedQ.trim()
+                : undefined,
           },
         },
         isOrganiserOrAbove
@@ -145,10 +149,9 @@ export function useTournamentFilters({
   }, []);
 
   const setQuery = useCallback((value: string) => {
-    const nextValue = value.trim();
     dispatch({
       type: "SET_QUERY",
-      payload: nextValue.length > 0 ? nextValue : undefined,
+      payload: value.length > 0 ? value : undefined,
     });
   }, []);
 
@@ -212,6 +215,7 @@ export function useTournamentFilters({
 
     if (!persisted) {
       hydratedStorageKeyRef.current = storageKey;
+      skipNextPersistRef.current = true;
       return;
     }
 

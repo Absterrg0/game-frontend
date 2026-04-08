@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Calendar, PencilEdit01Icon } from "@/icons/figma-icons";
+import { Calendar, EyeIcon, PencilEdit01Icon } from "@/icons/figma-icons";
 import {
   Table,
   TableBody,
@@ -40,25 +40,6 @@ function getStatusLabel(status: TournamentStatus, t: TFunction) {
     default:
       return "";
   }
-}
-
-function EyeIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-      focusable="false"
-    >
-      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  );
 }
 
 export function TournamentTable({

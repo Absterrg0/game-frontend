@@ -31,9 +31,19 @@ export function useTournamentActions({
   const updateTournament = useUpdateTournament();
   const publishTournament = usePublishTournament();
 
+  const isPublishing = useMemo(
+    () => createTournament.isPending || publishTournament.isPending,
+    [createTournament.isPending, publishTournament.isPending]
+  );
+
+  const isSavingDraft = useMemo(
+    () => createTournament.isPending || updateTournament.isPending,
+    [createTournament.isPending, updateTournament.isPending]
+  );
+
   const isMutating = useMemo(
-    () => createTournament.isPending || updateTournament.isPending || publishTournament.isPending,
-    [createTournament.isPending, publishTournament.isPending, updateTournament.isPending]
+    () => isSavingDraft || isPublishing,
+    [isPublishing, isSavingDraft]
   );
 
   const handleClose = useCallback(
@@ -109,6 +119,8 @@ export function useTournamentActions({
 
   return {
     isMutating,
+    isPublishing,
+    isSavingDraft,
     handleClose,
     handleSaveDraft,
     handlePublish,
