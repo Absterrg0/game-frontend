@@ -53,6 +53,9 @@ export const tournamentPermissionsSchema = z.object({
 });
 
 const memberCountSchema = z.coerce.number().int().min(1);
+const foodInfoSchema = z
+  .string()
+  .max(500, { message: "foodInfo must be at most 500 characters" });
 
 function normalizeMemberRange<T extends { minMember: number; maxMember: number }>(value: T): T {
   const minMember = Math.min(value.minMember, value.maxMember);
@@ -135,7 +138,7 @@ const tournamentInputBaseSchema = z.object({
   duration: z.string(),
   breakDuration: z.string(),
   courts: z.array(z.string()).optional(),
-  foodInfo: z.string().nullable().optional(),
+  foodInfo: foodInfoSchema.nullable().optional(),
   descriptionInfo: z.string().nullable().optional(),
 });
 
@@ -181,7 +184,7 @@ export const backendCreateTournamentInputSchema = z.object({
   duration: z.string(),
   breakDuration: z.string(),
   courts: z.array(z.string()).optional(),
-  foodInfo: z.string().nullable().optional(),
+  foodInfo: foodInfoSchema.nullable().optional(),
   descriptionInfo: z.string().nullable().optional(),
 }).transform(normalizeMemberRange);
 
@@ -201,7 +204,7 @@ export const backendUpdateTournamentInputSchema = z
     duration: z.string().nullable(),
     breakDuration: z.string().nullable(),
     courts: z.array(z.string()),
-    foodInfo: z.string().nullable(),
+    foodInfo: foodInfoSchema.nullable(),
     descriptionInfo: z.string().nullable(),
   })
   .partial()
