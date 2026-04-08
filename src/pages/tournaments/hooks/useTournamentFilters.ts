@@ -12,9 +12,22 @@ import {
 interface UseTournamentFiltersOptions {
   isOrganiserOrAbove: boolean;
   userId?: string | null;
+  isAuthLoading?: boolean;
+}
+
+interface PersistedTournamentFiltersState {
+  activeTab: TournamentListTab;
+  filters: {
+    q?: string;
+    when?: string;
+    distance?: string;
+    clubId?: string;
+  };
+  updatedAt: number;
 }
 
 const TOURNAMENT_FILTERS_STORAGE_PREFIX = "tournament:list:filters:";
+const ANONYMOUS_USER_STORAGE_ID = "anonymous";
 const QUERY_DEBOUNCE_MS = 200;
 
 function getStorageKey(userId: string) {
@@ -60,6 +73,11 @@ function parsePersistedState(rawValue: string) {
         ? filtersRaw.clubId
         : undefined;
 
+    const updatedAt =
+      typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt)
+        ? parsed.updatedAt
+        : 0;
+
     return {
       activeTab,
       filters: {
@@ -68,15 +86,24 @@ function parsePersistedState(rawValue: string) {
         distance,
         clubId,
       },
-    };
+      updatedAt,
+    } satisfies PersistedTournamentFiltersState;
   } catch {
     return null;
   }
 }
 
+function readPersistedState(storageKey: string) {
+  if (typeof window === "undefined") return null;
+  const rawValue = window.localStorage.getItem(storageKey);
+  if (!rawValue) return null;
+  return parsePersistedState(rawValue);
+}
+
 export function useTournamentFilters({
   isOrganiserOrAbove,
   userId,
+  isAuthLoading = false,
 }: UseTournamentFiltersOptions) {
   const [state, dispatch] = useReducer(
     filtersReducer,
@@ -84,7 +111,9 @@ export function useTournamentFilters({
   );
 
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const isHydratedRef = useRef(false);
+  const hydratedStorageKeyRef = useRef<string | null>(null);
+  const skipNextPersistRef = useRef(false);
+  const storageKey = getStorageKey(userId ?? ANONYMOUS_USER_STORAGE_ID);
 
   // ✅ Debounce only affects API layer, not state updates
   const debouncedQ = useDebouncedValue(
@@ -159,24 +188,30 @@ export function useTournamentFilters({
    * 🔄 Hydrate from localStorage
    */
   useEffect(() => {
-    if (!userId || typeof window === "undefined") {
-      isHydratedRef.current = true;
+    if (typeof window === "undefined") {
+      return;
+    }
+    if (isAuthLoading) {
+      hydratedStorageKeyRef.current = null;
+      skipNextPersistRef.current = false;
       return;
     }
 
-    const rawValue = window.localStorage.getItem(
-      getStorageKey(userId)
-    );
+    const anonymousStorageKey = getStorageKey(ANONYMOUS_USER_STORAGE_ID);
+    const anonymousPersisted = readPersistedState(anonymousStorageKey);
+    const userPersisted = userId ? readPersistedState(storageKey) : null;
 
-    if (!rawValue) {
-      isHydratedRef.current = true;
-      return;
-    }
-
-    const persisted = parsePersistedState(rawValue);
+    const persisted =
+      userId && userPersisted && anonymousPersisted
+        ? userPersisted.updatedAt >= anonymousPersisted.updatedAt
+          ? userPersisted
+          : anonymousPersisted
+        : userId
+          ? userPersisted ?? anonymousPersisted
+          : anonymousPersisted;
 
     if (!persisted) {
-      isHydratedRef.current = true;
+      hydratedStorageKeyRef.current = storageKey;
       return;
     }
 
@@ -189,17 +224,43 @@ export function useTournamentFilters({
         filters: persisted.filters,
       },
     });
+    skipNextPersistRef.current = true;
 
-    isHydratedRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+    // Ensure logged-in key reflects latest state when fallback/anonymous was newer.
+    if (userId) {
+      const shouldSyncToUserKey =
+        !userPersisted ||
+        (anonymousPersisted != null &&
+          anonymousPersisted.updatedAt > userPersisted.updatedAt);
+
+      if (shouldSyncToUserKey) {
+        const nextPayload: PersistedTournamentFiltersState = {
+          activeTab: persisted.activeTab,
+          filters: {
+            q: persisted.filters.q,
+            when: persisted.filters.when,
+            distance: persisted.filters.distance,
+            clubId: persisted.filters.clubId,
+          },
+          updatedAt: persisted.updatedAt,
+        };
+        window.localStorage.setItem(storageKey, JSON.stringify(nextPayload));
+      }
+    }
+
+    hydratedStorageKeyRef.current = storageKey;
+  }, [isAuthLoading, isOrganiserOrAbove, storageKey, userId]);
 
   /**
    * 💾 Persist to localStorage
    */
   useEffect(() => {
-    if (!userId || typeof window === "undefined") return;
-    if (!isHydratedRef.current) return;
+    if (typeof window === "undefined") return;
+    if (hydratedStorageKeyRef.current !== storageKey) return;
+    if (skipNextPersistRef.current) {
+      skipNextPersistRef.current = false;
+      return;
+    }
 
     const storagePayload = {
       activeTab: state.activeTab,
@@ -209,14 +270,12 @@ export function useTournamentFilters({
         distance: state.filters.distance,
         clubId: state.filters.clubId,
       },
+      updatedAt: Date.now(),
     };
 
-    window.localStorage.setItem(
-      getStorageKey(userId),
-      JSON.stringify(storagePayload)
-    );
+    window.localStorage.setItem(storageKey, JSON.stringify(storagePayload));
   }, [
-    userId,
+    storageKey,
     state.activeTab,
     state.filters.q,
     state.filters.when,

@@ -116,12 +116,15 @@ export function CreateTournamentModal({
 
           <div className="flex min-w-0 max-w-full flex-col gap-3 overflow-x-clip sm:flex-row">
             <Button
-              variant="outline"
-              className="w-full min-w-0 border-brand-primary/25 hover:bg-brand-primary/5 hover:text-brand-primary sm:flex-1"
-              onClick={() => handleClose(false)}
-              disabled={isMutating}
+              className="w-full min-w-0 bg-brand-primary text-white shadow-sm shadow-brand-primary/20 hover:bg-brand-primary-hover focus-visible:ring-brand-primary/40 sm:flex-1"
+              onClick={handlePublish}
+              disabled={isMutating || Boolean(publishValidationError)}
             >
-              {t("tournaments.cancel")}
+              {isMutating ? (
+                <InlineLoader size="sm" />
+              ) : (
+                t("tournaments.publish")
+              )}
             </Button>
 
             <Button
@@ -139,15 +142,12 @@ export function CreateTournamentModal({
             </Button>
 
             <Button
-              className="w-full min-w-0 bg-brand-primary text-white shadow-sm shadow-brand-primary/20 hover:bg-brand-primary-hover focus-visible:ring-brand-primary/40 sm:flex-1"
-              onClick={handlePublish}
-              disabled={isMutating || Boolean(publishValidationError)}
+              variant="outline"
+              className="w-full min-w-0 border-brand-primary/25 hover:bg-brand-primary/5 hover:text-brand-primary sm:flex-1"
+              onClick={() => handleClose(false)}
+              disabled={isMutating}
             >
-              {isMutating ? (
-                <InlineLoader size="sm" />
-              ) : (
-                t("tournaments.publish")
-              )}
+              {t("tournaments.cancel")}
             </Button>
           </div>
         </Tabs>

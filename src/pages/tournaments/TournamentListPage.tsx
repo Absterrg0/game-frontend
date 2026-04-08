@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
 import InlineLoader from "@/components/shared/InlineLoader";
 import { PaginationBar } from "@/components/pagination/PaginationBar";
 import { CreateTournamentModal } from "@/pages/tournaments/components/CreateTournamentModal";
 import { useIsOrganiserOrAbove } from "@/pages/auth/hooks";
+import { TournamentFilters } from "@/pages/tournaments/components/TournamentFilters";
 import { TournamentActions } from "@/pages/tournaments/components/TournamentActions";
 import { TournamentTable } from "@/pages/tournaments/components/TournamentTable";
 import { useTournamentFilters } from "@/pages/tournaments/hooks/useTournamentFilters";
@@ -14,8 +16,11 @@ import { useTournaments } from "./hooks/useTournaments";
 import { useAuth } from "@/pages/auth/hooks";
 import { TournamentTableSkeleton } from "@/components/ui/tournament-table-skeleton";
 import { getErrorMessage } from "@/lib/errors";
-import { TournamentTab } from "@/models/tournament";
-import { Search01Icon } from "@/icons/figma-icons";
+import { TournamentTab, type TournamentListTab } from "@/models/tournament";
+import { RoleGuard } from "@/components/auth/RoleGuard";
+import { ROLES } from "@/constants/roles";
+import { PlusSignIcon, PencilEdit01Icon, IconChevronLeft } from "@/icons/figma-icons";
+// import { Search01Icon } from "@/icons/figma-icons";
 
 export default function TournamentListPage() {
   return <TournamentListContent />;
@@ -29,8 +34,13 @@ const DEFAULT_PAGINATION = {
 
 function TournamentListContent() {
   const { t, i18n } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(min-width: 1024px)").matches;
+  });
   const isOrganiserOrAbove = useIsOrganiserOrAbove();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const {
     activeTab,
@@ -42,12 +52,55 @@ function TournamentListContent() {
     setWhenFromValue,
     setDistanceFromValue,
     setClubId,
-    setQuery,
+    // setQuery,
     setPage,
-  } = useTournamentFilters({ isOrganiserOrAbove, userId: user?.id ?? undefined });
+  } = useTournamentFilters({
+    isOrganiserOrAbove,
+    userId: user?.id ?? undefined,
+    isAuthLoading: authLoading,
+  });
   const { isDraftTab } = useTournamentPermissions({
     activeTab,
   });
+
+  const viewParam = searchParams.get("view");
+
+  useEffect(() => {
+    if (!isOrganiserOrAbove) return;
+    if (viewParam === "drafts") setTab(TournamentTab.Drafts);
+    else if (viewParam === "published") setTab(TournamentTab.Published);
+  }, [isOrganiserOrAbove, viewParam, setTab]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const media = window.matchMedia("(min-width: 1024px)");
+    const handleMediaChange = (event: MediaQueryListEvent) => {
+      setIsDesktop(event.matches);
+    };
+
+    media.addEventListener("change", handleMediaChange);
+
+    return () => {
+      media.removeEventListener("change", handleMediaChange);
+    };
+  }, []);
+
+  const handleTabChange = useCallback(
+    (tab: TournamentListTab) => {
+      setTab(tab);
+      if (!isOrganiserOrAbove) return;
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          next.set("view", tab === TournamentTab.Drafts ? "drafts" : "published");
+          return next;
+        },
+        { replace: true }
+      );
+    },
+    [isOrganiserOrAbove, setSearchParams, setTab]
+  );
 
   const { data, error, isPending, isFetching, refetch, isLoadingError } = useTournaments(
     effectiveFilters()
@@ -58,6 +111,10 @@ function TournamentListContent() {
   const loadErrorDetail = error ? getErrorMessage(error) : null;
   const showFullPageLoadError = isLoadingError || (!data && !!error && !isPending);
   const showRefetchErrorBanner = !!error && !!data && !isPending;
+  const listHeading =
+    activeTab === TournamentTab.Drafts
+      ? t("tournaments.tabDrafts")
+      : t("tournaments.allTournaments");
   const handleFiltersChange = (next: { when: string; distance: string; clubId?: string }) => {
     setWhenFromValue(next.when);
     setDistanceFromValue(next.distance);
@@ -65,29 +122,83 @@ function TournamentListContent() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] flex-col bg-brand-primary/[0.03]">
-      <div className="mx-auto w-full max-w-[1060px] flex-1 px-4 py-8 sm:px-6">
-        <div className="overflow-y-hidden overflow-x-auto rounded-[12px] border border-black/10 bg-white shadow-sm">
-          <div className="px-4 py-3 sm:px-5 sm:py-3.5">
-            <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold leading-tight text-foreground">
-                {activeTab === TournamentTab.Drafts
-                  ? t("tournaments.tabDrafts")
-                  : t("tournaments.allTournaments")}
+    <div className="flex min-h-[calc(100vh-56px)] flex-col bg-[#f8fbf8] lg:min-h-[calc(100vh-60px)]">
+      <div className="mx-auto w-full max-w-[440px] flex-1 px-3 pb-6 pt-6 sm:max-w-none sm:px-4 sm:pb-8 sm:pt-7 lg:max-w-[1060px] lg:px-6 lg:py-8">
+        <div className="overflow-hidden rounded-[12px] border border-[rgba(1,10,4,0.08)] bg-white shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)]">
+          <div className="px-4 pb-4 pt-5 sm:px-5 lg:py-4">
+            <div className="flex items-center justify-between gap-3 lg:hidden">
+              <h1 className="text-[21px] font-semibold leading-[1.15] text-[#010a04]">
+                {listHeading}
               </h1>
-              <TournamentActions
-                activeTab={activeTab}
-                onTabChange={setTab}
-                filtersOpen={filtersOpen}
-                onFiltersOpenChange={setFiltersOpen}
-                when={filters.when}
-                distance={filters.distance}
-                clubId={filters.clubId}
-                onFiltersChange={handleFiltersChange}
-                onCreate={() => setIsCreateModalOpen(true)}
-              />
+              <div className="flex items-center gap-2">
+                <RoleGuard requireRoleOrAbove={ROLES.ORGANISER}>
+                  {activeTab === TournamentTab.Published ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 border-black/12 bg-white px-2.5 text-[12px]"
+                      onClick={() => handleTabChange(TournamentTab.Drafts)}
+                    >
+                      <PencilEdit01Icon size={14} className="text-foreground" />
+                      <span>{t("tournaments.tabDrafts")}</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 border-black/12 bg-white px-2.5 text-[12px]"
+                      onClick={() => handleTabChange(TournamentTab.Published)}
+                    >
+                      <IconChevronLeft size={14} className="text-foreground" />
+                      <span>{t("tournaments.tabPublished")}</span>
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    className="h-8 rounded-[8px] bg-brand-primary px-3.5 text-white hover:bg-brand-primary-hover"
+                    onClick={() => setIsCreateModalOpen(true)}
+                  >
+                    <PlusSignIcon size={15} className="text-white" />
+                    <span className="text-[14px] font-medium">{t("tournaments.create")}</span>
+                  </Button>
+                </RoleGuard>
+              </div>
             </div>
-            <div className="mt-3 max-w-[340px]">
+
+            {!isDesktop ? (
+              <div className="mt-3 lg:hidden">
+                <TournamentFilters
+                  open={filtersOpen}
+                  onOpenChange={setFiltersOpen}
+                  filters={{
+                    when: filters.when,
+                    distance: filters.distance,
+                    clubId: filters.clubId,
+                  }}
+                  onFiltersChange={handleFiltersChange}
+                />
+              </div>
+            ) : null}
+
+            {isDesktop ? (
+              <div className="hidden flex-col gap-4 lg:flex lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+                <h1 className="text-lg font-semibold leading-tight text-foreground sm:text-xl">
+                  {listHeading}
+                </h1>
+                <TournamentActions
+                  activeTab={activeTab}
+                  onTabChange={handleTabChange}
+                  filtersOpen={filtersOpen}
+                  onFiltersOpenChange={setFiltersOpen}
+                  when={filters.when}
+                  distance={filters.distance}
+                  clubId={filters.clubId}
+                  onFiltersChange={handleFiltersChange}
+                  onCreate={() => setIsCreateModalOpen(true)}
+                />
+              </div>
+            ) : null}
+            {/* <div className="mt-3 max-w-[340px]">
               <div className="relative">
                 <Search01Icon
                   size={14}
@@ -102,7 +213,7 @@ function TournamentListContent() {
                   className="h-9 rounded-xl border-black/12 bg-black/[0.025] pl-9 text-sm placeholder:text-black/30 focus:border-brand-primary/40 focus:bg-white transition-colors"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
 
           {isFetching && !isPending ? (
@@ -118,7 +229,7 @@ function TournamentListContent() {
             <TournamentTableSkeleton />
           ) : showFullPageLoadError ? (
             <div
-              className="space-y-4 px-6 py-12 text-center"
+              className="space-y-4 px-4 py-10 text-center sm:px-6 sm:py-12"
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -167,8 +278,8 @@ function TournamentListContent() {
                 </div>
               ) : null}
               {tournaments.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                  <p className="text-muted-foreground">
+                <div className="px-4 py-10 text-center sm:px-6 sm:py-12">
+                  <p className="text-sm text-muted-foreground sm:text-base">
                     {isDraftTab
                       ? t("tournaments.noDrafts")
                       : t("tournaments.noTournaments")}
@@ -179,6 +290,7 @@ function TournamentListContent() {
                   tournaments={tournaments}
                   pagination={pagination}
                   language={i18n.language}
+                  listHeading={listHeading}
                 />
               )}
             </>
@@ -187,6 +299,7 @@ function TournamentListContent() {
           <PaginationBar
             pagination={pagination}
             onPageChange={setPage}
+            className="border-t border-black/8 px-4 py-3 sm:px-5"
             prevLabel={t("tournaments.prev")}
             nextLabel={t("tournaments.next")}
             info={({ from, to, total }) =>
