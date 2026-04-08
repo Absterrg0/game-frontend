@@ -94,8 +94,8 @@ export default function TournamentDetailsPage() {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#f8fbf8]">
-      <div className="mx-auto w-full max-w-[1040px] px-5 pb-10 pt-7 sm:px-6 sm:pt-8 lg:px-6">
+    <div className="flex min-h-[calc(100vh-4rem)] w-full flex-col items-center bg-[#f8fbf8]">
+      <div className="w-full max-w-6xl px-5 pb-10 pt-7 sm:px-6 sm:pt-8 lg:px-6">
         <div className="mb-6 flex items-center justify-between sm:mb-7">
           <Button
             asChild

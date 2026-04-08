@@ -24,7 +24,6 @@ export function toBackendCreateInput(data: CreateTournamentInput): BackendCreate
     name: data.name,
     status: data.status,
     sponsor: sponsorTrimmed !== "" ? sponsorTrimmed : undefined,
-    logo: data.logo,
     date: data.date ?? undefined,
     startTime: data.startTime ?? undefined,
     endTime: data.endTime ?? undefined,
@@ -52,7 +51,6 @@ export function toBackendUpdateInput(data: UpdateTournamentInput): BackendUpdate
           ? sponsorTrimmed
           : undefined,
     name: data.name,
-    logo: data.logo,
     date: data.date,
     startTime: data.startTime,
     endTime: data.endTime,

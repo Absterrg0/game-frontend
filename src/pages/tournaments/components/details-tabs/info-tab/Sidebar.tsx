@@ -6,7 +6,6 @@ import type { TFunction } from "i18next";
 interface SidebarProps {
   className?: string;
   tournament: TournamentDetail;
-  feeValue: number;
   spotPercentage: number;
   onJoin: () => Promise<void>;
   isJoinPending: boolean;
@@ -17,7 +16,6 @@ interface SidebarProps {
 export function Sidebar({
   className,
   tournament,
-  feeValue,
   spotPercentage,
   onJoin,
   isJoinPending,
@@ -66,16 +64,7 @@ export function Sidebar({
 
         <div className="my-6 h-px w-full bg-[#dddddd]" />
 
-        <div className="flex items-end gap-1 text-[#010a04]">
-          <p className="text-[22px] leading-[26px]">
-            {feeValue > 0
-              ? t("tournaments.entryFeeFormat", { amount: feeValue })
-              : t("tournaments.entryFeeFree")}
-          </p>
-          <p className="text-[16px] font-medium leading-5 text-[#010a04]/75">{t("tournaments.feeSidebarCaption")}</p>
-        </div>
-
-        <div className="mt-[18px] space-y-3">
+        <div className="space-y-3">
           {(canJoin || isParticipant) && (
             <Button
               className="h-[42px] w-full rounded-[8px] bg-gradient-to-r from-[#0a6925] via-[#0c7b2c] to-[#0f8d33] text-[16px] font-medium text-white hover:opacity-95"

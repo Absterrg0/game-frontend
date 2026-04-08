@@ -53,6 +53,9 @@ export const tournamentPermissionsSchema = z.object({
 });
 
 const memberCountSchema = z.coerce.number().int().min(1);
+const foodInfoSchema = z
+  .string()
+  .max(500, { message: "foodInfo must be at most 500 characters" });
 
 function normalizeMemberRange<T extends { minMember: number; maxMember: number }>(value: T): T {
   const minMember = Math.min(value.minMember, value.maxMember);
@@ -94,7 +97,6 @@ export const tournamentsResponseSchema = z.object({
 export const backendTournamentDetailSchema = z.object({
   id: z.string(),
   name: z.string(),
-  logo: z.string().nullable(),
   club: tournamentClubSchema.nullable(),
   sponsor: tournamentSponsorSchema.nullable(),
   clubSponsors: z.array(tournamentSponsorSchema),
@@ -106,8 +108,8 @@ export const backendTournamentDetailSchema = z.object({
   entryFee: z.number(),
   minMember: memberCountSchema,
   maxMember: memberCountSchema,
-  duration: z.string(),
-  breakDuration: z.string(),
+  duration: z.string().nullable(),
+  breakDuration: z.string().nullable(),
   courts: z.array(tournamentCourtSchema),
   foodInfo: z.string(),
   descriptionInfo: z.string(),
@@ -125,7 +127,6 @@ export const backendTournamentDetailResponseSchema = z.object({
 
 const tournamentInputBaseSchema = z.object({
   sponsor: z.string().nullable(),
-  logo: z.string().nullable().optional(),
   date: z.string().nullable().optional(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),
@@ -137,7 +138,7 @@ const tournamentInputBaseSchema = z.object({
   duration: z.string(),
   breakDuration: z.string(),
   courts: z.array(z.string()).optional(),
-  foodInfo: z.string().nullable().optional(),
+  foodInfo: foodInfoSchema.nullable().optional(),
   descriptionInfo: z.string().nullable().optional(),
 });
 
@@ -172,7 +173,6 @@ export const backendCreateTournamentInputSchema = z.object({
   name: z.string(),
   status: z.enum(["draft", "active"]),
   sponsor: z.string().optional(),
-  logo: z.string().nullable().optional(),
   date: z.string().nullable().optional(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),
@@ -184,7 +184,7 @@ export const backendCreateTournamentInputSchema = z.object({
   duration: z.string(),
   breakDuration: z.string(),
   courts: z.array(z.string()).optional(),
-  foodInfo: z.string().nullable().optional(),
+  foodInfo: foodInfoSchema.nullable().optional(),
   descriptionInfo: z.string().nullable().optional(),
 }).transform(normalizeMemberRange);
 
@@ -193,7 +193,6 @@ export const backendUpdateTournamentInputSchema = z
     club: z.string(),
     sponsor: z.string().nullable(),
     name: z.string(),
-    logo: z.string().nullable(),
     date: z.string().nullable(),
     startTime: z.string().nullable(),
     endTime: z.string().nullable(),
@@ -205,7 +204,7 @@ export const backendUpdateTournamentInputSchema = z
     duration: z.string().nullable(),
     breakDuration: z.string().nullable(),
     courts: z.array(z.string()),
-    foodInfo: z.string().nullable(),
+    foodInfo: foodInfoSchema.nullable(),
     descriptionInfo: z.string().nullable(),
   })
   .partial()
@@ -225,8 +224,8 @@ const createTournamentSummarySchema = z.object({
   name: z.string(),
   club: z.string(),
   status: z.string(),
-  date: z.string().optional(),
-  createdAt: z.string().optional(),
+  date: z.string().nullable().optional(),
+  createdAt: z.string().nullable().optional(),
 });
 
 const updateTournamentSummarySchema = z.object({
@@ -234,8 +233,8 @@ const updateTournamentSummarySchema = z.object({
   name: z.string(),
   club: z.string(),
   status: z.string(),
-  date: z.string().optional(),
-  updatedAt: z.string().optional(),
+  date: z.string().nullable().optional(),
+  updatedAt: z.string().nullable().optional(),
 });
 
 const publishTournamentSummarySchema = z.object({

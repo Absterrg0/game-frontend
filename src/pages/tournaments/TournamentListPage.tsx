@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import InlineLoader from "@/components/shared/InlineLoader";
@@ -7,8 +7,6 @@ import { CreateTournamentModal } from "@/pages/tournaments/components/CreateTour
 import { useIsOrganiserOrAbove } from "@/pages/auth/hooks";
 import { TournamentActions } from "@/pages/tournaments/components/TournamentActions";
 import { TournamentTable } from "@/pages/tournaments/components/TournamentTable";
-import { Input } from "@/components/ui/input";
-import { Search01Icon } from "@/icons/figma-icons";
 import { useTournamentFilters } from "@/pages/tournaments/hooks/useTournamentFilters";
 import { useTournamentPermissions } from "@/pages/tournaments/hooks/useTournamentPermissions";
 import { useTournaments } from "./hooks/useTournaments";
@@ -34,7 +32,6 @@ function TournamentListContent() {
   const isOrganiserOrAbove = useIsOrganiserOrAbove();
   const { user } = useAuth();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const listSearchLabelId = useId();
   const {
     activeTab,
     filters,
@@ -45,7 +42,6 @@ function TournamentListContent() {
     setWhenFromValue,
     setDistanceFromValue,
     setClubId,
-    setQuery,
     setPage,
   } = useTournamentFilters({ isOrganiserOrAbove, userId: user?.id ?? undefined });
   const { isDraftTab } = useTournamentPermissions({
@@ -89,28 +85,6 @@ function TournamentListContent() {
                 onFiltersChange={handleFiltersChange}
                 onCreate={() => setIsCreateModalOpen(true)}
               />
-            </div>
-
-            <div className="border-t border-black/[0.08] pt-3 pb-1 sm:pt-3.5 sm:pb-2">
-              <div className="relative">
-                <Search01Icon
-                  size={16}
-                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/35"
-                  aria-hidden
-                />
-                <Input
-                  type="search"
-                  value={filters.q ?? ""}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t("tournaments.filterSearchPlaceholder")}
-                  aria-labelledby={listSearchLabelId}
-                  autoComplete="off"
-                  className="h-10 w-full rounded-xl border-black/12 bg-black/[0.025] pl-10 text-sm placeholder:text-black/35 focus:border-brand-primary/40 focus:bg-white"
-                />
-                <span id={listSearchLabelId} className="sr-only">
-                  {t("tournaments.filterSearch")}
-                </span>
-              </div>
             </div>
           </div>
 

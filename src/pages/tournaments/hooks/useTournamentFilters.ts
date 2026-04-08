@@ -111,21 +111,6 @@ export function useTournamentFilters({
     dispatch({ type: "SET_TAB", payload: tab });
   }, []);
 
-  /**
-   * ✅ FIXED:
-   * - Only dispatch SET_QUERY
-   * - Pagination reset handled inside reducer
-   */
-  const setQuery = useCallback((value: string) => {
-    const normalized = value.trim();
-    const query = normalized.length > 0 ? normalized : undefined;
-
-    dispatch({
-      type: "SET_QUERY",
-      payload: query,
-    });
-  }, []);
-
   const setPage = useCallback((page: number) => {
     dispatch({ type: "SET_PAGE", payload: page });
   }, []);
@@ -241,7 +226,6 @@ export function useTournamentFilters({
     setWhenFromValue,
     setDistanceFromValue,
     setClubId,
-    setQuery,
     setPage,
   };
 }
