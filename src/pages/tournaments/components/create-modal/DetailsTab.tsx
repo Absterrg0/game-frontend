@@ -38,6 +38,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
   const minPlayersId = `${uid}-min-players`;
   const maxPlayersId = `${uid}-max-players`;
   const foodDrinksId = `${uid}-food-drinks`;
+  const foodDrinksCounterId = `${foodDrinksId}-counter`;
 
   return (
     <div className="min-w-0 max-w-full space-y-4 overflow-x-clip sm:space-y-5">
@@ -234,6 +235,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
             {t("tournaments.foodDrinks")}
           </Label>
           <span
+            id={foodDrinksCounterId}
             className="text-[11px] font-normal tabular-nums text-[#010a04]/40 sm:text-[12px] sm:text-[#010a04]/38"
             aria-live="polite"
           >
@@ -242,6 +244,7 @@ export function DetailsTab({ form, update }: DetailsTabProps) {
         </div>
         <Textarea
           id={foodDrinksId}
+          aria-describedby={foodDrinksCounterId}
           placeholder={t("tournaments.foodDrinksPlaceholder")}
           maxLength={500}
           value={form.foodInfo ?? ""}

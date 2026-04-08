@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import type {
   TournamentListItem,
   TournamentPagination,
@@ -34,7 +35,6 @@ export function TournamentTable({
   language,
 }: TournamentTableProps) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
 
   function getStatusLabel(status: TournamentStatus, t: TFunction) {
     switch (status) {
@@ -68,83 +68,66 @@ export function TournamentTable({
         </TableHeader>
         <TableBody>
           {tournaments.map((tournament, idx) => {
-
             const statusLabel = getStatusLabel(tournament.status, t);
             const statusDotClass = STATUS_DOTS[tournament.status];
-
             const rowPath = `/tournaments/${tournament.id}`;
-
-            const openRow = (e: React.MouseEvent<HTMLTableRowElement>) => {
-              if (e.defaultPrevented) return;
-              if (e.button !== 0) return;
-              if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                window.open(rowPath, "_blank", "noopener,noreferrer");
-                return;
-              }
-              void navigate(rowPath);
-            };
+            const rowAriaLabel = t("tournaments.openTournamentRow", {
+              name: tournament.name,
+            });
 
             return (
               <TableRow
                 key={tournament.id}
-                tabIndex={0}
-                className="h-[45px] cursor-pointer border-black/10 bg-card hover:bg-black/[0.015] focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
-                aria-label={t("tournaments.openTournamentRow", { name: tournament.name })}
-                onClick={openRow}
-                onAuxClick={(e) => {
-                  if (e.button === 1) {
-                    e.preventDefault();
-                    window.open(rowPath, "_blank", "noopener,noreferrer");
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    if (e.ctrlKey || e.metaKey) {
-                      e.preventDefault();
-                      window.open(rowPath, "_blank", "noopener,noreferrer");
-                      return;
-                    }
-                    e.preventDefault();
-                    void navigate(rowPath);
-                  }
-                }}
+                className="h-[45px] border-black/10 bg-card"
               >
-                <TableCell className="px-4 py-0 text-xs text-foreground/90">
-                  {(pagination.page - 1) * pagination.limit + idx + 1}
-                </TableCell>
-                <TableCell className="px-3 py-0">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-[22px] w-[22px] shrink-0 rounded-[5px] bg-black/15"
-                      aria-hidden="true"
-                    />
-                    <span className="truncate text-sm text-foreground">{tournament.name}</span>
-                    <span
-                      role="img"
-                      className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass}`}
-                      aria-label={statusLabel}
-                      title={statusLabel}
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="px-3 py-0">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-4 w-4 shrink-0 rounded-full bg-black/15"
-                      aria-hidden="true"
-                    />
-                    <span className="truncate text-sm text-foreground">
-                      {tournament.club?.name ?? "-"}
+                <TableCell colSpan={4} className="p-0">
+                  <Link
+                    to={rowPath}
+                    aria-label={rowAriaLabel}
+                    className={cn(
+                      "grid h-[45px] w-full grid-cols-[3rem_minmax(0,42fr)_minmax(0,38fr)_minmax(0,20fr)] items-center border-black/10 bg-card text-inherit no-underline transition-colors",
+                      "hover:bg-black/[0.015] focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                    )}
+                  >
+                    <span className="px-4 py-0 text-xs text-foreground/90">
+                      {(pagination.page - 1) * pagination.limit + idx + 1}
                     </span>
-                  </div>
-                </TableCell>
-                <TableCell className="px-3 py-0 text-sm text-foreground/90">
-                  {formatDateDisplay(
-                    tournament.date,
-                    t("tournaments.unscheduled"),
-                    getDateFnsLocale(language)
-                  )}
+                    <span className="block min-w-0 px-3 py-0">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-[22px] w-[22px] shrink-0 rounded-[5px] bg-black/15"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate text-sm text-foreground">
+                          {tournament.name}
+                        </span>
+                        <span
+                          role="img"
+                          className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass}`}
+                          aria-label={statusLabel}
+                          title={statusLabel}
+                        />
+                      </span>
+                    </span>
+                    <span className="block min-w-0 px-3 py-0">
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-4 w-4 shrink-0 rounded-full bg-black/15"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate text-sm text-foreground">
+                          {tournament.club?.name ?? "-"}
+                        </span>
+                      </span>
+                    </span>
+                    <span className="px-3 py-0 text-sm text-foreground/90">
+                      {formatDateDisplay(
+                        tournament.date,
+                        t("tournaments.unscheduled"),
+                        getDateFnsLocale(language)
+                      )}
+                    </span>
+                  </Link>
                 </TableCell>
               </TableRow>
             );
