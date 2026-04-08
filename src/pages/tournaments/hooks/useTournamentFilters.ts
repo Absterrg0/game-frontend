@@ -214,6 +214,7 @@ export function useTournamentFilters({
           : anonymousPersisted;
 
     if (!persisted) {
+      dispatch({ type: "RESET" });
       hydratedStorageKeyRef.current = storageKey;
       skipNextPersistRef.current = true;
       return;

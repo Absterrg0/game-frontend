@@ -55,6 +55,25 @@ export type IconProps = Omit<React.HTMLAttributes<HTMLSpanElement>, "children"> 
 
 type SvgIconComponent = React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
+const EyeSvgIcon = React.forwardRef<SVGSVGElement, React.SVGProps<SVGSVGElement>>(
+  (props, ref) => (
+    <svg
+      ref={ref}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  )
+);
+EyeSvgIcon.displayName = "EyeSvgIcon";
+
 type IconDefinition = {
   component?: SvgIconComponent;
   imageSrc?: string;
@@ -143,6 +162,7 @@ const ICONS = {
   search: defineSvgIcon(searchIcon, { defaultTone: "muted" }),
   archiveRestore: defineSvgIcon(archiveRestoreIcon, { defaultTone: "muted" }),
   alignRight: defineSvgIcon(alignRightIcon, { defaultTone: "muted" }),
+  eye: defineSvgIcon(EyeSvgIcon, { defaultTone: "default" }),
   tb10LogoFrame8: defineImageIcon(tb10LogoFrame8Url, { nativeColor: true }),
 };
 
@@ -312,58 +332,7 @@ export const Delete02Icon = createIcon("trash2");
 export const DragDropVerticalIcon = createIcon("gripVertical");
 export const Mail01Icon = createIcon("infoCircleBold");
 export const PencilEdit01Icon = createIcon("penLine");
-export const EyeIcon = React.forwardRef<HTMLSpanElement, IconProps>((props, ref) => {
-  const {
-    size,
-    className,
-    title,
-    style,
-    role,
-    "aria-label": ariaLabel,
-    "aria-hidden": ariaHidden,
-    ...rest
-  } = props;
-  const iconSize = toCssSize(size);
-
-  return (
-    <span
-      ref={ref}
-      className={[
-        "inline-flex shrink-0 items-center justify-center align-middle",
-        TONE_CLASS.default,
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      style={{
-        ...(iconSize !== undefined ? { width: iconSize, height: iconSize } : {}),
-        lineHeight: 0,
-        ...style,
-      }}
-      title={title}
-      role={role ?? (title ? "img" : undefined)}
-      aria-label={ariaLabel ?? (title ? title : undefined)}
-      aria-hidden={ariaHidden ?? (title ? undefined : true)}
-      {...rest}
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="block size-full"
-        preserveAspectRatio="xMidYMid meet"
-        focusable={false}
-        aria-hidden={true}
-      >
-        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
-        <circle cx="12" cy="12" r="3" />
-      </svg>
-    </span>
-  );
-});
+export const EyeIcon = createIcon("eye");
 EyeIcon.displayName = "EyeIcon";
 export const PencilIcon = createIcon("penLine");
 export const PlusSignIcon = createIcon("plus");

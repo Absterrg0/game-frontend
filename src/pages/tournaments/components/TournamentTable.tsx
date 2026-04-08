@@ -69,64 +69,64 @@ export function TournamentTable({
             const isDraft = tournament.status === "draft";
 
             return (
-              <Link
-                key={tournament.id}
-                to={rowPath}
-                role="listitem"
-                aria-label={rowAriaLabel}
-                className={cn(
-                  "block rounded-[10px] bg-[rgba(1,10,4,0.04)] p-[14px] text-inherit no-underline transition-colors",
-                  "hover:bg-[rgba(1,10,4,0.07)] active:bg-[rgba(1,10,4,0.09)]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/45"
-                )}
-              >
-                <div className="flex items-center gap-[15px]">
-                  <span
-                    className="h-[45px] w-[45px] shrink-0 rounded-[7px] bg-[#d9d9d9]"
-                    aria-hidden="true"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start gap-[6px]">
-                      <span className="line-clamp-2 text-[16px] font-medium leading-[1.2] text-[#010a04]">
-                        {tournament.name}
-                      </span>
-                      <span
-                        role="img"
-                        className={cn("mt-[6px] h-2 w-2 shrink-0 rounded-full", statusDotClass)}
-                        aria-label={statusLabel}
-                        title={statusLabel}
-                      />
-                    </div>
-                    <div className="mt-[9px] flex items-center gap-[10px] text-[13px] text-[#010a04]/75 sm:text-[14px]">
-                      <Calendar size={17} className="text-[#010a04]/60" />
-                      <span>{dateText}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="my-[14px] h-px w-full bg-[#010a04]/10" />
-
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex min-w-0 items-center gap-2">
+              <div key={tournament.id} role="listitem">
+                <Link
+                  to={rowPath}
+                  aria-label={rowAriaLabel}
+                  className={cn(
+                    "block rounded-[10px] bg-[rgba(1,10,4,0.04)] p-[14px] text-inherit no-underline transition-colors",
+                    "hover:bg-[rgba(1,10,4,0.07)] active:bg-[rgba(1,10,4,0.09)]",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/45"
+                  )}
+                >
+                  <div className="flex items-center gap-[15px]">
                     <span
-                      className="h-6 w-6 shrink-0 rounded-full bg-[#d9d9d9]"
+                      className="h-[45px] w-[45px] shrink-0 rounded-[7px] bg-[#d9d9d9]"
                       aria-hidden="true"
                     />
-                    <span className="truncate text-[14px] text-[#010a04]">
-                      {tournament.club?.name ?? "-"}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start gap-[6px]">
+                        <span className="line-clamp-2 text-[16px] font-medium leading-[1.2] text-[#010a04]">
+                          {tournament.name}
+                        </span>
+                        <span
+                          role="img"
+                          className={cn("mt-[6px] h-2 w-2 shrink-0 rounded-full", statusDotClass)}
+                          aria-label={statusLabel}
+                          title={statusLabel}
+                        />
+                      </div>
+                      <div className="mt-[9px] flex items-center gap-[10px] text-[13px] text-[#010a04]/75 sm:text-[14px]">
+                        <Calendar size={17} className="text-[#010a04]/60" />
+                        <span>{dateText}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  <span className="flex shrink-0 items-center gap-2 text-[14px] text-[#010a04]">
-                    {isDraft ? (
-                      <PencilEdit01Icon size={16} className="text-[#010a04]" />
-                    ) : (
-                      <EyeIcon className="size-4 text-[#010a04]" />
-                    )}
-                    {isDraft ? t("tournaments.edit") : t("tournaments.view")}
-                  </span>
-                </div>
-              </Link>
+                  <div className="my-[14px] h-px w-full bg-[#010a04]/10" />
+
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="h-6 w-6 shrink-0 rounded-full bg-[#d9d9d9]"
+                        aria-hidden="true"
+                      />
+                      <span className="truncate text-[14px] text-[#010a04]">
+                        {tournament.club?.name ?? "-"}
+                      </span>
+                    </div>
+
+                    <span className="flex shrink-0 items-center gap-2 text-[14px] text-[#010a04]">
+                      {isDraft ? (
+                        <PencilEdit01Icon size={16} className="text-[#010a04]" />
+                      ) : (
+                        <EyeIcon className="size-4 text-[#010a04]" />
+                      )}
+                      {isDraft ? t("tournaments.edit") : t("tournaments.view")}
+                    </span>
+                  </div>
+                </Link>
+              </div>
             );
           })}
         </div>
@@ -159,59 +159,59 @@ export function TournamentTable({
                 name: tournament.name,
               });
 
+              const dateText = formatDateDisplay(
+                tournament.date,
+                t("tournaments.unscheduled"),
+                getDateFnsLocale(language)
+              );
+
               return (
                 <TableRow
                   key={tournament.id}
-                  className="h-[45px] border-black/10 bg-card"
+                  className="h-[45px] border-black/10 bg-card transition-colors hover:bg-black/[0.015]"
                 >
-                  <TableCell colSpan={4} className="p-0">
+                  <TableCell className="h-[45px] border-black/10 bg-card px-4 py-0 align-middle text-xs text-foreground/90">
+                    {(pagination.page - 1) * pagination.limit + idx + 1}
+                  </TableCell>
+                  <TableCell className="h-[45px] border-black/10 bg-card p-0 align-middle">
                     <Link
                       to={rowPath}
                       aria-label={rowAriaLabel}
                       className={cn(
-                        "grid h-[45px] w-full grid-cols-[3rem_minmax(0,42fr)_minmax(0,38fr)_minmax(0,20fr)] items-center border-black/10 bg-card text-inherit no-underline transition-colors",
-                        "hover:bg-black/[0.015] focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                        "flex h-[45px] w-full min-w-0 items-center px-3 py-0 text-inherit no-underline transition-colors",
+                        "focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
                       )}
                     >
-                      <span className="px-4 py-0 text-xs text-foreground/90">
-                        {(pagination.page - 1) * pagination.limit + idx + 1}
-                      </span>
-                      <span className="block min-w-0 px-3 py-0">
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="h-[22px] w-[22px] shrink-0 rounded-[5px] bg-black/15"
-                            aria-hidden="true"
-                          />
-                          <span className="truncate text-sm text-foreground">
-                            {tournament.name}
-                          </span>
-                          <span
-                            role="img"
-                            className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass}`}
-                            aria-label={statusLabel}
-                            title={statusLabel}
-                          />
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="h-[22px] w-[22px] shrink-0 rounded-[5px] bg-black/15"
+                          aria-hidden="true"
+                        />
+                        <span className="truncate text-sm text-foreground">
+                          {tournament.name}
                         </span>
-                      </span>
-                      <span className="block min-w-0 px-3 py-0">
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="h-4 w-4 shrink-0 rounded-full bg-black/15"
-                            aria-hidden="true"
-                          />
-                          <span className="truncate text-sm text-foreground">
-                            {tournament.club?.name ?? "-"}
-                          </span>
-                        </span>
-                      </span>
-                      <span className="px-3 py-0 text-sm text-foreground/90">
-                        {formatDateDisplay(
-                          tournament.date,
-                          t("tournaments.unscheduled"),
-                          getDateFnsLocale(language)
-                        )}
+                        <span
+                          role="img"
+                          className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass}`}
+                          aria-label={statusLabel}
+                          title={statusLabel}
+                        />
                       </span>
                     </Link>
+                  </TableCell>
+                  <TableCell className="h-[45px] border-black/10 bg-card px-3 py-0 align-middle">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span
+                        className="h-4 w-4 shrink-0 rounded-full bg-black/15"
+                        aria-hidden="true"
+                      />
+                      <span className="truncate text-sm text-foreground">
+                        {tournament.club?.name ?? "-"}
+                      </span>
+                    </span>
+                  </TableCell>
+                  <TableCell className="h-[45px] border-black/10 bg-card px-3 py-0 align-middle text-sm text-foreground/90">
+                    {dateText}
                   </TableCell>
                 </TableRow>
               );

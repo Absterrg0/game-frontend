@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useRef } from "react";
 import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
@@ -31,20 +31,17 @@ export function useTournamentActions({
   const updateTournament = useUpdateTournament();
   const publishTournament = usePublishTournament();
 
-  const isPublishing = useMemo(
-    () => createTournament.isPending || publishTournament.isPending,
-    [createTournament.isPending, publishTournament.isPending]
-  );
+  const creationActionRef = useRef<"draft" | "publish" | null>(null);
 
-  const isSavingDraft = useMemo(
-    () => createTournament.isPending || updateTournament.isPending,
-    [createTournament.isPending, updateTournament.isPending]
-  );
+  const isPublishing =
+    (creationActionRef.current === "publish" && createTournament.isPending) ||
+    publishTournament.isPending;
 
-  const isMutating = useMemo(
-    () => isSavingDraft || isPublishing,
-    [isPublishing, isSavingDraft]
-  );
+  const isSavingDraft =
+    (creationActionRef.current === "draft" && createTournament.isPending) ||
+    updateTournament.isPending;
+
+  const isMutating = isSavingDraft || isPublishing;
 
   const handleClose = useCallback(
     (nextOpen: boolean) => {
@@ -67,6 +64,7 @@ export function useTournamentActions({
           data: updatePayload,
         });
       } else {
+        creationActionRef.current = "draft";
         const createPayload = buildTournamentPayload(form, "draft");
         await createTournament.mutateAsync(createPayload);
       }
@@ -99,6 +97,7 @@ export function useTournamentActions({
           data: buildDraftUpdatePayload(form),
         });
       } else {
+        creationActionRef.current = "publish";
         await createTournament.mutateAsync(buildTournamentPayload(form, "active"));
       }
 
