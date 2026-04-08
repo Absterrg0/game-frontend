@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const tournamentStatusSchema = z.enum(["active", "draft"]);
-export const tournamentModeSchema = z.enum(["singleDay", "period"]);
+export const tournamentModeSchema = z.enum(["singleDay", "unscheduled"]);
 export const tournamentPlayModeSchema = z.enum(["TieBreak10", "1set", "3setTieBreak10", "3set", "5set"]);
 export const tournamentListViewSchema = z.enum(["published", "drafts"]);
 export const tournamentWhenFilterSchema = z.enum(["future", "past"]);
