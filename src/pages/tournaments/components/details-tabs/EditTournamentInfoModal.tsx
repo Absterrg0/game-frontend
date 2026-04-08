@@ -55,8 +55,6 @@ function buildPublishPayload({
     duration: tournament.duration ?? undefined,
     breakDuration: tournament.breakDuration ?? undefined,
     courts: tournament.courts.map((court) => court.id),
-    foodInfo: tournament.foodInfo ?? "",
-    descriptionInfo: tournament.descriptionInfo ?? "",
   };
 }
 

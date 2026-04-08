@@ -4,6 +4,7 @@ import { Calendar, EyeIcon, PencilEdit01Icon } from "@/icons/figma-icons";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -58,9 +59,6 @@ export function TournamentTable({
             const statusLabel = getStatusLabel(tournament.status, t);
             const statusDotClass = STATUS_DOTS[tournament.status];
             const rowPath = `/tournaments/${tournament.id}`;
-            const rowAriaLabel = t("tournaments.openTournamentRow", {
-              name: tournament.name,
-            });
             const dateText = formatDateDisplay(
               tournament.date,
               t("tournaments.unscheduled"),
@@ -72,7 +70,6 @@ export function TournamentTable({
               <div key={tournament.id} role="listitem">
                 <Link
                   to={rowPath}
-                  aria-label={rowAriaLabel}
                   className={cn(
                     "block rounded-[10px] bg-[rgba(1,10,4,0.04)] p-[14px] text-inherit no-underline transition-colors",
                     "hover:bg-[rgba(1,10,4,0.07)] active:bg-[rgba(1,10,4,0.09)]",
@@ -134,6 +131,7 @@ export function TournamentTable({
 
       <div className="hidden overflow-x-auto border-y border-black/10 lg:block">
         <Table className="min-w-[860px] table-fixed">
+          <TableCaption className="sr-only">{listHeading}</TableCaption>
           <TableHeader>
             <TableRow className="h-[35px] border-black/10 bg-black/5 hover:bg-black/5">
               <TableHead className="h-[35px] w-12 px-4 py-0 text-left text-xs font-normal text-foreground/80">

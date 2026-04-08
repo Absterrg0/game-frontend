@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useState } from "react";
 import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
@@ -31,14 +31,16 @@ export function useTournamentActions({
   const updateTournament = useUpdateTournament();
   const publishTournament = usePublishTournament();
 
-  const creationActionRef = useRef<"draft" | "publish" | null>(null);
+  const [creationAction, setCreationAction] = useState<
+    "draft" | "publish" | null
+  >(null);
 
   const isPublishing =
-    (creationActionRef.current === "publish" && createTournament.isPending) ||
+    (creationAction === "publish" && createTournament.isPending) ||
     publishTournament.isPending;
 
   const isSavingDraft =
-    (creationActionRef.current === "draft" && createTournament.isPending) ||
+    (creationAction === "draft" && createTournament.isPending) ||
     updateTournament.isPending;
 
   const isMutating = isSavingDraft || isPublishing;
@@ -64,9 +66,13 @@ export function useTournamentActions({
           data: updatePayload,
         });
       } else {
-        creationActionRef.current = "draft";
-        const createPayload = buildTournamentPayload(form, "draft");
-        await createTournament.mutateAsync(createPayload);
+        setCreationAction("draft");
+        try {
+          const createPayload = buildTournamentPayload(form, "draft");
+          await createTournament.mutateAsync(createPayload);
+        } finally {
+          setCreationAction(null);
+        }
       }
 
       toast.success(t("tournaments.draftSaved"));
@@ -97,8 +103,14 @@ export function useTournamentActions({
           data: buildDraftUpdatePayload(form),
         });
       } else {
-        creationActionRef.current = "publish";
-        await createTournament.mutateAsync(buildTournamentPayload(form, "active"));
+        setCreationAction("publish");
+        try {
+          await createTournament.mutateAsync(
+            buildTournamentPayload(form, "active")
+          );
+        } finally {
+          setCreationAction(null);
+        }
       }
 
       toast.success(t("tournaments.published"));
