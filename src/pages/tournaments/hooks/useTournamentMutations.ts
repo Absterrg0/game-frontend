@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { AuthUser } from "@/contexts/auth";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { toBackendCreateInput, toBackendUpdateInput } from "./mappers";
@@ -17,6 +18,7 @@ import {
   type PublishTournamentPayload,
   type UpdateTournamentInput,
   type UpdateTournamentResponse,
+  type TournamentParticipant,
 } from "@/models/tournament/types";
 
 function calculateParticipationPercentage(spotsFilled: number, spotsTotal: number): number {
@@ -27,19 +29,63 @@ function calculateParticipationPercentage(spotsFilled: number, spotsTotal: numbe
   return Math.max(0, Math.min(100, percentage));
 }
 
+type ParticipationSummary =
+  JoinTournamentResponse["tournament"] | LeaveTournamentResponse["tournament"];
+
+type ParticipationActorMeta = {
+  mode: "join" | "leave";
+  actor: Pick<AuthUser, "id" | "name" | "alias"> | null;
+};
+
+function resolveParticipantsAfterParticipation(
+  current: TournamentParticipant[],
+  participation: ParticipationSummary,
+  meta: ParticipationActorMeta
+): TournamentParticipant[] | null {
+  if (participation.participants != null) {
+    return participation.participants;
+  }
+  const actorId = meta.actor?.id ?? null;
+  if (actorId == null) {
+    return null;
+  }
+  if (meta.mode === "join") {
+    if (current.some((p) => p.id === actorId)) {
+      return current;
+    }
+    return [
+      ...current,
+      {
+        id: actorId,
+        name: meta.actor?.name ?? null,
+        alias: meta.actor?.alias ?? null,
+      },
+    ];
+  }
+  return current.filter((p) => p.id !== actorId);
+}
+
+/** Returns null when the cache should not be patched (avoid mixed progress vs. participants). */
 function applyParticipationServerUpdate(
   currentData: TournamentDetailResponse,
-  participation: JoinTournamentResponse["tournament"] | LeaveTournamentResponse["tournament"]
-): TournamentDetailResponse {
+  participation: ParticipationSummary,
+  meta: ParticipationActorMeta
+): TournamentDetailResponse | null {
   const { tournament } = currentData;
   const spotsFilled = participation.spotsFilled;
   const spotsTotal = participation.spotsTotal;
   const isParticipant = participation.isParticipant;
 
+  const participants = resolveParticipantsAfterParticipation(tournament.participants, participation, meta);
+  if (participants == null) {
+    return null;
+  }
+
   return {
     ...currentData,
     tournament: {
       ...tournament,
+      participants,
       progress: {
         ...tournament.progress,
         spotsFilled,
@@ -48,8 +94,8 @@ function applyParticipationServerUpdate(
       },
       permissions: {
         ...tournament.permissions,
+        ...participation.permissions,
         isParticipant,
-        canJoin: isParticipant ? false : spotsFilled < spotsTotal,
       },
     },
   };
@@ -122,11 +168,17 @@ export function useJoinTournament() {
     mutationFn: ({ id }: { id: string }) => joinTournament(id),
     onSuccess: (response, { id }) => {
       const queryKey = queryKeys.tournament.detail(id);
+      const me = queryClient.getQueryData<AuthUser | null>(queryKeys.auth.me());
+      const meta: ParticipationActorMeta = {
+        mode: "join",
+        actor: me ? { id: me.id, name: me.name ?? null, alias: me.alias ?? null } : null,
+      };
       queryClient.setQueryData<TournamentDetailResponse>(queryKey, (currentData) => {
         if (!currentData) {
           return currentData;
         }
-        return applyParticipationServerUpdate(currentData, response.tournament);
+        const updated = applyParticipationServerUpdate(currentData, response.tournament, meta);
+        return updated ?? currentData;
       });
 
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) });
@@ -141,11 +193,17 @@ export function useLeaveTournament() {
     mutationFn: ({ id }: { id: string }) => leaveTournament(id),
     onSuccess: (response, { id }) => {
       const queryKey = queryKeys.tournament.detail(id);
+      const me = queryClient.getQueryData<AuthUser | null>(queryKeys.auth.me());
+      const meta: ParticipationActorMeta = {
+        mode: "leave",
+        actor: me ? { id: me.id, name: me.name ?? null, alias: me.alias ?? null } : null,
+      };
       queryClient.setQueryData<TournamentDetailResponse>(queryKey, (currentData) => {
         if (!currentData) {
           return currentData;
         }
-        return applyParticipationServerUpdate(currentData, response.tournament);
+        const updated = applyParticipationServerUpdate(currentData, response.tournament, meta);
+        return updated ?? currentData;
       });
 
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) });

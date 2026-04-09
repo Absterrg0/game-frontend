@@ -250,6 +250,8 @@ const tournamentParticipationSummarySchema = z.object({
   spotsFilled: z.number(),
   spotsTotal: z.number(),
   isParticipant: z.boolean(),
+  participants: z.array(tournamentParticipantSchema).optional(),
+  permissions: tournamentPermissionsSchema.partial().optional(),
 });
 
 export const publishTournamentPayloadSchema = updateTournamentInputSchema;
