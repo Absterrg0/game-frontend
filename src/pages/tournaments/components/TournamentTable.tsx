@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Calendar, EyeIcon, PencilEdit01Icon } from "@/icons/figma-icons";
 import {
   Table,
@@ -71,6 +71,7 @@ export function TournamentTable({
   listHeading,
 }: TournamentTableProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <>
@@ -174,18 +175,24 @@ export function TournamentTable({
               return (
                 <TableRow
                   key={row.id}
-                  className="h-[45px] border-black/10 bg-card transition-colors hover:bg-black/[0.015]"
+                  className="h-[45px] cursor-pointer border-black/10 bg-card transition-colors hover:bg-black/[0.015] focus-visible:bg-black/[0.02]"
+                  tabIndex={0}
+                  onClick={() => navigate(row.rowPath)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      navigate(row.rowPath);
+                    }
+                  }}
                 >
                   <TableCell className="h-[45px] border-black/10 bg-card px-4 py-0 align-middle text-xs text-foreground/90">
                     {(pagination.page - 1) * pagination.limit + idx + 1}
                   </TableCell>
                   <TableCell className="h-[45px] border-black/10 bg-card p-0 align-middle">
-                    <Link
-                      to={row.rowPath}
+                    <span
                       aria-label={rowAriaLabel}
                       className={cn(
-                        "flex h-[45px] w-full min-w-0 items-center px-3 py-0 text-inherit no-underline transition-colors",
-                        "focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                        "flex h-[45px] w-full min-w-0 items-center px-3 py-0 text-inherit no-underline transition-colors"
                       )}
                     >
                       <span className="flex min-w-0 items-center gap-2">
@@ -203,7 +210,7 @@ export function TournamentTable({
                           title={row.statusLabel}
                         />
                       </span>
-                    </Link>
+                    </span>
                   </TableCell>
                   <TableCell className="h-[45px] border-black/10 bg-card px-3 py-0 align-middle">
                     <span className="flex min-w-0 items-center gap-2">

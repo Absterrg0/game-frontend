@@ -38,11 +38,15 @@ export function CreateTournamentModal({
     isSponsorsLoading,
     isEditMode,
     validTournamentId,
+    originalTournamentStatus,
     isTournamentLoading,
     draftValidationError,
     publishValidationError,
     update,
   } = useTournamentForm({ mode, tournamentId, open });
+
+  const isEditingPublishedTournament =
+    isEditMode && originalTournamentStatus === "active";
 
   const {
     isMutating,
@@ -130,7 +134,9 @@ export function CreateTournamentModal({
               {isPublishing ? (
                 <InlineLoader size="sm" />
               ) : (
-                t("tournaments.publish")
+                isEditingPublishedTournament
+                  ? t("settings.saveChanges")
+                  : t("tournaments.publish")
               )}
             </Button>
 
@@ -141,6 +147,8 @@ export function CreateTournamentModal({
             >
               {isSavingDraft ? (
                 <InlineLoader size="sm" />
+              ) : isEditingPublishedTournament ? (
+                t("tournaments.saveAsDraft")
               ) : isEditMode ? (
                 t("settings.saveChanges")
               ) : (

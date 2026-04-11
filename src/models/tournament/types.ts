@@ -154,6 +154,7 @@ export const updateTournamentInputSchema = tournamentInputBaseSchema
   .extend({
     club: z.string(),
     name: z.string(),
+    status: tournamentStatusSchema,
   })
   .partial()
   .refine(
@@ -191,6 +192,7 @@ export const backendUpdateTournamentInputSchema = z
     club: z.string(),
     sponsor: z.string().nullable(),
     name: z.string(),
+    status: tournamentStatusSchema,
     date: z.string().nullable(),
     startTime: z.string().nullable(),
     endTime: z.string().nullable(),

@@ -6,7 +6,6 @@ import { buildDraftUpdatePayload, buildTournamentPayload } from "@/lib/tournamen
 import type { CreateTournamentInput } from "@/models/tournament/types";
 import {
   useCreateTournament,
-  usePublishTournament,
   useUpdateTournament,
 } from "@/pages/tournaments/hooks";
 
@@ -29,7 +28,6 @@ export function useTournamentActions({
 }: UseTournamentActionsArgs) {
   const createTournament = useCreateTournament();
   const updateTournament = useUpdateTournament();
-  const publishTournament = usePublishTournament();
 
   const [creationAction, setCreationAction] = useState<
     "draft" | "publish" | null
@@ -37,7 +35,7 @@ export function useTournamentActions({
 
   const isPublishing =
     (creationAction === "publish" && createTournament.isPending) ||
-    publishTournament.isPending;
+    updateTournament.isPending;
 
   const isSavingDraft =
     (creationAction === "draft" && createTournament.isPending) ||
@@ -63,7 +61,10 @@ export function useTournamentActions({
         const updatePayload = buildDraftUpdatePayload(form);
         await updateTournament.mutateAsync({
           id: validTournamentId,
-          data: updatePayload,
+          data: {
+            ...updatePayload,
+            status: "draft",
+          },
         });
       } else {
         setCreationAction("draft");
@@ -98,9 +99,12 @@ export function useTournamentActions({
 
     try {
       if (validTournamentId) {
-        await publishTournament.mutateAsync({
+        await updateTournament.mutateAsync({
           id: validTournamentId,
-          data: buildDraftUpdatePayload(form),
+          data: {
+            ...buildDraftUpdatePayload(form),
+            status: "active",
+          },
         });
       } else {
         setCreationAction("publish");
@@ -122,9 +126,9 @@ export function useTournamentActions({
     createTournament,
     form,
     handleClose,
-    publishTournament,
     publishValidationError,
     t,
+    updateTournament,
     validTournamentId,
   ]);
 
