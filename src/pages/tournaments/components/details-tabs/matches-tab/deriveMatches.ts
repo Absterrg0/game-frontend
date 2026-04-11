@@ -75,7 +75,9 @@ export function deriveMatches(
 
     const scheduleLabel = scheduleText(
       match.startTime ?? fallbackDate,
-      match.startTime ? null : fallbackStartTime,
+      match.startTime && dateStringHasTimeComponent(match.startTime)
+        ? null
+        : fallbackStartTime,
       tbdLabel,
       locale
     );
