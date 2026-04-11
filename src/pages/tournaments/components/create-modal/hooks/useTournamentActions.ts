@@ -3,7 +3,10 @@ import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
 import { buildDraftUpdatePayload, buildTournamentPayload } from "@/lib/tournament/form";
-import type { CreateTournamentInput } from "@/models/tournament/types";
+import type {
+  CreateTournamentInput,
+  UpdateTournamentInput,
+} from "@/models/tournament/types";
 import {
   useCreateTournament,
   useUpdateTournament,
@@ -46,6 +49,22 @@ export function useTournamentActions({
 
   const isMutating = isSavingDraft || isPublishing;
 
+  const performUpdate = useCallback(
+    async (
+      id: string,
+      action: "draft" | "publish",
+      data: UpdateTournamentInput
+    ) => {
+      setUpdateAction(action);
+      try {
+        await updateTournament.mutateAsync({ id, data });
+      } finally {
+        setUpdateAction(null);
+      }
+    },
+    [updateTournament]
+  );
+
   const handleClose = useCallback(
     (nextOpen: boolean) => {
       onOpenChange(nextOpen);
@@ -61,19 +80,10 @@ export function useTournamentActions({
 
     try {
       if (validTournamentId) {
-        const updatePayload = buildDraftUpdatePayload(form);
-        setUpdateAction("draft");
-        try {
-          await updateTournament.mutateAsync({
-            id: validTournamentId,
-            data: {
-              ...updatePayload,
-              status: "draft",
-            },
-          });
-        } finally {
-          setUpdateAction(null);
-        }
+        await performUpdate(validTournamentId, "draft", {
+          ...buildDraftUpdatePayload(form),
+          status: "draft",
+        });
       } else {
         setCreationAction("draft");
         try {
@@ -94,8 +104,8 @@ export function useTournamentActions({
     draftValidationError,
     form,
     handleClose,
+    performUpdate,
     t,
-    updateTournament,
     validTournamentId,
   ]);
 
@@ -107,18 +117,10 @@ export function useTournamentActions({
 
     try {
       if (validTournamentId) {
-        setUpdateAction("publish");
-        try {
-          await updateTournament.mutateAsync({
-            id: validTournamentId,
-            data: {
-              ...buildDraftUpdatePayload(form),
-              status: "active",
-            },
-          });
-        } finally {
-          setUpdateAction(null);
-        }
+        await performUpdate(validTournamentId, "publish", {
+          ...buildDraftUpdatePayload(form),
+          status: "active",
+        });
       } else {
         setCreationAction("publish");
         try {
@@ -139,9 +141,9 @@ export function useTournamentActions({
     createTournament,
     form,
     handleClose,
+    performUpdate,
     publishValidationError,
     t,
-    updateTournament,
     validTournamentId,
   ]);
 
