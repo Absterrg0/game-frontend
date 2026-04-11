@@ -174,18 +174,18 @@ export function TournamentTable({
               return (
                 <TableRow
                   key={row.id}
-                  className="h-[45px] border-black/10 bg-card transition-colors hover:bg-black/[0.015]"
+                  className="h-[45px] border-black/10 bg-card transition-colors hover:bg-black/[0.015] focus-within:bg-black/[0.02]"
                 >
-                  <TableCell className="h-[45px] border-black/10 bg-card px-4 py-0 align-middle text-xs text-foreground/90">
+                  <TableCell className="h-[45px] w-12 border-black/10 bg-card px-4 align-middle text-xs text-foreground/90">
                     {(pagination.page - 1) * pagination.limit + idx + 1}
                   </TableCell>
-                  <TableCell className="h-[45px] border-black/10 bg-card p-0 align-middle">
+                  <TableCell className="h-[45px] w-[42%] border-black/10 bg-card p-0 align-middle">
                     <Link
                       to={row.rowPath}
                       aria-label={rowAriaLabel}
                       className={cn(
-                        "flex h-[45px] w-full min-w-0 items-center px-3 py-0 text-inherit no-underline transition-colors",
-                        "focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-primary/50"
+                        "flex h-full min-h-[45px] min-w-0 items-center px-3 py-0 text-inherit no-underline transition-colors",
+                        "hover:bg-black/[0.015] focus-visible:bg-black/[0.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/45 focus-visible:ring-inset"
                       )}
                     >
                       <span className="flex min-w-0 items-center gap-2">
@@ -205,7 +205,7 @@ export function TournamentTable({
                       </span>
                     </Link>
                   </TableCell>
-                  <TableCell className="h-[45px] border-black/10 bg-card px-3 py-0 align-middle">
+                  <TableCell className="h-[45px] w-[38%] border-black/10 bg-card px-3 align-middle">
                     <span className="flex min-w-0 items-center gap-2">
                       <span
                         className="h-4 w-4 shrink-0 rounded-full bg-black/15"
@@ -216,7 +216,7 @@ export function TournamentTable({
                       </span>
                     </span>
                   </TableCell>
-                  <TableCell className="h-[45px] border-black/10 bg-card px-3 py-0 align-middle text-sm text-foreground/90">
+                  <TableCell className="h-[45px] w-[20%] border-black/10 bg-card px-3 align-middle text-sm text-foreground/90">
                     {row.dateText}
                   </TableCell>
                 </TableRow>

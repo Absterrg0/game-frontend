@@ -43,6 +43,7 @@ export function toBackendUpdateInput(data: UpdateTournamentInput): BackendUpdate
   const sponsorTrimmed = typeof data.sponsor === "string" ? data.sponsor.trim() : undefined;
   const payload = {
     club: data.club,
+    status: data.status,
     sponsor:
       data.sponsor === null
         ? null

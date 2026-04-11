@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useClubSponsors } from "@/pages/sponsors/hooks";
 import { useTournamentById } from "@/pages/tournaments/hooks";
-import type { CreateTournamentInput } from "@/models/tournament/types";
+import type { CreateTournamentInput, TournamentStatus } from "@/models/tournament/types";
 import {
   DEFAULT_CREATE_TOURNAMENT_FORM,
   getDraftValidationError,
@@ -83,6 +83,7 @@ export function useTournamentForm({ mode, tournamentId = null, open }: UseTourna
 
   const draftValidationError = useMemo(() => getDraftValidationError(form), [form]);
   const publishValidationError = useMemo(() => getPublishValidationError(form), [form]);
+  const originalTournamentStatus: TournamentStatus | null = tournamentData?.tournament?.status ?? null;
 
   return {
     form,
@@ -90,6 +91,7 @@ export function useTournamentForm({ mode, tournamentId = null, open }: UseTourna
     isSponsorsLoading,
     isEditMode,
     validTournamentId,
+    originalTournamentStatus,
     isTournamentLoading,
     draftValidationError,
     publishValidationError,

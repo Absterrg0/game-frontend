@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import type { TournamentDetail } from "@/models/tournament/types";
 import { TabsContent } from "@/components/ui/tabs";
 import { CreateTournamentModal } from "@/pages/tournaments/components/CreateTournamentModal";
-import { EditTournamentInfoModal } from "./EditTournamentInfoModal";
 import { ClubInfo } from "./info-tab/ClubInfo";
 import { DescriptionSection } from "./info-tab/DescriptionSection";
 import { FoodSection } from "./info-tab/FoodSection";
@@ -136,21 +135,12 @@ export function InfoTab({
         />
       </div>
 
-      {tournament.status === "draft" ? (
-        <CreateTournamentModal
-          open={isEditModalOpen}
-          onOpenChange={setIsEditModalOpen}
-          mode="edit"
-          tournamentId={tournament.id}
-        />
-      ) : (
-        <EditTournamentInfoModal
-          key={tournament.id}
-          open={isEditModalOpen}
-          onOpenChange={setIsEditModalOpen}
-          tournament={tournament}
-        />
-      )}
+      <CreateTournamentModal
+        open={isEditModalOpen}
+        onOpenChange={setIsEditModalOpen}
+        mode="edit"
+        tournamentId={tournament.id}
+      />
     </TabsContent>
   );
 }

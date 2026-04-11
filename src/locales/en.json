@@ -546,6 +546,7 @@
     "officialSponsor": "Official Sponsor",
     "cancel": "Cancel",
     "saveDraft": "Save DRAFT",
+    "saveAsDraft": "Save as Draft",
     "publish": "Publish",
     "requiredNameAndClub": "Tournament name and club are required.",
     "requiredDateAndTime": "Date and times are required for scheduled tournaments.",
