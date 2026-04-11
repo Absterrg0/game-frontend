@@ -170,6 +170,12 @@ export function TournamentTable({
               const rowAriaLabel = t("tournaments.openTournamentRow", {
                 name: row.name,
               });
+              const desktopRowAriaLabel = row.statusLabel
+                ? t("tournaments.openTournamentRowWithStatus", {
+                    name: row.name,
+                    status: row.statusLabel,
+                  })
+                : rowAriaLabel;
               const rowNumber =
                 (pagination.page - 1) * pagination.limit + idx + 1;
 
@@ -184,7 +190,7 @@ export function TournamentTable({
                   >
                     <Link
                       to={row.rowPath}
-                      aria-label={rowAriaLabel}
+                      aria-label={desktopRowAriaLabel}
                       className={cn(
                         "grid min-h-[45px] w-full items-center text-inherit no-underline transition-colors",
                         "grid-cols-[3rem_minmax(0,21fr)_minmax(0,19fr)_minmax(0,10fr)]",
@@ -202,11 +208,24 @@ export function TournamentTable({
                         <span className="truncate text-sm text-foreground">
                           {row.name}
                         </span>
-                        <span
-                          className={`h-2 w-2 shrink-0 rounded-full ${row.statusDotClass}`}
-                          aria-hidden="true"
-                          title={row.statusLabel}
-                        />
+                        {row.statusLabel ? (
+                          <span
+                            role="img"
+                            className={cn(
+                              "h-2 w-2 shrink-0 rounded-full",
+                              row.statusDotClass
+                            )}
+                            aria-label={row.statusLabel}
+                          />
+                        ) : (
+                          <span
+                            className={cn(
+                              "h-2 w-2 shrink-0 rounded-full",
+                              row.statusDotClass
+                            )}
+                            aria-hidden="true"
+                          />
+                        )}
                       </span>
                       <span className="flex h-full min-h-[45px] min-w-0 items-center gap-2 px-3">
                         <span
