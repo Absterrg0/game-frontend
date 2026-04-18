@@ -123,13 +123,12 @@ export default function TournamentSchedulePage() {
     enrolledParticipants >= tournamentMinimumParticipants;
 
   const scheduleRoundGate = getPreviousRoundGate(round, matchesQuery.data?.matches ?? []);
-  const blockedByPreviousRound = scheduleRoundGate.blocked;
 
   const canSubmit =
     selectedCourtIds.length > 0 &&
     meetsTournamentMinimum &&
     canGenerateSchedule(mode, participants.length) &&
-    !blockedByPreviousRound &&
+    !scheduleRoundGate.blocked &&
     !matchesQuery.isLoading &&
     !generateScheduleMutation.isPending;
 

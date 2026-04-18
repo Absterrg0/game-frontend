@@ -240,10 +240,14 @@ export default function TournamentMatchSchedulePage() {
                 onClick={() => navigate(`/tournaments/${id}/schedule?round=${view.nextRound}`)}
                 disabled={!view.canCreateNextRound}
                 title={
-                  !view.canCreateNextRound
-                    ? t("tournaments.schedulePreviousRoundIncomplete", {
-                        round: view.previousRoundBeforeNext,
-                      })
+                  view.nextRoundDisabledHint
+                    ? view.nextRoundDisabledHint.reason === "missing"
+                      ? t("tournaments.schedulePreviousRoundMissing", {
+                          round: view.nextRoundDisabledHint.round,
+                        })
+                      : t("tournaments.schedulePreviousRoundIncomplete", {
+                          round: view.nextRoundDisabledHint.round,
+                        })
                     : undefined
                 }
                 className="h-[34px] shrink-0 gap-1.5 rounded-[8px] bg-[#067429] px-3 text-[13px] font-medium text-white hover:bg-[#055d21] sm:px-4"

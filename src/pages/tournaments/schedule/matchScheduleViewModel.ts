@@ -1,7 +1,7 @@
 import type { TournamentScheduleMatch } from "@/models/tournament/types";
 import {
-  canCreateNextScheduleRound,
   deriveMatchScheduleRoundModel,
+  getPreviousRoundGate,
   parseRoundQueryParam,
   resolveMatchViewSelectedRound,
 } from "@/pages/tournaments/schedule/tournamentRoundWorkflow";
@@ -10,10 +10,11 @@ export interface MatchSchedulePageModel {
   selectedRound: number;
   roundMatches: TournamentScheduleMatch[];
   nextRound: number;
-  previousRoundBeforeNext: number;
   canCreateNextRound: boolean;
   showRoundLoadingSkeleton: boolean;
   hasReachedFinalRound: boolean;
+  /** When the new-round control is disabled, which message applies (matches schedule page copy). */
+  nextRoundDisabledHint: { round: number; reason: "missing" | "incomplete" } | null;
 }
 
 export function buildMatchSchedulePageModel(
@@ -41,20 +42,22 @@ export function buildMatchSchedulePageModel(
     .slice()
     .sort((left, right) => left.slot - right.slot);
   const nextRound = Math.max(1, roundModel.latestGeneratedRound + 1);
-  const canCreateNextRound = canCreateNextScheduleRound(
-    roundModel.hasReachedFinalRound,
-    nextRound,
-    allMatches
-  );
+  const nextRoundGate = getPreviousRoundGate(nextRound, allMatches);
+  const canCreateNextRound =
+    !roundModel.hasReachedFinalRound && !nextRoundGate.blocked;
+  const nextRoundDisabledHint =
+    !roundModel.hasReachedFinalRound && nextRoundGate.blocked
+      ? { round: nextRoundGate.previousRound, reason: nextRoundGate.reason }
+      : null;
   const showRoundLoadingSkeleton = isFetchingMatches && roundMatches.length === 0;
 
   return {
     selectedRound,
     roundMatches,
     nextRound,
-    previousRoundBeforeNext: nextRound - 1,
     canCreateNextRound,
     showRoundLoadingSkeleton,
     hasReachedFinalRound: roundModel.hasReachedFinalRound,
+    nextRoundDisabledHint,
   };
 }

@@ -4,7 +4,7 @@ import type { TournamentScheduleMatch } from "@/models/tournament/types";
  * Parses `?round=` from the URL. Returns null when missing or invalid (< 1 or NaN).
  */
 export function parseRoundQueryParam(searchParams: URLSearchParams): number | null {
-  const raw = searchParams.get("round");
+  const raw = searchParams.get("round")?.trim();
   if (raw == null || raw === "") {
     return null;
   }
@@ -103,13 +103,3 @@ export function deriveMatchScheduleRoundModel(
   };
 }
 
-export function canCreateNextScheduleRound(
-  hasReachedFinalRound: boolean,
-  nextRound: number,
-  matches: readonly TournamentScheduleMatch[]
-): boolean {
-  if (hasReachedFinalRound) {
-    return false;
-  }
-  return !getPreviousRoundGate(nextRound, matches).blocked;
-}
