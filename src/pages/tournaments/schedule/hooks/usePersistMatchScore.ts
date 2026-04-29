@@ -72,6 +72,7 @@ export function usePersistMatchScore({
       const freshMatch = matchesQuery.data?.matches.find((m) => m.id === match.id) ?? null;
       if (!freshMatch) { toast.error(t("tournaments.matchesLoadError")); return { ok: false }; }
       if (freshMatch.status === "cancelled") { toast.error(t("tournaments.matchStatusCancelled")); return { ok: false }; }
+      if (!tournament?.id) { toast.error(t("tournaments.matchesLoadError")); return { ok: false }; }
 
       const payload = buildScorePayload(rows, freshMatch.playMode, t);
       if (!payload.ok) { toast.error(payload.message ?? t("tournaments.scoreEditorIncomplete")); return { ok: false }; }
@@ -90,7 +91,7 @@ export function usePersistMatchScore({
           }
 
           mutationResult = await recordScoreMutation.mutateAsync({
-            tournamentId: tournament?.id ?? "",
+            tournamentId: tournament.id,
             matchId: freshMatch.id,
             input: { playerOneScores: payload.playerOneScores, playerTwoScores: payload.playerTwoScores },
           });
@@ -98,7 +99,7 @@ export function usePersistMatchScore({
           toast.success(t("tournaments.scoreEditorSaveSuccess"));
 
           const cacheData = queryClient.getQueryData<TournamentMatchesResponse>(
-            queryKeys.tournament.matches(tournament?.id ?? "")
+            queryKeys.tournament.matches(tournament.id)
           );
 
           return {

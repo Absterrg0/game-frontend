@@ -197,7 +197,7 @@ function constrainedOppositeScores(
       return [0, 1, 2, 3, 4, 7];
     }
     if (selectedValue === 7) {
-      return [5];
+      return [5, 6];
     }
     return [];
   }
@@ -209,7 +209,11 @@ function constrainedOppositeScores(
     return [11];
   }
   const deuceWinner = selectedValue + 2;
-  return deuceWinner <= 99 ? [deuceWinner] : [];
+  const validLoserScores = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  if (deuceWinner <= 99 && !validLoserScores.includes(deuceWinner)) {
+    return [...validLoserScores, deuceWinner];
+  }
+  return validLoserScores;
 }
 
 function baseOptionsForRule(rule: ScoreSetRule): Array<MatchScoreValue | null> {
