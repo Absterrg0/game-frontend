@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+
 import { Trans, useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ const TB10_URL = "https://www.tiebreak10.eu";
 export default function AboutPage() {
   const { t } = useTranslation();
 
-  const handleInviteFriends = useCallback(async () => {
+  const handleInviteFriends = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({
@@ -31,11 +31,11 @@ export default function AboutPage() {
         return;
       } catch {
         toast.error(t("about.unableToCopyLink"));
-      }
+     
+       } }
     }
 
     window.open(TB10_URL, "_blank", "noopener,noreferrer");
-  }, [t]);
 
   return (
     <div

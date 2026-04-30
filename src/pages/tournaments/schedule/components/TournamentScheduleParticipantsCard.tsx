@@ -41,7 +41,7 @@ export function TournamentScheduleParticipantsCard({
             </h3>
             {unpairedCount > 0 ? (
               <span className="inline-flex items-center rounded-full border border-[#067429]/20 bg-[#f2fbf4] px-2.5 py-1 text-[12px] font-medium text-[#067429]">
-                Unpaired members: {unpairedCount}
+                {t("tournaments.scheduleUnpairedMembersCount", { count: unpairedCount })}
               </span>
             ) : null}
           </div>

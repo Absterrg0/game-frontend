@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
 import type {
   GenerateTournamentDoublesPairsResponse,
+  TournamentSchedulePairPlayer,
   TournamentScheduleMatch,
   TournamentScheduleMode,
 } from "@/models/tournament/types";
@@ -24,12 +25,6 @@ import {
   removeParticipant,
   type ScheduleParticipantRow,
 } from "../helpers/scheduleParticipants";
-import {
-  buildDoublesPairsResponse,
-  loadDoublesPartnerById,
-  saveDoublesPartnerById,
-  sanitizeDoublesPartnerById,
-} from "../helpers/doublesPairingState";
 import {
   getPreviousRoundGate,
   parseRoundQueryParam,
@@ -57,6 +52,73 @@ type TournamentScopedOverrides = {
   tournamentId: string | null;
   values: ScheduleOverrides;
 };
+
+type DoublesPartnerById = Record<string, string>;
+
+function sanitizeDoublesPartnerById(
+  partnerById: DoublesPartnerById,
+  participantIds: string[]
+): DoublesPartnerById {
+  const validIds = new Set(participantIds);
+  const next: DoublesPartnerById = {};
+
+  for (const participantId of participantIds) {
+    const partnerId = partnerById[participantId];
+    if (!partnerId || partnerId === participantId || !validIds.has(partnerId)) {
+      continue;
+    }
+    if (partnerById[partnerId] !== participantId) {
+      continue;
+    }
+    next[participantId] = partnerId;
+  }
+
+  return next;
+}
+
+function asPairPlayer(participant: ScheduleParticipantRow): TournamentSchedulePairPlayer {
+  return {
+    id: participant.id,
+    name: participant.name,
+    alias: participant.alias,
+    skillLabel: participant.skillLabel,
+    rating: participant.rating,
+  };
+}
+
+function buildDoublesPairsResponse(
+  participants: ScheduleParticipantRow[],
+  partnerById: DoublesPartnerById
+): GenerateTournamentDoublesPairsResponse {
+  const byId = new Map(participants.map((participant) => [participant.id, participant]));
+  const used = new Set<string>();
+  const teams: GenerateTournamentDoublesPairsResponse["teams"] = [];
+  const unpaired: TournamentSchedulePairPlayer[] = [];
+
+  let teamNumber = 1;
+  for (const participant of participants) {
+    if (used.has(participant.id)) {
+      continue;
+    }
+    const partnerId = partnerById[participant.id];
+    const partner = partnerId ? byId.get(partnerId) : undefined;
+    if (partner && !used.has(partner.id) && partnerById[partner.id] === participant.id) {
+      teams.push({
+        team: teamNumber,
+        players: [asPairPlayer(participant), asPairPlayer(partner)],
+      });
+      teamNumber += 1;
+      used.add(participant.id);
+      used.add(partner.id);
+      continue;
+    }
+
+    used.add(participant.id);
+    unpaired.push(asPairPlayer(participant));
+  }
+
+  return { teams, unpaired };
+}
 
 export function useTournamentSchedulePageController({
   id,
@@ -131,21 +193,18 @@ export function useTournamentSchedulePageController({
   const participants = scopedOverrides.participants ?? defaultParticipants;
   const selectedCourtIds = scopedOverrides.selectedCourtIds ?? defaultSelectedCourtIds;
   const doublesPartnerById = useMemo(
-    () => (id ? sanitizeDoublesPartnerById(loadDoublesPartnerById(id), participants) : {}),
-    [id, participants]
+    () =>
+      sanitizeDoublesPartnerById(
+        tournamentDetailQuery.data?.tournament.doublesPairs ?? {},
+        participants.map((participant) => participant.id)
+      ),
+    [participants, tournamentDetailQuery.data?.tournament.doublesPairs]
   );
   const doublesPairs: GenerateTournamentDoublesPairsResponse | null = useMemo(
     () => (mode === "doubles" ? buildDoublesPairsResponse(participants, doublesPartnerById) : null),
     [doublesPartnerById, mode, participants]
   );
   const doublesUnpairedCount = mode === "doubles" ? (doublesPairs?.unpaired.length ?? participants.length) : 0;
-
-  useEffect(() => {
-    if (!id) {
-      return;
-    }
-    saveDoublesPartnerById(id, doublesPartnerById);
-  }, [doublesPartnerById, id]);
 
   const queryRound = parseRoundQueryParam(searchParams);
   const summaryCurrentRound = scheduleQuery.data?.scheduleSummary.currentRound ?? 0;
@@ -491,16 +550,6 @@ export function useTournamentSchedulePageController({
   }, [id, submitGenerateSchedule, t]);
 
   const onRemoveParticipant = useCallback((participantId: string) => {
-    if (id) {
-      const nextPartners = { ...doublesPartnerById };
-      const partnerId = nextPartners[participantId];
-      delete nextPartners[participantId];
-      if (partnerId) {
-        delete nextPartners[partnerId];
-      }
-      saveDoublesPartnerById(id, nextPartners);
-    }
-
     updateOverrides((current) => {
       const baseParticipants = current.participants ?? defaultParticipants;
       return {
@@ -508,7 +557,7 @@ export function useTournamentSchedulePageController({
         participants: removeParticipant(baseParticipants, participantId),
       };
     });
-  }, [defaultParticipants, doublesPartnerById, id, updateOverrides]);
+  }, [defaultParticipants, updateOverrides]);
 
   const onReorderParticipant = useCallback((activeId: string, overId: string) => {
     updateOverrides((current) => {

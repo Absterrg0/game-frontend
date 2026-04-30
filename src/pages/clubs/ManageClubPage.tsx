@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate,useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/api/queryKeys";
 import { useTranslation } from "react-i18next";
@@ -69,6 +69,7 @@ export default function ManageClubPage() {
   const { t } = useTranslation();
   const isDesktop = useMinWidth(TW_BREAKPOINT_LG_PX, { defaultValue: true });
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const hasSuperAdminAccess = useHasRoleOrAbove(ROLES.SUPER_ADMIN);
   const { user } = useAuth();
   const {
@@ -385,11 +386,15 @@ export default function ManageClubPage() {
       <div className="flex w-full max-w-[1088px] flex-col gap-[25px]">
         <button
           type="button"
-          onClick={() => setMobileView("clubs")}
-          className={cn(
-            "inline-flex w-fit items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground",
-            isDesktop && "hidden"
-          )}
+          onClick={() => {
+            if (isDesktop || mobileView === "clubs") {
+              navigate("/clubs");
+            } else {
+              // mobileView === "staff" on mobile → go back to clubs view
+              setMobileView("clubs");
+            }
+          }}
+          className="inline-flex w-fit items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           ← {t("clubs.goBack")}
         </button>

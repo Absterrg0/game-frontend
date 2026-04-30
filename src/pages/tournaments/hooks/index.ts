@@ -5,8 +5,10 @@ export { useTournamentLiveMatch } from "./useTournamentLiveMatch";
 export { useRecordTournamentMatchScore } from "./useTournamentMatchScore";
 export {
   useTournamentSchedule,
+  useDoublesPairs,
   useGenerateTournamentSchedule,
   useGenerateTournamentDoublesPairs,
+  useSaveDoublesPairs,
   useCancelTournamentScheduleRound,
 } from "./useTournamentSchedule";
 export {

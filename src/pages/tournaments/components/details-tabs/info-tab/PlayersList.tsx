@@ -4,14 +4,8 @@ import { toast } from "sonner";
 import { PlayerNameText } from "@/components/shared/PlayerNameText";
 import { ChevronDown, ChevronUp, UserCircle2 } from "@/icons/figma-icons";
 import { useAuth } from "@/pages/auth/hooks";
-import type { TournamentParticipant } from "@/models/tournament/types";
-import {
-  buildDoublesPairsResponse,
-  loadDoublesPartnerById,
-  sanitizeDoublesPartnerById,
-  saveDoublesPartnerById,
-  type DoublesPartnerById,
-} from "@/pages/tournaments/schedule/helpers/doublesPairingState";
+import type { TournamentParticipant, TournamentSchedulePairPlayer } from "@/models/tournament/types";
+import { useDoublesPairs, useSaveDoublesPairs } from "@/pages/tournaments/hooks";
 import { UI_LIMITS } from "./constants";
 
 interface PlayersListProps {
@@ -21,8 +15,78 @@ interface PlayersListProps {
   hasParticipants: boolean;
   isPlayersCollapsible: boolean;
   isPlayersListExpanded: boolean;
+  canEditPairs: boolean;
+  isCurrentUserParticipant: boolean;
   onToggle: () => void;
   t: TFunction;
+}
+
+type DoublesPartnerById = Record<string, string>;
+
+function sanitizeDoublesPartnerById(
+  partnerById: DoublesPartnerById,
+  participants: TournamentParticipant[]
+): DoublesPartnerById {
+  const validIds = new Set(participants.map((participant) => participant.id));
+  const next: DoublesPartnerById = {};
+
+  for (const participant of participants) {
+    const partnerId = partnerById[participant.id];
+    if (!partnerId || !validIds.has(partnerId) || partnerId === participant.id) {
+      continue;
+    }
+    if (partnerById[partnerId] !== participant.id) {
+      continue;
+    }
+    next[participant.id] = partnerId;
+  }
+
+  return next;
+}
+
+function asPairPlayer(participant: TournamentParticipant): TournamentSchedulePairPlayer {
+  return {
+    id: participant.id,
+    name: participant.name,
+    alias: participant.alias,
+    skillLabel: "",
+    rating: 0,
+  };
+}
+
+function buildDoublesPairsResponse(
+  participants: TournamentParticipant[],
+  partnerById: DoublesPartnerById
+) {
+  const byId = new Map(participants.map((participant) => [participant.id, participant]));
+  const used = new Set<string>();
+  const teams: Array<{ team: number; players: [TournamentSchedulePairPlayer, TournamentSchedulePairPlayer] }> = [];
+  const unpaired: TournamentSchedulePairPlayer[] = [];
+
+  let teamNo = 1;
+  for (const participant of participants) {
+    if (used.has(participant.id)) {
+      continue;
+    }
+
+    const partnerId = partnerById[participant.id];
+    const partner = partnerId ? byId.get(partnerId) : undefined;
+    if (partner && !used.has(partner.id) && partnerById[partner.id] === participant.id) {
+      teams.push({
+        team: teamNo,
+        players: [asPairPlayer(participant), asPairPlayer(partner)],
+      });
+      teamNo += 1;
+      used.add(participant.id);
+      used.add(partner.id);
+      continue;
+    }
+
+    used.add(participant.id);
+    unpaired.push(asPairPlayer(participant));
+  }
+
+  return { teams, unpaired };
 }
 
 function getPlayersContent({
@@ -35,10 +99,13 @@ function getPlayersContent({
   currentUserId,
   onTogglePartner,
   t,
-}: Omit<PlayersListProps, "onToggle" | "tournamentId"> & {
+}: Omit<
+  PlayersListProps,
+  "onToggle" | "tournamentId" | "canEditPairs" | "isCurrentUserParticipant"
+> & {
   safePartnerById: DoublesPartnerById;
   currentUserId: string | null;
-  onTogglePartner: (participantId: string) => void;
+  onTogglePartner: (participantId: string) => Promise<void>;
 }): ReactNode {
   if (!hasParticipants) {
     return <p className="text-[14px] text-[#010a04]/60">{t("tournaments.noPlayersYet")}</p>;
@@ -68,7 +135,9 @@ function getPlayersContent({
             <button
               key={participant.id}
               type="button"
-              onClick={() => onTogglePartner(participant.id)}
+              onClick={() => {
+                void onTogglePartner(participant.id);
+              }}
               className={`flex w-full items-center gap-3 rounded-[12px] border px-3 py-2.5 text-left transition-colors sm:gap-5 sm:px-[15px] sm:py-3 ${
                 isPaired
                   ? "border-[#067429]/45 bg-[#0a6925]/15"
@@ -122,20 +191,22 @@ export function PlayersList({
   hasParticipants,
   isPlayersCollapsible,
   isPlayersListExpanded,
+  canEditPairs,
+  isCurrentUserParticipant,
   onToggle,
   t,
 }: PlayersListProps) {
   const { user } = useAuth();
-  const [partnerById, setPartnerById] = useState<DoublesPartnerById>(() =>
-    sanitizeDoublesPartnerById(loadDoublesPartnerById(tournamentId), participants)
-  );
+  const doublesPairsQuery = useDoublesPairs(tournamentId, true);
+  const saveDoublesPairsMutation = useSaveDoublesPairs();
+  const [selectedParticipantId, setSelectedParticipantId] = useState<string | null>(null);
   const id = useId();
   const headingId = `${id}-heading`;
   const contentId = `${id}-content`;
 
   const safePartnerById = useMemo(
-    () => sanitizeDoublesPartnerById(partnerById, participants),
-    [partnerById, participants]
+    () => sanitizeDoublesPartnerById(doublesPairsQuery.data?.doublesPairs ?? {}, participants),
+    [doublesPairsQuery.data?.doublesPairs, participants]
   );
 
   const pairsPreview = useMemo(
@@ -143,12 +214,60 @@ export function PlayersList({
     [participants, safePartnerById]
   );
 
-  const persistPartnerById = (next: DoublesPartnerById) => {
-    setPartnerById(next);
-    saveDoublesPartnerById(tournamentId, next);
+  const persistPartnerById = async (next: DoublesPartnerById) => {
+    await saveDoublesPairsMutation.mutateAsync({
+      id: tournamentId,
+      payload: { doublesPairs: next },
+    });
   };
 
-  const onTogglePartner = (participantId: string) => {
+  const onTogglePartner = async (participantId: string) => {
+    if (saveDoublesPairsMutation.isPending) {
+      return;
+    }
+
+    if (canEditPairs && !isCurrentUserParticipant) {
+      const next = { ...safePartnerById };
+      const currentPartnerId = next[participantId];
+
+      if (selectedParticipantId == null) {
+        if (currentPartnerId) {
+          delete next[participantId];
+          delete next[currentPartnerId];
+          await persistPartnerById(next);
+          setSelectedParticipantId(null);
+          toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+          return;
+        }
+        setSelectedParticipantId(participantId);
+        toast.info(t("tournaments.scheduleDoublesSelectParticipant"));
+        return;
+      }
+
+      if (selectedParticipantId === participantId) {
+        setSelectedParticipantId(null);
+        return;
+      }
+
+      const selectedExistingPartner = next[selectedParticipantId];
+      if (selectedExistingPartner) {
+        delete next[selectedParticipantId];
+        delete next[selectedExistingPartner];
+      }
+      const clickedExistingPartner = next[participantId];
+      if (clickedExistingPartner) {
+        delete next[participantId];
+        delete next[clickedExistingPartner];
+      }
+
+      next[selectedParticipantId] = participantId;
+      next[participantId] = selectedParticipantId;
+      await persistPartnerById(next);
+      setSelectedParticipantId(null);
+      toast.success(t("tournaments.scheduleDoublesPairCreated"));
+      return;
+    }
+
     const currentUserId = user?.id ?? null;
     if (!currentUserId) {
       toast.error(t("tournaments.scheduleDoublesNoCurrentUser"));
@@ -169,7 +288,7 @@ export function PlayersList({
       const next = { ...safePartnerById };
       delete next[currentUserId];
       delete next[currentPartner];
-      persistPartnerById(next);
+      await persistPartnerById(next);
       toast.success(t("tournaments.scheduleDoublesPairDismissed"));
       return;
     }
@@ -194,14 +313,14 @@ export function PlayersList({
     if (currentPartnerId === participantId && targetPartnerId === currentUserId) {
       delete next[currentUserId];
       delete next[participantId];
-      persistPartnerById(next);
+      await persistPartnerById(next);
       toast.success(t("tournaments.scheduleDoublesPairDismissed"));
       return;
     }
 
     next[currentUserId] = participantId;
     next[participantId] = currentUserId;
-    persistPartnerById(next);
+    await persistPartnerById(next);
     toast.success(t("tournaments.scheduleDoublesPairCreated"));
   };
 

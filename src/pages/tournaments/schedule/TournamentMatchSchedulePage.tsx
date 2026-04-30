@@ -89,6 +89,13 @@ export default function TournamentMatchSchedulePage() {
   const onStartReschedule = useCallback(async () => {
     if (!id) return;
     const round = selectedRoundFromQuery;
+    const activeRound = matchesQuery.data?.schedule.currentRound;
+
+    if (activeRound != null && round !== activeRound) {
+      toast.error(t("tournaments.scheduleRoundCancelError"));
+      return;
+    }
+
     try {
       await cancelRoundMutation.mutateAsync({ id, round });
       await Promise.all([
@@ -108,6 +115,7 @@ export default function TournamentMatchSchedulePage() {
     queryClient,
     t,
     selectedRoundFromQuery,
+    matchesQuery.data?.schedule.currentRound,
   ]);
 
   if (!id) return <Navigate to="/tournaments" replace />;

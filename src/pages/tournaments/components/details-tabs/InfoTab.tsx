@@ -106,14 +106,17 @@ export function InfoTab({
           </section>
 
           <FoodSection hasFoodInfo={hasFoodInfo} foodInfoTrimmed={foodInfoTrimmed} t={t} />
-
+          
           <PlayersList
+            key={tournament.id}
             tournamentId={tournament.id}
             participants={tournament.participants}
             participantSummary={participantSummary}
             hasParticipants={hasParticipants}
             isPlayersCollapsible={isPlayersCollapsible}
             isPlayersListExpanded={isPlayersExpanded}
+            canEditPairs={tournament.permissions.canEdit}
+            isCurrentUserParticipant={tournament.permissions.isParticipant}
             onToggle={togglePlayersExpanded}
             t={t}
           />
