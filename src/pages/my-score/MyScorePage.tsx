@@ -10,6 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getErrorMessage } from "@/lib/errors";
 import { getDateFnsLocale } from "@/lib/dateFnsLocale";
 import type {
@@ -203,53 +211,61 @@ export default function MyScorePage() {
 
           <div className="overflow-x-auto">
             {entries.length > 0 ? (
-              <table className="min-w-[760px] w-full border-collapse">
-                <thead className="border-b border-[rgba(0,0,0,0.06)] bg-[#010a04]/[0.04]">
-                  <tr className="grid grid-cols-[128px_1.6fr_1.6fr_1fr_1fr] gap-4 px-[16px] py-2 sm:px-[18px]">
-                    <th scope="col" className="text-left text-[12px] font-normal text-[#010a04]/80">
+              <Table className="min-w-[760px] w-full table-fixed border-collapse">
+                <colgroup>
+                  <col className="w-[16%]" />
+                  <col className="w-[32%]" />
+                  <col className="w-[32%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                </colgroup>
+                <TableHeader className="border-b border-[rgba(0,0,0,0.06)] bg-[#010a04]/[0.04]">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead scope="col" className="h-auto px-[16px] py-2 text-left text-[12px] font-normal text-[#010a04]/80 sm:px-[18px]">
                       {t("myScorePage.table.date")}
-                    </th>
-                    <th scope="col" className="text-left text-[12px] font-normal text-[#010a04]/80">
+                    </TableHead>
+                    <TableHead scope="col" className="h-auto px-2 py-2 text-left text-[12px] font-normal text-[#010a04]/80">
                       {t("myScorePage.table.tournament")}
-                    </th>
-                    <th scope="col" className="text-left text-[12px] font-normal text-[#010a04]/80">
+                    </TableHead>
+                    <TableHead scope="col" className="h-auto px-2 py-2 text-left text-[12px] font-normal text-[#010a04]/80">
                       {t("myScorePage.table.opponent")}
-                    </th>
-                    <th scope="col" className="text-left text-[12px] font-normal text-[#010a04]/80">
+                    </TableHead>
+                    <TableHead scope="col" className="h-auto px-2 py-2 text-left text-[12px] font-normal text-[#010a04]/80">
                       {t("myScorePage.table.myScore")}
-                    </th>
-                    <th scope="col" className="text-left text-[12px] font-normal text-[#010a04]/80">
+                    </TableHead>
+                    <TableHead scope="col" className="h-auto px-[16px] py-2 text-left text-[12px] font-normal text-[#010a04]/80 sm:px-[18px]">
                       {t("myScorePage.table.opponentScore")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {entries.map((entry) => (
-                    <tr
-                      key={entry.id}
-                      className="grid grid-cols-[128px_1.6fr_1.6fr_1fr_1fr] items-center gap-4 border-b border-[rgba(0,0,0,0.06)] px-[16px] py-[11px] text-[14px] text-[#010a04] last:border-b-0 sm:px-[18px]"
-                    >
-                      <td>{formatPlayedAt(entry.playedAt, i18n.language)}</td>
-                      <td>
+                    <TableRow key={entry.id} className="border-b border-[rgba(0,0,0,0.06)] text-[14px] text-[#010a04] last:border-b-0 hover:bg-transparent">
+                      <TableCell className="px-[16px] py-[11px] align-middle sm:px-[18px]">
+                        {formatPlayedAt(entry.playedAt, i18n.language)}
+                      </TableCell>
+                      <TableCell className="px-2 py-[11px] align-middle">
                         <div className="flex min-w-0 items-center gap-2">
                           <span className="inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px] bg-[#d9d9d9] text-[10px] font-semibold text-[#010a04]/75">
                             {tournamentBadgeLabel(entry)}
                           </span>
                           <p className="truncate">{entry.tournament.name}</p>
                         </div>
-                      </td>
-                      <td>
+                      </TableCell>
+                      <TableCell className="px-2 py-[11px] align-middle">
                         <div className="flex min-w-0 items-center gap-2">
                           <span className="h-[17px] w-[17px] shrink-0 rounded-full bg-[#d9d9d9]" aria-hidden="true" />
                           <p className="truncate">{entry.opponent.name}</p>
                         </div>
-                      </td>
-                      <td>{formatScore(entry.myScore)}</td>
-                      <td>{formatScore(entry.opponentScore)}</td>
-                    </tr>
+                      </TableCell>
+                      <TableCell className="px-2 py-[11px] align-middle">{formatScore(entry.myScore)}</TableCell>
+                      <TableCell className="px-[16px] py-[11px] align-middle sm:px-[18px]">
+                        {formatScore(entry.opponentScore)}
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             ) : (
               <div className="px-6 py-10 text-center text-[14px] text-[#010a04]/70">
                 {t("myScorePage.empty")}
