@@ -55,7 +55,8 @@ function getSidePlayerIds(match: TournamentScheduleMatch, side: 0 | 1): string[]
 }
 
 function applyScoreAdvantageBySide(match: TournamentScheduleMatch, scoreAdvantageById: Map<string, number>) {
-  if (match.playMode !== "TieBreak10" && match.playMode !== "3setTieBreak10") {
+  // Total score advantage is a tie-break metric only for pure TB10 matches.
+  if (match.playMode !== "TieBreak10") {
     return;
   }
 
