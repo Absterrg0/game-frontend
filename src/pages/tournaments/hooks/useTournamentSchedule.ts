@@ -6,7 +6,9 @@ import {
   generateTournamentDoublesPairsResponseSchema,
   generateTournamentScheduleInputSchema,
   generateTournamentScheduleResponseSchema,
+  cancelTournamentScheduleRoundResponseSchema,
   tournamentScheduleResponseSchema,
+  type CancelTournamentScheduleRoundResponse,
   type GenerateTournamentDoublesPairsInput,
   type GenerateTournamentDoublesPairsResponse,
   type GenerateTournamentScheduleInput,
@@ -35,6 +37,14 @@ async function generateDoublesPairs(
   const parsedPayload = generateTournamentDoublesPairsInputSchema.parse(payload);
   const response = await api.post(`/api/schedule/${id}/pairs`, parsedPayload);
   return generateTournamentDoublesPairsResponseSchema.parse(response.data);
+}
+
+async function cancelScheduleRound(
+  id: string,
+  round: number
+): Promise<CancelTournamentScheduleRoundResponse> {
+  const response = await api.delete(`/api/schedule/${id}/round/${round}`);
+  return cancelTournamentScheduleRoundResponseSchema.parse(response.data);
 }
 
 export function useTournamentSchedule(id: string | null, enabled = true) {
@@ -70,6 +80,20 @@ export function useGenerateTournamentDoublesPairs() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: string; payload: GenerateTournamentDoublesPairsInput }) =>
       generateDoublesPairs(id, payload),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.schedule(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.matches(variables.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(variables.id) });
+    },
+  });
+}
+
+export function useCancelTournamentScheduleRound() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, round }: { id: string; round: number }) =>
+      cancelScheduleRound(id, round),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament.schedule(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tournament.matches(variables.id) });

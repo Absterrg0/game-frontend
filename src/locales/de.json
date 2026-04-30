@@ -109,7 +109,7 @@
       "recordScore": "Punktzahl eintragen",
       "settings": "Einstellungen",
       "clubs": "Vereine",
-      "sponsors": "Sponsoren",
+      "sponsors": "TB10 Sponsoren",
       "about": "Über uns"
     },
     "saveChanges": "Änderungen speichern",
@@ -236,7 +236,7 @@
   },
   "manageClub": {
     "title": "Vereine verwalten",
-    "allClubs": "Alle Vereine",
+    "allClubs": "Meine Vereine",
     "allStatus": "Alle Status",
     "selectClub": "Wählen Sie einen Verein zur Verwaltung.",
     "noClubs": "Sie verwalten noch keine Vereine. Fügen Sie Vereine in den Einstellungen hinzu.",
@@ -437,7 +437,7 @@
     }
   },
   "tournaments": {
-    "allTournaments": "Alle Turniere",
+    "Tournaments": "Turniere",
     "tabPublished": "Veröffentlicht",
     "tabDrafts": "Entwürfe",
     "draftsWorkspaceTitle": "Entwurfsbereich",
@@ -587,7 +587,7 @@
     "failedToLoadDetails": "Turnierdetails konnten nicht geladen werden.",
     "currentPlayers": "Aktuelle Spieler",
     "noPlayersYet": "Noch keine Spieler dabei.",
-    "matchProgress": "Turnierfortschritt",
+    "participantsProgress": "Teilnehmer",
     "spotsFilled": "{{filled}} von {{total}} Plätze belegt",
     "joinThisMatch": "Beitreten",
     "leaveMatch": "Verlassen",
@@ -760,7 +760,7 @@
     "loadError": "Punktverlauf konnte nicht geladen werden.",
     "totalMatches": "Spiele insgesamt",
     "totalWins": "Siege insgesamt",
-    "glicko2": "Glicko2",
+    "glicko2": "G2 Spielniveau",
     "share": "Teilen",
     "shareSuccess": "Link zur Punkteansicht wurde kopiert.",
     "shareError": "Link zur Punkteansicht konnte nicht kopiert werden.",

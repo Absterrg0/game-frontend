@@ -7,6 +7,7 @@ export {
   useTournamentSchedule,
   useGenerateTournamentSchedule,
   useGenerateTournamentDoublesPairs,
+  useCancelTournamentScheduleRound,
 } from "./useTournamentSchedule";
 export {
   useCreateTournament,
