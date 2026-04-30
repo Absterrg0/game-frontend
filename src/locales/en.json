@@ -687,6 +687,7 @@
     "scheduleDoublesSelectParticipant": "Select {{name}} for doubles pairing",
     "scheduleDoublesPairCreated": "Doubles pair created.",
     "scheduleDoublesPairDismissed": "Doubles pair dismissed.",
+    "scheduleDoublesSaveFailed": "Failed to save doubles pair.",
     "scheduleDoublesTargetAlreadyPaired": "This player is already paired. You cannot pair with them.",
     "scheduleDoublesDismissCurrentPairFirst": "Dismiss your current pair before choosing a new partner.",
     "scheduleDoublesNoCurrentUser": "Sign in to manage doubles pairs.",

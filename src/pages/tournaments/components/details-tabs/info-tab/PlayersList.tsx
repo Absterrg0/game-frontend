@@ -1,4 +1,4 @@
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
 import type { TFunction } from "i18next";
 import { toast } from "sonner";
 import { PlayerNameText } from "@/components/shared/PlayerNameText";
@@ -103,10 +103,12 @@ function getPlayersContent({
   PlayersListProps,
   "onToggle" | "tournamentId" | "canEditPairs" | "isCurrentUserParticipant"
 > & {
-  safePartnerById: DoublesPartnerById;
+  safePartnerById: DoublesPartnerById | undefined;
   currentUserId: string | null;
   onTogglePartner: (participantId: string) => Promise<void>;
 }): ReactNode {
+  const partnerById = safePartnerById ?? {};
+
   if (!hasParticipants) {
     return <p className="text-[14px] text-[#010a04]/60">{t("tournaments.noPlayersYet")}</p>;
   }
@@ -117,9 +119,9 @@ function getPlayersContent({
         {participants.map((participant) => {
           const nameTrimmed = participant.name?.trim() ?? "";
           const aliasTrimmed = participant.alias?.trim() ?? "";
-          const isPaired = Boolean(safePartnerById[participant.id]);
+          const isPaired = Boolean(partnerById[participant.id]);
           const isCurrentUser = currentUserId === participant.id;
-          const partnerId = safePartnerById[participant.id];
+          const partnerId = partnerById[participant.id];
           const partner = partnerId
             ? participants.find((item) => item.id === partnerId) ?? null
             : null;
@@ -205,16 +207,34 @@ export function PlayersList({
   const contentId = `${id}-content`;
 
   const safePartnerById = useMemo(
-    () => sanitizeDoublesPartnerById(doublesPairsQuery.data?.doublesPairs ?? {}, participants),
+    () => {
+      const doublesPairs = doublesPairsQuery.data?.doublesPairs;
+
+      if (doublesPairs == null) {
+        return undefined;
+      }
+
+      return sanitizeDoublesPartnerById(doublesPairs, participants);
+    },
     [doublesPairsQuery.data?.doublesPairs, participants]
   );
 
+  useEffect(() => {
+    if (selectedParticipantId && !participants.some((participant) => participant.id === selectedParticipantId)) {
+      setSelectedParticipantId(null);
+    }
+  }, [participants, selectedParticipantId]);
+
   const pairsPreview = useMemo(
-    () => buildDoublesPairsResponse(participants, safePartnerById),
+    () => buildDoublesPairsResponse(participants, safePartnerById ?? {}),
     [participants, safePartnerById]
   );
 
   const persistPartnerById = async (next: DoublesPartnerById) => {
+    if (safePartnerById == null) {
+      throw new Error("Doubles pairs are still loading");
+    }
+
     await saveDoublesPairsMutation.mutateAsync({
       id: tournamentId,
       payload: { doublesPairs: next },
@@ -226,21 +246,34 @@ export function PlayersList({
       return;
     }
 
+    const partnerById = safePartnerById ?? {};
+    const clickedParticipant = participants.find((participant) => participant.id === participantId);
+    if (!clickedParticipant) {
+      return;
+    }
+    const clickedParticipantName =
+      clickedParticipant.alias?.trim() || clickedParticipant.name?.trim() || t("tournaments.unknownPlayer");
+
     if (canEditPairs && !isCurrentUserParticipant) {
-      const next = { ...safePartnerById };
+      const next = { ...partnerById };
       const currentPartnerId = next[participantId];
 
       if (selectedParticipantId == null) {
         if (currentPartnerId) {
           delete next[participantId];
           delete next[currentPartnerId];
-          await persistPartnerById(next);
-          setSelectedParticipantId(null);
-          toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+          try {
+            await persistPartnerById(next);
+            setSelectedParticipantId(null);
+            toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+          } catch {
+            setSelectedParticipantId(null);
+            toast.error(t("tournaments.scheduleDoublesSaveFailed"));
+          }
           return;
         }
         setSelectedParticipantId(participantId);
-        toast.info(t("tournaments.scheduleDoublesSelectParticipant"));
+        toast.info(t("tournaments.scheduleDoublesSelectParticipant", { name: clickedParticipantName }));
         return;
       }
 
@@ -262,9 +295,14 @@ export function PlayersList({
 
       next[selectedParticipantId] = participantId;
       next[participantId] = selectedParticipantId;
-      await persistPartnerById(next);
-      setSelectedParticipantId(null);
-      toast.success(t("tournaments.scheduleDoublesPairCreated"));
+      try {
+        await persistPartnerById(next);
+        setSelectedParticipantId(null);
+        toast.success(t("tournaments.scheduleDoublesPairCreated"));
+      } catch {
+        setSelectedParticipantId(null);
+        toast.error(t("tournaments.scheduleDoublesSaveFailed"));
+      }
       return;
     }
 
@@ -281,47 +319,54 @@ export function PlayersList({
     }
 
     if (participantId === currentUserId) {
-      const currentPartner = safePartnerById[currentUserId];
+      const currentPartner = partnerById[currentUserId];
       if (!currentPartner) {
         return;
       }
-      const next = { ...safePartnerById };
+      const next = { ...partnerById };
       delete next[currentUserId];
       delete next[currentPartner];
-      await persistPartnerById(next);
-      toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+      try {
+        await persistPartnerById(next);
+        toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+      } catch {
+        toast.error(t("tournaments.scheduleDoublesSaveFailed"));
+      }
       return;
     }
 
-    const targetParticipant = participants.find((participant) => participant.id === participantId);
-    if (!targetParticipant) {
-      return;
-    }
-
-    const currentPartnerId = safePartnerById[currentUserId];
+    const currentPartnerId = partnerById[currentUserId];
     if (currentPartnerId && currentPartnerId !== participantId) {
       toast.error(t("tournaments.scheduleDoublesDismissCurrentPairFirst"));
       return;
     }
-    const targetPartnerId = safePartnerById[participantId];
+    const targetPartnerId = partnerById[participantId];
     if (targetPartnerId && targetPartnerId !== currentUserId) {
       toast.error(t("tournaments.scheduleDoublesTargetAlreadyPaired"));
       return;
     }
 
-    const next = { ...safePartnerById };
+    const next = { ...partnerById };
     if (currentPartnerId === participantId && targetPartnerId === currentUserId) {
       delete next[currentUserId];
       delete next[participantId];
-      await persistPartnerById(next);
-      toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+      try {
+        await persistPartnerById(next);
+        toast.success(t("tournaments.scheduleDoublesPairDismissed"));
+      } catch {
+        toast.error(t("tournaments.scheduleDoublesSaveFailed"));
+      }
       return;
     }
 
     next[currentUserId] = participantId;
     next[participantId] = currentUserId;
-    await persistPartnerById(next);
-    toast.success(t("tournaments.scheduleDoublesPairCreated"));
+    try {
+      await persistPartnerById(next);
+      toast.success(t("tournaments.scheduleDoublesPairCreated"));
+    } catch {
+      toast.error(t("tournaments.scheduleDoublesSaveFailed"));
+    }
   };
 
   const playersContent = getPlayersContent({

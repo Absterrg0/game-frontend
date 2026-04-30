@@ -58,11 +58,11 @@ export default function TournamentMatchSchedulePage() {
     [t]
   );
 
-  const queryClient = useQueryClient();
   const tournamentQuery = useTournamentById(id ?? null, Boolean(id));
   const matchesQuery = useTournamentMatches(id ?? null, Boolean(id));
   const scheduleQuery = useTournamentSchedule(id ?? null, Boolean(id));
   const cancelRoundMutation = useCancelTournamentScheduleRound();
+  const queryClient = useQueryClient();
 
   const persistHook = usePersistMatchScore({
     tournament: tournamentQuery.data?.tournament,
@@ -85,7 +85,7 @@ export default function TournamentMatchSchedulePage() {
       return res.ok;
     },
   });
-  
+
   const onStartReschedule = useCallback(async () => {
     if (!id) return;
     const round = selectedRoundFromQuery;
@@ -98,11 +98,6 @@ export default function TournamentMatchSchedulePage() {
 
     try {
       await cancelRoundMutation.mutateAsync({ id, round });
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: queryKeys.tournament.schedule(id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.tournament.matches(id) }),
-        queryClient.invalidateQueries({ queryKey: queryKeys.tournament.detail(id) }),
-      ]);
       toast.success(t("tournaments.scheduleRoundCancelled", { round }));
       navigate(`/tournaments/${id}/schedule?round=${round}`);
     } catch (error: unknown) {
@@ -112,7 +107,6 @@ export default function TournamentMatchSchedulePage() {
     cancelRoundMutation,
     id,
     navigate,
-    queryClient,
     t,
     selectedRoundFromQuery,
     matchesQuery.data?.schedule.currentRound,

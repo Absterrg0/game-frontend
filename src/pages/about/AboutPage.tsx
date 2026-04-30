@@ -31,11 +31,11 @@ export default function AboutPage() {
         return;
       } catch {
         toast.error(t("about.unableToCopyLink"));
-     
-       } }
+      }
     }
 
     window.open(TB10_URL, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div
