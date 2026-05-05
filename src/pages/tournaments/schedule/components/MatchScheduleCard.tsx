@@ -71,6 +71,7 @@ export function MatchScheduleCard({
   const isPendingScore = match.status === "pendingScore";
   const isCancelled = match.status === "cancelled";
   const isFromPreviousRound = match.detachedFromRound != null;
+  const showHistoricalBadge = isFromPreviousRound || match.isHistorical;
   const hasStatusBadge = isLive || isPendingScore || isCancelled;
   const scoreGridStyle = {
     "--score-column-count": Math.max(editableRowsToRender.length, 1),
@@ -259,9 +260,9 @@ export function MatchScheduleCard({
       </div>
 
       {/* Historical + status badges */}
-      {(match.isHistorical || hasStatusBadge) && (
+      {(showHistoricalBadge || hasStatusBadge) && (
         <div className="mt-auto flex min-h-[26px] flex-wrap items-center gap-2 pt-3">
-          {match.isHistorical && (
+          {showHistoricalBadge && (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef2ff] px-2.5 py-1 text-[11px] font-medium text-[#1e3a8a]">
               {historicalBadgeLabel}
             </span>

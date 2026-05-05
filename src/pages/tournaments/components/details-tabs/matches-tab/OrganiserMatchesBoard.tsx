@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { Locale } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { toast } from "sonner";
@@ -51,12 +51,30 @@ function countMatches(matches: TournamentScheduleMatch[]): MatchCounts {
   };
 }
 
+function parseRoundFilter(search: string): OrganiserRoundFilter {
+  const roundParam = new URLSearchParams(search).get("round");
+  if (roundParam === "all" || roundParam == null) {
+    return "all";
+  }
+
+  const round = Number.parseInt(roundParam, 10);
+  return Number.isFinite(round) && round > 0 && String(round) === roundParam ? round : "all";
+}
+
 export function OrganiserMatchesBoard({ tournament }: OrganiserMatchesBoardProps) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const [roundFilter, setRoundFilter] = useState<OrganiserRoundFilter>("all");
+  const location = useLocation();
+  const [roundFilter, setRoundFilter] = useState<OrganiserRoundFilter>(() => parseRoundFilter(location.search));
   const [isRescheduleWarningOpen, setIsRescheduleWarningOpen] = useState(false);
   const matchesQuery = useTournamentMatches(tournament.id, true);
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setRoundFilter(parseRoundFilter(location.search));
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [location.search]);
 
   const { persistMatchScore, isPersisting, savingMatchId, saveErrorsByMatchId } = usePersistMatchScore({
     tournament,
@@ -126,7 +144,7 @@ export function OrganiserMatchesBoard({ tournament }: OrganiserMatchesBoardProps
     matchesQuery.data?.schedule.totalRounds ?? 0
   );
   const hasGeneratedSchedule = allMatches.length > 0 || (matchesQuery.data?.schedule.currentRound ?? 0) > 0;
-  const currentRoundMatches = allMatches.filter((match) => match.round === currentRound);
+  const currentRoundMatches = allMatches.filter((match) => match.round === currentRound && match.detachedFromRound == null);
   const scoredMatchesCount = currentRoundMatches.filter((match) => {
     const p1 = match.score.playerOneScores?.length ?? 0;
     const p2 = match.score.playerTwoScores?.length ?? 0;
@@ -144,6 +162,18 @@ export function OrganiserMatchesBoard({ tournament }: OrganiserMatchesBoardProps
   const canRescheduleThisRound = !canScheduleNextRound && currentRoundMatches.length > 0;
 
   const dateLocale: Locale = getDateFnsLocale(i18n.language) ?? enUS;
+
+  const handleRoundFilterChange = (nextRoundFilter: OrganiserRoundFilter) => {
+    const params = new URLSearchParams(location.search);
+    if (nextRoundFilter === "all") {
+      params.delete("round");
+    } else {
+      params.set("round", String(nextRoundFilter));
+    }
+
+    const search = params.toString();
+    navigate({ search: search ? `?${search}` : "" });
+  };
 
   const handleToggleInlineEdit = async (match: TournamentScheduleMatch) => {
     if (match.status === "cancelled" || match.round !== currentRound || match.detachedFromRound != null) {
@@ -241,7 +271,7 @@ export function OrganiserMatchesBoard({ tournament }: OrganiserMatchesBoardProps
         total={filteredMatches.length}
         roundFilter={roundFilter}
         availableRounds={availableRounds}
-        onRoundFilterChange={setRoundFilter}
+        onRoundFilterChange={handleRoundFilterChange}
         t={t}
       />
 
