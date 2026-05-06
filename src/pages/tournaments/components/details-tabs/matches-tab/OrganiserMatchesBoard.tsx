@@ -222,8 +222,9 @@ export function OrganiserMatchesBoard({ tournament }: { tournament: TournamentDe
   };
 
   const handleToggleInlineEdit = async (match: TournamentScheduleMatch) => {
+    const isScoreEditLockedNow = isOrganiserScoreEditLocked(tournament);
     if (
-      organiserScoreEditLocked ||
+      isScoreEditLockedNow ||
       match.status === "cancelled" ||
       match.detachedFromRound != null
     ) {
