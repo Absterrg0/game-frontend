@@ -72,11 +72,11 @@ function compareOrganiserMatchOrder(
 ): number {
   const tier = (m: TournamentScheduleMatch): number => {
     if (m.status === "cancelled") return 4;
-    if (m.detachedFromRound != null) return 3;
     const open =
       m.status === "scheduled" || m.status === "inProgress" || m.status === "pendingScore";
     if (m.round === currentRound && open) return 0;
     if (open) return 1;
+    if (m.detachedFromRound != null) return 2;
     return 2;
   };
 
