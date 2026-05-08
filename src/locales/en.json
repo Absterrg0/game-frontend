@@ -784,7 +784,7 @@
     "loadError": "Failed to load score history.",
     "totalMatches": "Total Matches",
     "totalWins": "Total Wins",
-    "glicko3": "G3 Skill Level",
+    "glicko2": "G3 Skill Level",
     "share": "Share",
     "shareSuccess": "Score view link copied to clipboard.",
     "shareError": "Unable to copy score view link.",
