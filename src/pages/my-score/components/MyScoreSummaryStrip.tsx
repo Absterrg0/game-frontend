@@ -7,6 +7,9 @@ interface MyScoreSummaryStripProps {
 
 export function MyScoreSummaryStrip({ summary }: MyScoreSummaryStripProps) {
   const { t } = useTranslation();
+  const winsDisplay = summary.winsTruncated
+    ? `${summary.estimatedWins}${t("myScorePage.winsTruncatedSuffix")}`
+    : String(summary.estimatedWins);
 
   return (
     <section className="rounded-[10px] border border-[#010a04]/8 bg-white px-4 py-2.5 shadow-[0_2px_8px_rgba(0,0,0,0.05)] sm:px-5">
@@ -22,10 +25,10 @@ export function MyScoreSummaryStrip({ summary }: MyScoreSummaryStripProps) {
 
         <div className="flex items-baseline justify-between">
           <p className="text-[13px] font-medium text-[#010a04]/90">
-            {t("myScorePage.totalWins")}:
+            {t("myScorePage.estimatedWins")}:
           </p>
           <p className="text-[16px] font-semibold leading-none text-[#067429]">
-            {summary.totalWins}
+            {winsDisplay}
           </p>
         </div>
 
@@ -54,10 +57,10 @@ export function MyScoreSummaryStrip({ summary }: MyScoreSummaryStripProps) {
 
         <div className="flex min-w-0 items-baseline gap-2">
           <p className="text-[13px] font-medium text-[#010a04]/90">
-            {t("myScorePage.totalWins")}:
+            {t("myScorePage.estimatedWins")}:
           </p>
           <p className="truncate text-[22px] font-semibold leading-none text-[#067429]">
-            {summary.totalWins}
+            {winsDisplay}
           </p>
         </div>
 
