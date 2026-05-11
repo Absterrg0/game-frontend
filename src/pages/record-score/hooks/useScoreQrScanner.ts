@@ -26,7 +26,8 @@ export function useScoreQrScanner({
   const streamRef = useRef<MediaStream | null>(null);
   const scanRafRef = useRef<number | null>(null);
   const lastScanAtRef = useRef(0);
-  const scannerStartInFlightRef = useRef(false);
+  const scannerStartCounterRef = useRef(0);
+  const scannerStartCurrentRef = useRef<number | null>(null);
   const cameraToastShownForAttemptRef = useRef(false);
   const autoStartRequestedRef = useRef(false);
 
@@ -44,14 +45,17 @@ export function useScoreQrScanner({
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
+    // Invalidate any in-flight or active start token so pending async starts are treated as stale
+    scannerStartCurrentRef.current = null;
   }, []);
 
   const startScanner = useCallback(async () => {
     if (scanBlocked) return;
     if (!videoRef.current) return;
-    if (scannerStartInFlightRef.current) return;
+    if (scannerStartCurrentRef.current !== null) return;
 
-    scannerStartInFlightRef.current = true;
+    const startToken = ++scannerStartCounterRef.current;
+    scannerStartCurrentRef.current = startToken;
 
     const showScanAttemptError = (message: string) => {
       if (cameraToastShownForAttemptRef.current) return;
@@ -62,7 +66,7 @@ export function useScoreQrScanner({
     stopScanner();
 
     if (typeof navigator === "undefined" || typeof window === "undefined") {
-      scannerStartInFlightRef.current = false;
+      if (scannerStartCurrentRef.current === startToken) scannerStartCurrentRef.current = null;
       return;
     }
 
@@ -70,7 +74,7 @@ export function useScoreQrScanner({
       showScanAttemptError(
         t("recordScorePage.validate.cameraApiUnavailable"),
       );
-      scannerStartInFlightRef.current = false;
+      if (scannerStartCurrentRef.current === startToken) scannerStartCurrentRef.current = null;
       return;
     }
 
@@ -94,14 +98,53 @@ export function useScoreQrScanner({
           getErrorMessage(error) || t("recordScorePage.validate.noCamera");
       }
       showScanAttemptError(message.trim() || t("recordScorePage.validate.noCamera"));
-      scannerStartInFlightRef.current = false;
+      if (scannerStartCurrentRef.current === startToken) scannerStartCurrentRef.current = null;
       return;
     }
 
     try {
+      // If start was invalidated while awaiting getUserMedia, treat stream as stale.
+      if (scannerStartCurrentRef.current !== startToken) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      // Play briefly on an offscreen video to ensure the stream can start without mutating
+      // the real `videoRef` until we're sure this start is still active.
+      const probeVideo = document.createElement("video");
+      probeVideo.muted = true;
+      probeVideo.playsInline = true;
+      probeVideo.srcObject = stream;
+      try {
+        // this may reject on some platforms; if so, stop stream and surface error below
+        // (we'll handle showing toasts in the outer try/catch)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (probeVideo as any).play();
+      } catch {
+        stream.getTracks().forEach((t) => t.stop());
+        if (scannerStartCurrentRef.current === startToken) scannerStartCurrentRef.current = null;
+        throw new Error("video-play-failed");
+      }
+
+      // Verify still current after the probe play
+      if (scannerStartCurrentRef.current !== startToken) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      // Now attach to the real video element and start playback there.
       streamRef.current = stream;
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
+
+      // Final check after actual play: if stale, close stream and bail without mutating refs further.
+      if (scannerStartCurrentRef.current !== startToken) {
+        stream.getTracks().forEach((t) => t.stop());
+        // detach from video element if it was set
+        if (videoRef.current) videoRef.current.srcObject = null;
+        streamRef.current = null;
+        return;
+      }
 
       type BarcodeDetectorConstructor =
         (new (options?: {
@@ -135,6 +178,8 @@ export function useScoreQrScanner({
         const detector = new DetectorCtor({ formats: ["qr_code"] });
 
         const scanLoop = async () => {
+          // If this start is no longer the active one, stop scanning here.
+          if (scannerStartCurrentRef.current !== startToken) return;
           if (!videoRef.current || !streamRef.current) return;
 
           const now = Date.now();
@@ -147,10 +192,11 @@ export function useScoreQrScanner({
           try {
             const detections = await detector.detect(videoRef.current);
             const payload = detections[0]?.rawValue?.trim() ?? "";
-            const token = parseScoreQrTokenFromPayload(payload);
+            const detectedToken = parseScoreQrTokenFromPayload(payload);
 
-            if (token) {
-              onTokenDetected(token);
+            if (detectedToken) {
+              if (scannerStartCurrentRef.current !== startToken) return;
+              onTokenDetected(detectedToken);
               stopScanner();
               return;
             }
@@ -166,6 +212,8 @@ export function useScoreQrScanner({
         const canvas = document.createElement("canvas");
 
         const scanLoop = () => {
+          // If this start is no longer the active one, stop scanning here.
+          if (scannerStartCurrentRef.current !== startToken) return;
           if (!videoRef.current || !streamRef.current) return;
           const video = videoRef.current;
 
@@ -183,9 +231,10 @@ export function useScoreQrScanner({
 
           const imageData = captureVideoFrameImageData(video, canvas);
           if (imageData) {
-            const token = decodeScoreQrWithJsQR(imageData);
-            if (token) {
-              onTokenDetected(token);
+            const detectedToken = decodeScoreQrWithJsQR(imageData);
+            if (detectedToken) {
+              if (scannerStartCurrentRef.current !== startToken) return;
+              onTokenDetected(detectedToken);
               stopScanner();
               return;
             }
@@ -197,14 +246,14 @@ export function useScoreQrScanner({
         scanRafRef.current = window.requestAnimationFrame(scanLoop);
       }
 
-      scannerStartInFlightRef.current = false;
+      // Leave `scannerStartCurrentRef.current` set to `startToken` while scanner is active.
     } catch (error: unknown) {
       stopScanner();
       showScanAttemptError(
         (getErrorMessage(error) || t("recordScorePage.validate.noCamera")).trim() ||
           t("recordScorePage.validate.noCamera"),
       );
-      scannerStartInFlightRef.current = false;
+      if (scannerStartCurrentRef.current === startToken) scannerStartCurrentRef.current = null;
     }
   }, [onTokenDetected, scanBlocked, stopScanner, t]);
 
