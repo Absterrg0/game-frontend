@@ -8,6 +8,7 @@ import {
   confirmTournamentScoreQrResponseSchema,
   generateTournamentScoreQrResponseSchema,
   recordTournamentMatchScoreInputSchema,
+  validateTournamentScoreQrConfirmContextResponseSchema,
   validateTournamentScoreQrResponseSchema,
   type ActiveTournamentScoreQrSessionResponse,
   type ConfirmTournamentScoreQrInput,
@@ -16,8 +17,20 @@ import {
   type RecordTournamentMatchScoreInput,
   type TournamentPlayMode,
   type TournamentScheduleMode,
+  type ValidateTournamentScoreQrConfirmContextResponse,
   type ValidateTournamentScoreQrResponse,
 } from "@/models/tournament/types";
+
+/** Opaque cache segment so query keys are not keyed by the raw token string. */
+function scoreQrTokenOpaqueKeyPart(token: string): string {
+  const s = token.trim();
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return `${s.length}:${(h >>> 0).toString(16)}`;
+}
 
 // Backward-compatible schema: tolerate missing `request` in validate response.
 const validateTournamentScoreQrResponseLooseSchema =
@@ -88,6 +101,23 @@ async function validateTournamentScoreQr(
   }
 
   return parsed;
+}
+
+async function validateTournamentScoreQrConfirmContext(
+  token: string,
+): Promise<ValidateTournamentScoreQrConfirmContextResponse> {
+  const safeToken = token.trim();
+  if (!safeToken) {
+    throw new Error("QR token is required");
+  }
+
+  const response = await api.post("/api/tournaments/score-qr/confirm-context", {
+    token: safeToken,
+  });
+
+  return validateTournamentScoreQrConfirmContextResponseSchema.parse(
+    response.data,
+  );
 }
 
 async function confirmTournamentScoreQr(
@@ -184,9 +214,29 @@ export function useValidateTournamentScoreQr(
       ...queryKeys.tournament.all,
       "score-qr",
       "validate",
-      normalized,
+      scoreQrTokenOpaqueKeyPart(normalized),
     ] as const,
     queryFn: () => validateTournamentScoreQr(normalized),
+    enabled: enabled && normalized.length > 0,
+    staleTime: 15_000,
+    retry: false,
+  });
+}
+
+export function useValidateTournamentScoreQrConfirmContext(
+  token: string | null | undefined,
+  enabled = true,
+) {
+  const normalized = (token ?? "").trim();
+
+  return useQuery({
+    queryKey: [
+      ...queryKeys.tournament.all,
+      "score-qr",
+      "confirm-context",
+      scoreQrTokenOpaqueKeyPart(normalized),
+    ] as const,
+    queryFn: () => validateTournamentScoreQrConfirmContext(normalized),
     enabled: enabled && normalized.length > 0,
     staleTime: 15_000,
     retry: false,
