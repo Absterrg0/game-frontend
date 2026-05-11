@@ -63,7 +63,6 @@ export function readScoreQrToken(ref: string | null | undefined): string {
     const storedAt = typeof parsed.storedAt === "number" ? parsed.storedAt : 0;
 
     if (!token || Date.now() - storedAt > SCORE_QR_TOKEN_MAX_AGE_MS) {
-      storage.removeItem(scoreQrTokenKey(normalizedRef));
       return "";
     }
 
@@ -73,7 +72,8 @@ export function readScoreQrToken(ref: string | null | undefined): string {
   }
 }
 
-export function clearScoreQrToken(ref: string | null | undefined) {
+/** Removes any session entry for this ref (stale, expired, or user-dismissed). */
+export function pruneScoreQrToken(ref: string | null | undefined) {
   const normalizedRef = ref?.trim();
   if (!normalizedRef) return;
 
@@ -87,6 +87,10 @@ export function clearScoreQrToken(ref: string | null | undefined) {
   }
 }
 
+export function clearScoreQrToken(ref: string | null | undefined) {
+  pruneScoreQrToken(ref);
+}
+
 /**
  * Moves a raw `token` query param into session (`qrRef`) or navigation state so the URL
  * no longer exposes the secret. Caller should `navigate({ search }, { replace, state })`.
@@ -97,6 +101,7 @@ export function buildConfirmScoreQrLocationAfterTokenPromotion(
 ): { search: string; navigationState?: { scoreQrToken: string } } {
   const nextParams = new URLSearchParams(currentSearchParams);
   nextParams.delete("token");
+  nextParams.delete("scoreQrToken");
 
   const storedRef = storeScoreQrToken(tokenFromQuery);
   if (storedRef) {

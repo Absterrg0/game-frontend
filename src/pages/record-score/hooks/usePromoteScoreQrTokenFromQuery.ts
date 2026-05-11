@@ -22,9 +22,12 @@ export function usePromoteScoreQrTokenFromQuery() {
       return;
     }
 
-    navigate("/record-score/validate", {
-      replace: true,
-      state: { scoreQrToken: tokenFromQuery },
-    });
+    navigate(
+      `/record-score/validate?scoreQrToken=${encodeURIComponent(tokenFromQuery)}`,
+      {
+        replace: true,
+        state: { scoreQrToken: tokenFromQuery },
+      },
+    );
   }, [navigate, tokenFromQuery]);
 }

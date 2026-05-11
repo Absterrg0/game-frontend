@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { TFunction } from "i18next";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -29,6 +29,7 @@ import { INDEPENDENT_MATCH_ID, type MatchOption } from "../types";
 import {
   buildConfirmScoreQrLocationAfterTokenPromotion,
   clearScoreQrToken,
+  pruneScoreQrToken,
   readScoreQrToken,
 } from "../../scoreQrTokenSession";
 
@@ -66,6 +67,8 @@ export function useEnterMatchScoreController({
 
   const mode = searchParams.get("mode") === "confirm" ? "confirm" : "generate";
   const confirmedTokenFromQuery = searchParams.get("token")?.trim() ?? "";
+  const confirmedTokenFromScoreQrQuery =
+    searchParams.get("scoreQrToken")?.trim() ?? "";
   const confirmedTokenRef = searchParams.get("qrRef")?.trim() ?? "";
   const confirmedTokenFromRef = readScoreQrToken(confirmedTokenRef);
   const confirmedTokenFromNavigationState =
@@ -77,6 +80,7 @@ export function useEnterMatchScoreController({
     mode === "confirm"
       ? confirmedTokenFromRef ||
         confirmedTokenFromNavigationState ||
+        confirmedTokenFromScoreQrQuery ||
         confirmedTokenFromQuery
       : "";
   const forcedMatchId = searchParams.get("matchId")?.trim() ?? "";
@@ -107,17 +111,21 @@ export function useEnterMatchScoreController({
   const resolvedConfirmTournamentId =
     forcedTournamentId || validatedRequest?.tournamentId || "";
 
-  // Strip `token` from the URL as soon as possible (secret should not live in the address bar).
+  // Strip raw token query params as soon as possible (secret should not live in the address bar).
   useLayoutEffect(() => {
-    if (mode !== "confirm" || !confirmedTokenFromQuery) return;
+    if (mode !== "confirm" || !confirmedToken) return;
 
     const params = new URLSearchParams(location.search);
     const rawTokenParam = params.get("token")?.trim() ?? "";
-    if (!rawTokenParam || rawTokenParam !== confirmedTokenFromQuery) return;
+    const rawScoreQrParam = params.get("scoreQrToken")?.trim() ?? "";
+    const hasRawTokenInUrl =
+      (rawTokenParam && rawTokenParam === confirmedToken) ||
+      (rawScoreQrParam && rawScoreQrParam === confirmedToken);
+    if (!hasRawTokenInUrl) return;
 
     const { search, navigationState } = buildConfirmScoreQrLocationAfterTokenPromotion(
       params,
-      confirmedTokenFromQuery,
+      confirmedToken,
     );
 
     navigate(
@@ -130,7 +138,13 @@ export function useEnterMatchScoreController({
         ? { replace: true, state: navigationState }
         : { replace: true },
     );
-  }, [confirmedTokenFromQuery, mode, navigate, location.pathname, location.search, location.hash]);
+  }, [confirmedToken, mode, navigate, location.pathname, location.search, location.hash]);
+
+  useEffect(() => {
+    if (mode !== "confirm" || !confirmedTokenRef) return;
+    if (readScoreQrToken(confirmedTokenRef)) return;
+    pruneScoreQrToken(confirmedTokenRef);
+  }, [mode, confirmedTokenRef]);
 
   const liveMatch = liveMatchQuery.data?.liveMatch ?? null;
   const inFlightMatches = useMemo(
@@ -650,9 +664,12 @@ export function useEnterMatchScoreController({
   };
 
   const shareOrCopyValidationUrl = async (url: string) => {
-    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+    const shareFn =
+      typeof navigator !== "undefined" ? navigator.share : undefined;
+
+    if (typeof shareFn === "function") {
       try {
-        await navigator.share({
+        await shareFn({
           title: t("recordScorePage.enter.validationLinkShareTitle"),
           text: t("recordScorePage.enter.validationLinkShareText"),
           url,
@@ -663,7 +680,15 @@ export function useEnterMatchScoreController({
         if (name === "AbortError") {
           return;
         }
-        // Fall through to clipboard (share unavailable or failed).
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success(
+            t("recordScorePage.enter.validationLinkCopiedFallback"),
+          );
+        } catch {
+          toast.error(t("recordScorePage.enter.validationLinkShareFailed"));
+        }
+        return;
       }
     }
 

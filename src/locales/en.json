@@ -905,6 +905,8 @@
       "validationLinkShareTitle": "Confirm this score on TB10",
       "validationLinkShareText": "Open this link to review and confirm the match score.",
       "validationLinkCopied": "Link copied. Send it to your opponent so they can confirm the score.",
+      "validationLinkCopiedFallback": "Sharing did not complete, but the link was copied. Send it to your opponent so they can confirm the score.",
+      "validationLinkShareFailed": "Could not share or copy the link. Check browser permissions and try again.",
       "validationLinkCopyFailed": "Could not copy the link. Check browser permissions or copy it from your device share sheet.",
       "qrExpiresAt": "QR expires at: {{expiresAt}}",
       "sessionLoading": "Loading saved QR for this match…",

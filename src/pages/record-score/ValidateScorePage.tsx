@@ -9,6 +9,7 @@ import { getErrorMessage, getHttpStatus } from "@/lib/errors";
 import { useValidateTournamentScoreQrConfirmContext } from "@/pages/tournaments/hooks/useTournamentScoreQr";
 import {
   clearScoreQrToken,
+  pruneScoreQrToken,
   readScoreQrToken,
   storeScoreQrToken,
 } from "./scoreQrTokenSession";
@@ -48,6 +49,8 @@ export default function ValidateScorePage() {
   const [searchParams] = useSearchParams();
 
   const tokenFromQuery = searchParams.get("token")?.trim() ?? "";
+  const tokenFromScoreQrQuery =
+    searchParams.get("scoreQrToken")?.trim() ?? "";
   const tokenRef = searchParams.get("qrRef")?.trim() ?? "";
   const tokenFromRef = readScoreQrToken(tokenRef);
   const tokenFromNavigationState =
@@ -63,9 +66,23 @@ export default function ValidateScorePage() {
 
   const effectiveToken = useMemo(
     () =>
-      tokenFromRef || tokenFromNavigationState || tokenFromQuery,
-    [tokenFromNavigationState, tokenFromQuery, tokenFromRef],
+      tokenFromRef ||
+      tokenFromNavigationState ||
+      tokenFromScoreQrQuery ||
+      tokenFromQuery,
+    [
+      tokenFromNavigationState,
+      tokenFromQuery,
+      tokenFromRef,
+      tokenFromScoreQrQuery,
+    ],
   );
+
+  useEffect(() => {
+    if (!tokenRef) return;
+    if (readScoreQrToken(tokenRef)) return;
+    pruneScoreQrToken(tokenRef);
+  }, [tokenRef]);
 
   const validateQuery = useValidateTournamentScoreQrConfirmContext(
     effectiveToken,
@@ -113,7 +130,12 @@ export default function ValidateScorePage() {
   const handleRetryValidation = () => {
     clearScoreQrToken(tokenRef);
     hasNavigatedRef.current = false;
-    if (tokenFromQuery || tokenRef || tokenFromNavigationState) {
+    if (
+      tokenFromQuery ||
+      tokenFromScoreQrQuery ||
+      tokenRef ||
+      tokenFromNavigationState
+    ) {
       navigate("/record-score/validate", { replace: true });
     }
   };
@@ -127,7 +149,7 @@ export default function ValidateScorePage() {
   };
 
   const handleOpenScanner = () => {
-    if (tokenFromQuery) return;
+    if (tokenFromQuery || tokenFromScoreQrQuery) return;
     const qs = searchParams.toString();
     navigate(`/record-score/validate/scan${qs ? `?${qs}` : ""}`);
   };
@@ -143,7 +165,7 @@ export default function ValidateScorePage() {
     const encodedTournamentId = encodeURIComponent(req.tournamentId ?? "");
     const tokenSearchPart = storedRef
       ? `qrRef=${encodeURIComponent(storedRef)}`
-      : "";
+      : `scoreQrToken=${encodeURIComponent(effectiveToken)}`;
     const targetSearch = [
       "mode=confirm",
       tokenSearchPart,
@@ -152,12 +174,10 @@ export default function ValidateScorePage() {
     ]
       .filter(Boolean)
       .join("&");
-    navigate(
-      `/record-score/manual?${targetSearch}`,
-      storedRef
-        ? { replace: true }
-        : { replace: true, state: { scoreQrToken: effectiveToken } },
-    );
+    navigate(`/record-score/manual?${targetSearch}`, {
+      replace: true,
+      ...(storedRef ? {} : { state: { scoreQrToken: effectiveToken } }),
+    });
   }, [
     canContinue,
     effectiveToken,

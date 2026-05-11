@@ -103,20 +103,35 @@ export function useScoreQrScanner({
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
 
-      const useNativeBarcode = "BarcodeDetector" in window;
+      type BarcodeDetectorConstructor =
+        (new (options?: {
+          formats?: string[];
+        }) => {
+          detect: (
+            source: HTMLVideoElement,
+          ) => Promise<Array<{ rawValue?: string }>>;
+        }) & {
+          getSupportedFormats?: () => Promise<string[]>;
+        };
 
-      if (useNativeBarcode) {
-        const DetectorCtor = (
-          window as unknown as {
-            BarcodeDetector: new (options?: {
-              formats?: string[];
-            }) => {
-              detect: (
-                source: HTMLVideoElement,
-              ) => Promise<Array<{ rawValue?: string }>>;
-            };
-          }
-        ).BarcodeDetector;
+      const useNativeBarcode = "BarcodeDetector" in window;
+      const DetectorCtor = useNativeBarcode
+        ? (window as unknown as { BarcodeDetector: BarcodeDetectorConstructor })
+            .BarcodeDetector
+        : null;
+
+      let nativeQrSupported = false;
+      if (DetectorCtor && typeof DetectorCtor.getSupportedFormats === "function") {
+        try {
+          const supported = await DetectorCtor.getSupportedFormats();
+          nativeQrSupported =
+            Array.isArray(supported) && supported.includes("qr_code");
+        } catch {
+          nativeQrSupported = false;
+        }
+      }
+
+      if (nativeQrSupported && DetectorCtor) {
         const detector = new DetectorCtor({ formats: ["qr_code"] });
 
         const scanLoop = async () => {

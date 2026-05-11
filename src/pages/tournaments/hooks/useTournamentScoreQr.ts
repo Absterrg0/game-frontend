@@ -19,6 +19,17 @@ import {
   type ValidateTournamentScoreQrResponse,
 } from "@/models/tournament/types";
 
+/** Opaque cache segment so query keys are not keyed by the raw token string. */
+function scoreQrTokenOpaqueKeyPart(token: string): string {
+  const s = token.trim();
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return `${s.length}:${(h >>> 0).toString(16)}`;
+}
+
 // Backward-compatible schema: tolerate missing `request` in validate response.
 const validateTournamentScoreQrResponseLooseSchema =
   validateTournamentScoreQrResponseSchema.or(
@@ -199,7 +210,7 @@ export function useValidateTournamentScoreQr(
       ...queryKeys.tournament.all,
       "score-qr",
       "validate",
-      normalized,
+      scoreQrTokenOpaqueKeyPart(normalized),
     ] as const,
     queryFn: () => validateTournamentScoreQr(normalized),
     enabled: enabled && normalized.length > 0,
@@ -219,7 +230,7 @@ export function useValidateTournamentScoreQrConfirmContext(
       ...queryKeys.tournament.all,
       "score-qr",
       "confirm-context",
-      normalized,
+      scoreQrTokenOpaqueKeyPart(normalized),
     ] as const,
     queryFn: () => validateTournamentScoreQrConfirmContext(normalized),
     enabled: enabled && normalized.length > 0,

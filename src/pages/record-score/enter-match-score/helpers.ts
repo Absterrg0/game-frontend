@@ -92,7 +92,6 @@ export function formatLiveMatchTeamLabel(
         t("tournaments.playerFallback", { index: index + 1 }),
       ),
     )
-    .filter(Boolean)
     .join(" / ");
 
   return formatted.trim() ? formatted : t("tournaments.opponentUnknown");
