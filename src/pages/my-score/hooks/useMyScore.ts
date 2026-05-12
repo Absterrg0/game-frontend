@@ -59,6 +59,5 @@ export function useMyScore(filters: MyScoreFilters, options?: UseMyScoreOptions)
 
   return {
     ...queryResult,
-    isPlaceholderData: queryResult.isPlaceholderData,
   };
 }

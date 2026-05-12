@@ -19,17 +19,8 @@ import type { TournamentLiveMatchItem } from "@/models/tournament/types";
 import { useTournamentLiveMatch, useTournamentMatches } from "@/pages/tournaments/hooks";
 import { parseIsoDateSafely } from "@/utils/date";
 
-const LIVE_MATCH_MODAL_EXCLUDED_PATHS = new Set([
-  "/record-score/manual",
-  "/record-score/validate",
-  "/record-score/validate/scan",
-]);
-
 function shouldSuppressLiveMatchModal(pathname: string): boolean {
-  if (pathname === "/record-score" || pathname.startsWith("/record-score/")) {
-    return true;
-  }
-  return LIVE_MATCH_MODAL_EXCLUDED_PATHS.has(pathname);
+  return pathname === "/record-score" || pathname.startsWith("/record-score/");
 }
 
 function playerDisplayName(

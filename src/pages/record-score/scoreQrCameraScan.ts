@@ -13,7 +13,8 @@ export function parseScoreQrTokenFromPayload(raw: string): string {
       const hashWithoutPound = asUrl.hash.startsWith("#") ? asUrl.hash.slice(1) : asUrl.hash;
       const hashPathAndQuery = hashWithoutPound.replace(/^\//, "");
       const queryStart = hashPathAndQuery.indexOf("?");
-      const queryString = queryStart === -1 ? "" : hashPathAndQuery.slice(queryStart + 1);
+      const queryString =
+        queryStart === -1 ? hashPathAndQuery : hashPathAndQuery.slice(queryStart + 1);
       return new URLSearchParams(queryString).get("token")?.trim() ?? "";
     } catch {
       return "";
