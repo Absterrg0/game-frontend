@@ -388,12 +388,16 @@ export function useEnterMatchScoreController({
 
   // Only redirect after a real confirm-context response: `data` undefined must not mean "invalid"
   // (TanStack Query v5 keeps confirm queries `pending` while disabled — avoid treating that as failure).
+  const validatedScoreForbidden =
+    validatedScoreQuery.isError &&
+    getHttpStatus(validatedScoreQuery.error) === 403;
+
   const shouldRedirectInvalidConfirm =
     mode === "confirm" &&
     !validatedScoreQuery.isPending &&
     (unreadableQrRefWithoutTokenFallback ||
       (Boolean(confirmedToken) &&
-        (validatedScoreQuery.isError ||
+        (validatedScoreForbidden ||
           validatedScoreQuery.data?.valid === false ||
           (validatedScoreQuery.data?.valid === true && !validatedRequest))));
 

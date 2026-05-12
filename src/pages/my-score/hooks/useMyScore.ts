@@ -19,7 +19,6 @@ interface MyScoreFilters {
 
 interface UseMyScoreOptions {
   enabled?: boolean;
-  onSuccess?: (data: MyScoreResponse) => void;
 }
 
 async function fetchMyScore(filters: MyScoreFilters): Promise<MyScoreResponse> {
@@ -33,25 +32,27 @@ async function fetchMyScore(filters: MyScoreFilters): Promise<MyScoreResponse> {
   });
 
   const parsed = myScoreResponseSchema.parse(response.data);
+  const resolvedLimit =
+    parsed.pagination.limit ??
+    parsed.filters.limit ??
+    myScoreDefaultPagination.limit ??
+    PAGE_SIZE;
+
   return {
     ...parsed,
     pagination: {
       ...myScoreDefaultPagination,
       ...parsed.pagination,
-      limit: PAGE_SIZE,
+      limit: resolvedLimit,
     },
   };
 }
 
 export function useMyScore(filters: MyScoreFilters, options?: UseMyScoreOptions) {
-  const { enabled = true, onSuccess } = options ?? {};
+  const { enabled = true } = options ?? {};
   const queryResult = useQuery({
     queryKey: queryKeys.user.myScore(filters),
-    queryFn: async () => {
-      const data = await fetchMyScore(filters);
-      onSuccess?.(data);
-      return data;
-    },
+    queryFn: () => fetchMyScore(filters),
     enabled,
     placeholderData: (previousData) => previousData,
   });

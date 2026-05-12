@@ -45,6 +45,7 @@ export function useScoreQrScanner({
     if (!scanBlocked) {
       detectedRef.current = false;
       cameraToastShownRef.current = false;
+      setHasDetectedToken(false);
     }
   }, [scanBlocked]);
 

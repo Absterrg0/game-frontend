@@ -51,15 +51,16 @@ export default function MyScorePage() {
     range,
     page,
     limit: PAGE_SIZE,
-  }, {
-    onSuccess: (data) => {
-      const maxPage = data.pagination.totalPages;
-      const clampedPage = maxPage === 0 ? 1 : Math.min(page, maxPage);
-      if (clampedPage !== page) {
-        setPage(clampedPage);
-      }
-    },
   });
+
+  useEffect(() => {
+    if (!myScoreQuery.isSuccess || !myScoreQuery.data) return;
+    const maxPage = myScoreQuery.data.pagination.totalPages;
+    const clampedPage = maxPage === 0 ? 1 : Math.min(page, maxPage);
+    if (clampedPage !== page) {
+      setPage(clampedPage);
+    }
+  }, [myScoreQuery.isSuccess, myScoreQuery.data?.pagination.totalPages, page]);
 
   const serverTotalPages = myScoreQuery.data?.pagination?.totalPages;
   const effectivePage =

@@ -549,7 +549,7 @@ export const backendTournamentDetailResponseSchema = z.object({
 });
 
 const tournamentInputBaseSchema = z.object({
-  sponsor: z.string().nullable(),
+  sponsor: z.string().nullable().optional(),
   date: z.string().nullable().optional(),
   startTime: z.string().nullable().optional(),
   endTime: z.string().nullable().optional(),

@@ -405,7 +405,7 @@ export function AppNavbar() {
           </Link>
         </div>
 
-        <div className="flex min-w-0 w-full max-w-full justify-center justify-self-center overflow-hidden px-1">
+        <div className="flex min-w-0 w-full max-w-full justify-center justify-self-center overflow-hidden px-1 lg:overflow-visible">
           <span className="block w-full min-w-0 truncate text-center text-[22px] font-semibold leading-none text-[#F4C95D] sm:text-[24px] lg:hidden">
             {pageTitle}
           </span>

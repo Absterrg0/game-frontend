@@ -1,5 +1,3 @@
-import type { MyScoreDateRange, MyScoreFilterMode } from "@/models/myScore/types";
-
-export const FILTER_MODES: MyScoreFilterMode[] = ["all", "singles", "doubles"];
-export const DATE_RANGES: MyScoreDateRange[] = ["last30Days", "allTime"];
+export const FILTER_MODES = ["all", "singles", "doubles"] as const;
+export const DATE_RANGES = ["last30Days", "allTime"] as const;
 export const PAGE_SIZE = 10;

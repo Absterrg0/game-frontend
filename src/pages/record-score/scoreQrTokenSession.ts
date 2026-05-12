@@ -54,20 +54,31 @@ export function readScoreQrToken(ref: string | null | undefined): string {
   const storage = safeSessionStorage();
   if (!storage) return "";
 
+  const key = scoreQrTokenKey(normalizedRef);
+
   try {
-    const raw = storage.getItem(scoreQrTokenKey(normalizedRef));
-    if (!raw) return "";
+    const raw = storage.getItem(key);
+    if (!raw) {
+      storage.removeItem(key);
+      return "";
+    }
 
     const parsed = JSON.parse(raw) as Partial<StoredScoreQrToken>;
     const token = typeof parsed.token === "string" ? parsed.token.trim() : "";
     const storedAt = typeof parsed.storedAt === "number" ? parsed.storedAt : 0;
 
     if (!token || Date.now() - storedAt > SCORE_QR_TOKEN_MAX_AGE_MS) {
+      storage.removeItem(key);
       return "";
     }
 
     return token;
   } catch {
+    try {
+      storage.removeItem(key);
+    } catch {
+      // Best-effort cleanup only.
+    }
     return "";
   }
 }

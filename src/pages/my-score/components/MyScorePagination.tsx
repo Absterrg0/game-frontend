@@ -43,7 +43,9 @@ export function MyScorePagination({
             <PaginationItem>
               <PaginationPrevious
                 disabled={currentPage <= 1}
-                onClick={() => onPageChange(currentPage - 1)}
+                onClick={() => {
+                  if (currentPage > 1) onPageChange(currentPage - 1);
+                }}
               />
             </PaginationItem>
 
@@ -72,7 +74,9 @@ export function MyScorePagination({
             <PaginationItem>
               <PaginationNext
                 disabled={currentPage >= totalPages}
-                onClick={() => onPageChange(currentPage + 1)}
+                onClick={() => {
+                  if (currentPage < totalPages) onPageChange(currentPage + 1);
+                }}
               />
             </PaginationItem>
           </PaginationContent>

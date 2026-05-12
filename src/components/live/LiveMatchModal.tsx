@@ -26,6 +26,9 @@ const LIVE_MATCH_MODAL_EXCLUDED_PATHS = new Set([
 ]);
 
 function shouldSuppressLiveMatchModal(pathname: string): boolean {
+  if (pathname === "/record-score" || pathname.startsWith("/record-score/")) {
+    return true;
+  }
   return LIVE_MATCH_MODAL_EXCLUDED_PATHS.has(pathname);
 }
 

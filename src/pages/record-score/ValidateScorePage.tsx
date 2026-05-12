@@ -18,9 +18,11 @@ import { useScanEnvironment } from "./hooks/useScanEnvironment";
 
 /** Animated loading spinner component */
 function LoadingSpinner() {
+  const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-center gap-2 py-3">
-      <div className="flex gap-1">
+    <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 py-3">
+      <span className="sr-only">{t("common.loading", "Loading...")}</span>
+      <div className="flex gap-1" aria-hidden="true">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
