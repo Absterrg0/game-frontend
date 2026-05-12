@@ -27,7 +27,9 @@ export interface ScoreSelectOption {
 export const SCORE_SELECT_EMPTY_VALUE = "__DASH__";
 
 const NORMAL_SET_NUMERIC_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7] as const;
-const TIE_BREAK_LOSER_SCORE_MAX = 97;
+// Keep options realistic and usable in dropdowns; very long deuce tie-breaks are
+// still accepted when already present as current values.
+const TIE_BREAK_LOSER_SCORE_MAX = 21;
 const TIE_BREAK_NUMERIC_OPTIONS = Array.from(
   { length: TIE_BREAK_LOSER_SCORE_MAX + 1 },
   (_, index) => index
@@ -378,6 +380,28 @@ export function visibleScoreEditorRows(
   }
 
   return rows.slice(0, maxSetCount);
+}
+
+/** Minimum columns shown at once on record-score (mirrors schedule UX; expands as sets complete). */
+const RECORD_SCORE_MIN_VISIBLE_SETS = 3;
+
+/**
+ * Progressive disclosure like {@link visibleScoreEditorRows}, but never fewer than
+ * {@link RECORD_SCORE_MIN_VISIBLE_SETS} (capped by format max) so longer formats
+ * do not start with a single narrow column.
+ */
+export function visibleScoreEditorRowsForRecordScore(
+  rows: ScoreEditorRow[],
+  playMode: TournamentPlayMode,
+): ScoreEditorRow[] {
+  const progressive = visibleScoreEditorRows(rows, playMode);
+  const maxSet = requiredSetCountForPlayMode(playMode);
+  if (maxSet <= 1) {
+    return progressive;
+  }
+  const minInitial = Math.min(RECORD_SCORE_MIN_VISIBLE_SETS, maxSet);
+  const targetLen = Math.min(maxSet, Math.max(progressive.length, minInitial));
+  return rows.slice(0, targetLen);
 }
 
 export interface ScorePayloadBuildResult {
