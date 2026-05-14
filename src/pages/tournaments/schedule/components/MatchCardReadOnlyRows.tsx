@@ -10,6 +10,7 @@ import { initialsFromName } from "../utils/avatarUtils";
 export type MatchCardReadOnlyRow = {
   name: string;
   side: "one" | "two";
+  profilePictureUrl?: string | null;
   nameSuffix?: ReactNode;
   subtext?: ReactNode;
 };
@@ -30,7 +31,7 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
   const hasCols = visibleColumns.length > 0;
   const scoreGridStyle = {
     "--score-column-count": Math.max(visibleColumns.length, 1),
-    gridTemplateColumns: `repeat(${Math.max(visibleColumns.length, 1)}, minmax(calc(3ch + 1rem), max-content))`,
+    gridTemplateColumns: `repeat(${Math.max(visibleColumns.length, 1)}, 2rem)`,
   } as CSSProperties;
 
   return (
@@ -47,7 +48,11 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
                 tone
               )}
             >
-              {initialsFromName(row.name)}
+              {row.profilePictureUrl ? (
+                <img src={row.profilePictureUrl} alt="" className="size-full rounded-full object-cover" />
+              ) : (
+                initialsFromName(row.name)
+              )}
             </span>
 
             {row.nameSuffix != null ? (
@@ -79,14 +84,15 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
           </div>
 
           {hasCols && (
-            <div className="inline-grid min-w-0 justify-self-end gap-1" style={scoreGridStyle}>
+            <div className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+              <div className="ml-auto inline-grid min-w-0 gap-1" style={scoreGridStyle}>
               {visibleColumns.map(({ column, index }) => {
                 const value = row.side === "one" ? column.playerOne : column.playerTwo;
                 return (
                   <span
                     key={`${matchId}-${row.side}-${index}`}
                     className={cn(
-                      "inline-flex h-8 min-w-[calc(3ch+1rem)] items-center justify-center rounded-[6px] px-1 text-[13px] font-semibold",
+                      "inline-flex h-8 w-8 min-h-8 min-w-8 max-w-8 shrink-0 items-center justify-center rounded-[6px] px-0 text-[13px] font-semibold",
                       scoreCellClass(column.winner, row.side, value != null)
                     )}
                   >
@@ -94,6 +100,7 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
                   </span>
                 );
               })}
+              </div>
             </div>
           )}
         </div>

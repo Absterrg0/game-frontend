@@ -81,6 +81,7 @@ function asPairPlayer(participant: ScheduleParticipantRow): TournamentSchedulePa
     id: participant.id,
     name: participant.name,
     alias: participant.alias,
+    profilePictureUrl: participant.profilePictureUrl,
     skillLabel: participant.skillLabel,
     rating: participant.rating,
   };

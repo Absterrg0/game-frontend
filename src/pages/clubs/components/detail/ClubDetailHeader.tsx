@@ -20,9 +20,13 @@ export function ClubDetailHeader({ club }: ClubDetailHeaderProps) {
 
       <div className="mb-5 flex items-start gap-4">
         <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-[#e8e6e3]">
-          <span className="text-2xl font-semibold text-[#9ca3af]">
-            {club.name.charAt(0)}
-          </span>
+          {club.logoUrl ? (
+            <img src={club.logoUrl} alt={club.name} className="size-full object-cover" />
+          ) : (
+            <span className="text-2xl font-semibold text-[#9ca3af]">
+              {club.name.charAt(0)}
+            </span>
+          )}
         </div>
         <div>
           <h1 className="text-2xl font-bold text-foreground">{club.name}</h1>
@@ -32,7 +36,11 @@ export function ClubDetailHeader({ club }: ClubDetailHeaderProps) {
         </div>
       </div>
 
-      <div className="mb-8 aspect-[21/6] w-full overflow-hidden rounded-xl bg-[#e5e7eb]" />
+      <div className="mb-8 aspect-[21/6] w-full overflow-hidden rounded-xl bg-[#e5e7eb]">
+        {club.logoUrl ? (
+          <img src={club.logoUrl} alt="" className="size-full object-cover" />
+        ) : null}
+      </div>
     </>
   );
 }

@@ -1,29 +1,35 @@
-import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useMemo, type CSSProperties } from "react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { IconChevronDown } from "@/icons/figma-icons";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import {
-  SCORE_SELECT_EMPTY_VALUE,
   getScoreSelectOptions,
+  scoreEditorSelectTriggerClassName,
   visibleScoreEditorRowsForRecordScore,
   type ScoreEditorRow,
   type ScoreEditorSide,
 } from "@/pages/tournaments/schedule/utils/matchScheduleScore";
+import {
+  avatarToneClass,
+  initialsFromName,
+} from "@/pages/tournaments/schedule/utils/avatarUtils";
 import type { AllowedPlayMode } from "../types";
-import { asSelectValue, getScorePickerLabel } from "../helpers";
-
-/** Width of each set score control (matches grid column). */
-const SET_COLUMN_REM = 5.375;
+import { asSelectValue } from "../helpers";
 
 type ScoreGridProps = {
   rows: ScoreEditorRow[];
   playMode: AllowedPlayMode;
   playerOneRowLabel: string;
   playerTwoRowLabel: string;
+  playerOneAvatarUrl?: string | null;
+  playerTwoAvatarUrl?: string | null;
+  /** Stable id for avatar placeholder gradients (e.g. selected match option id). */
+  avatarToneSeedPrefix: string;
   isConfirmLocked: boolean;
   openScorePickerKey: string | null;
   setOpenScorePickerKey: (key: string | null) => void;
@@ -41,6 +47,9 @@ export function ScoreGrid({
   playMode,
   playerOneRowLabel,
   playerTwoRowLabel,
+  playerOneAvatarUrl = null,
+  playerTwoAvatarUrl = null,
+  avatarToneSeedPrefix,
   isConfirmLocked,
   openScorePickerKey,
   setOpenScorePickerKey,
@@ -51,138 +60,212 @@ export function ScoreGrid({
     () => visibleScoreEditorRowsForRecordScore(rows, playMode),
     [rows, playMode],
   );
-
   const columnCount = Math.max(visibleRows.length, 1);
-  const columnTemplate = useMemo(
-    () => `repeat(${columnCount}, ${SET_COLUMN_REM}rem)`,
+  /** One visible set: keep score on the same row as name on narrow screens (no S-row stack). */
+  const isSingleSet = columnCount === 1;
+  /** Fixed-width columns (32px): matches read-only match cards; scrolls on very narrow viewports. */
+  const scoreGridStyle = useMemo(
+    () =>
+      ({
+        "--score-column-count": columnCount,
+        gridTemplateColumns: `repeat(${columnCount}, 2rem)`,
+      }) as CSSProperties,
     [columnCount],
   );
   const playerRows = useMemo(
     () =>
       [
-        ["playerOne", playerOneRowLabel],
-        ["playerTwo", playerTwoRowLabel],
-      ] as Array<[ScoreEditorSide, string]>,
-    [playerOneRowLabel, playerTwoRowLabel],
+        {
+          side: "playerOne" as const,
+          label: playerOneRowLabel,
+          avatarUrl: playerOneAvatarUrl,
+        },
+        {
+          side: "playerTwo" as const,
+          label: playerTwoRowLabel,
+          avatarUrl: playerTwoAvatarUrl,
+        },
+      ] as const,
+    [playerOneAvatarUrl, playerOneRowLabel, playerTwoAvatarUrl, playerTwoRowLabel],
   );
 
   return (
-    <div className="space-y-4">
-      {playerRows.map(([side, label]) => (
-        <div
-          key={side}
-          className="flex min-w-0 flex-col items-center gap-2 rounded-[12px] border border-[#010a04]/[0.08] bg-[#f4f6f5] p-3 sm:flex-row sm:items-center sm:gap-4 sm:border-0 sm:bg-transparent sm:p-0"
-        >
-          <p
-            className="min-w-0 max-w-full truncate text-center text-[13px] font-semibold leading-snug text-[#010a04] sm:w-[min(8.75rem,34vw)] sm:shrink-0 sm:text-right sm:text-[14px] sm:font-medium"
-            title={label}
+    <div className="min-w-0 w-full overflow-hidden rounded-[12px] border border-[#010a04]/[0.08] bg-[#f7f8f7]">
+      <div className="flex w-full min-w-0 flex-col">
+        <div className="hidden items-end justify-between gap-x-3 gap-y-2 border-b border-[#010a04]/[0.06] px-3 py-2.5 sm:flex">
+          <div className="flex min-w-0 shrink-0 items-end gap-2.5">
+            <span className="h-7 w-7 shrink-0" aria-hidden />
+            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#010a04]/45">
+              {t("recordScorePage.enter.sideLabel")}
+            </span>
+          </div>
+          <div className="max-w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+            <div className="ml-auto inline-grid min-w-0 gap-1" style={scoreGridStyle}>
+              {visibleRows.map((_, setIndex) => (
+                <span
+                  key={`set-label-${setIndex}`}
+                  className="min-w-0 text-center text-[9px] font-semibold uppercase tracking-[0.05em] text-[#010a04]/45"
+                >
+                  S{setIndex + 1}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+        {playerRows.map(({ side, label, avatarUrl }) => (
+          <div
+            key={side}
+            className={cn(
+              "border-b border-[#010a04]/[0.06] px-3 py-2.5 last:border-b-0",
+              isSingleSet
+                ? "flex flex-row items-center justify-between gap-x-3 gap-y-2"
+                : "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-x-3 sm:gap-y-2",
+            )}
           >
-            {label}
-          </p>
-
-          <div className="flex w-full min-w-0 justify-center sm:flex-1 sm:justify-start">
-            <div className="max-w-full overflow-x-auto pb-0.5 [-webkit-overflow-scrolling:touch]">
-              <div
-                className="inline-grid gap-x-2 gap-y-2 sm:gap-x-2 sm:gap-y-2"
-                style={{ gridTemplateColumns: columnTemplate }}
+            <div
+              className={cn(
+                "flex min-w-0 items-center gap-2.5",
+                isSingleSet ? "min-w-0 flex-1" : "w-full sm:w-auto sm:min-w-[80px] sm:flex-1",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-semibold text-[#010a04]/70",
+                  avatarToneClass(`${avatarToneSeedPrefix}-${side}`),
+                )}
               >
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt=""
+                    className="size-full rounded-full object-cover"
+                  />
+                ) : (
+                  initialsFromName(label)
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="min-w-0 truncate text-[13px] font-semibold leading-snug text-[#010a04] sm:text-[14px]"
+                  title={label}
+                >
+                  {label}
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "flex min-w-0 max-w-full",
+                isSingleSet
+                  ? "shrink-0 flex-row items-center justify-end sm:flex-1"
+                  : "w-full flex-col items-stretch sm:items-end sm:justify-end sm:flex-1",
+              )}
+            >
+              {!isSingleSet && side === "playerOne" ? (
+                <div className="mb-1 max-w-full overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch] sm:hidden">
+                  <div
+                    className="mx-auto inline-grid min-w-0 gap-1"
+                    style={scoreGridStyle}
+                  >
+                    {visibleRows.map((_, setIndex) => (
+                      <span
+                        key={`set-label-mobile-${setIndex}`}
+                        className="min-w-0 text-center text-[9px] font-semibold uppercase tracking-[0.05em] text-[#010a04]/45"
+                      >
+                        S{setIndex + 1}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+              <div
+                className={cn(
+                  "max-w-full min-w-0",
+                  isSingleSet
+                    ? ""
+                    : "overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]",
+                )}
+              >
+                <div
+                  className={cn(
+                    "inline-grid min-w-0 gap-1",
+                    isSingleSet ? "ml-auto sm:ml-auto sm:mr-0" : "mx-auto sm:ml-auto sm:mr-0",
+                  )}
+                  style={scoreGridStyle}
+                >
                 {visibleRows.map((row, setIndex) => {
+                  const value = asSelectValue(
+                    side === "playerOne" ? row.playerOne : row.playerTwo,
+                  );
                   const options = getScoreSelectOptions(
                     row,
                     side,
                     playMode,
                     setIndex,
                   );
-                  const value = asSelectValue(
-                    side === "playerOne" ? row.playerOne : row.playerTwo,
-                  );
-                  const oppositeRaw =
-                    side === "playerOne" ? row.playerTwo : row.playerOne;
-                  const isOppositeWalkover =
-                    oppositeRaw.trim().toUpperCase() === "WO";
-                  const shouldRenderDashPlaceholder =
-                    isOppositeWalkover && value === SCORE_SELECT_EMPTY_VALUE;
-                  const pickerKey = `${row.id}-${side}`;
+                  const pickerKey = `${row.id}-${side}-${setIndex}`;
 
                   return (
-                    <div
+                    <Select
                       key={pickerKey}
-                      className="shrink-0"
-                      style={{ width: `${SET_COLUMN_REM}rem` }}
+                      value={value}
+                      open={
+                        isConfirmLocked ? false : openScorePickerKey === pickerKey
+                      }
+                      onOpenChange={(nextOpen) => {
+                        if (isConfirmLocked) return;
+                        setOpenScorePickerKey(nextOpen ? pickerKey : null);
+                      }}
+                      onValueChange={(nextValue) =>
+                        onScoreChange(row.id, side, setIndex, nextValue)
+                      }
                     >
-                      <Popover
-                        open={
-                          isConfirmLocked
-                            ? false
-                            : openScorePickerKey === pickerKey
-                        }
-                        onOpenChange={(nextOpen) => {
-                          if (isConfirmLocked) return;
-                          setOpenScorePickerKey(nextOpen ? pickerKey : null);
-                        }}
+                      <SelectTrigger
+                        hideIcon
+                        disabled={isConfirmLocked}
+                        aria-label={t("tournaments.scoreInputLabel", {
+                          playerName: label,
+                          setNumber: setIndex + 1,
+                        })}
+                        className={cn(
+                          scoreEditorSelectTriggerClassName(
+                            row,
+                            setIndex,
+                            playMode,
+                            side === "playerOne" ? "one" : "two",
+                          ),
+                          "data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground",
+                        )}
                       >
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            disabled={isConfirmLocked || shouldRenderDashPlaceholder}
-                            className="h-[44px] w-full min-w-0 justify-between rounded-[10px] border-[#010a04]/10 bg-[#f2f4f3] px-2 text-[14px] font-normal tabular-nums text-[#010a04] hover:bg-[#edf0ef] sm:h-[34px] sm:rounded-[8px] sm:px-2 sm:text-[13px]"
+                        <SelectValue placeholder="–" />
+                      </SelectTrigger>
+                      <SelectContent
+                        position="popper"
+                        align="center"
+                        sideOffset={6}
+                        collisionPadding={12}
+                        showScrollButtons={false}
+                        className="max-h-64"
+                      >
+                        {options.map((opt) => (
+                          <SelectItem
+                            key={`${row.id}-${side}-${setIndex}-${opt.value}`}
+                            value={opt.value}
                           >
-                            <span className="truncate">
-                              {shouldRenderDashPlaceholder
-                                ? "-"
-                                : getScorePickerLabel(value, setIndex, t)}
-                            </span>
-                            <IconChevronDown
-                              size={14}
-                              className="ml-1 shrink-0 text-[#010a04]/55"
-                            />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          align="start"
-                          sideOffset={6}
-                          className="w-[var(--radix-popover-trigger-width)] min-w-[var(--radix-popover-trigger-width)] rounded-[10px] border-[#010a04]/10 p-1"
-                        >
-                          <div className="thin-scrollbar max-h-44 overflow-y-auto rounded-[8px] border border-[#010a04]/8">
-                            {options
-                              .filter(
-                                (option) =>
-                                  option.value !== SCORE_SELECT_EMPTY_VALUE,
-                              )
-                              .map((option) => (
-                                <button
-                                  key={`${row.id}-${side}-${option.value}`}
-                                  type="button"
-                                  onClick={() => {
-                                    onScoreChange(
-                                      row.id,
-                                      side,
-                                      setIndex,
-                                      option.value,
-                                    );
-                                    setOpenScorePickerKey(null);
-                                  }}
-                                  className={`block w-full border-b border-[#010a04]/8 px-2.5 py-1.5 text-left text-[12px] last:border-b-0 ${
-                                    option.value === value
-                                      ? "bg-[#067429]/10 font-medium text-[#067429]"
-                                      : "text-[#010a04] hover:bg-[#010a04]/[0.035]"
-                                  }`}
-                                >
-                                  {option.label}
-                                </button>
-                              ))}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   );
                 })}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

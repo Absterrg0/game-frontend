@@ -43,6 +43,7 @@ function asPairPlayer(participant: TournamentParticipant): TournamentSchedulePai
     id: participant.id,
     name: participant.name,
     alias: participant.alias,
+    profilePictureUrl: participant.profilePictureUrl,
     skillLabel: "",
     rating: 0,
   };
@@ -150,7 +151,11 @@ function getPlayersContent({
           const inner = (
             <>
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[20px] border-[1.5px] border-[#010a04] bg-[#dddddd]/60 sm:h-10 sm:w-10">
-                <UserCircle2 size={30} className="text-[#010a04]" />
+                {participant.profilePictureUrl ? (
+                  <img src={participant.profilePictureUrl} alt="" className="size-full rounded-[20px] object-cover" />
+                ) : (
+                  <UserCircle2 size={30} className="text-[#010a04]" />
+                )}
               </div>
               <div className="flex min-w-0 flex-col gap-1.5">
                 <div className="flex items-center gap-2">

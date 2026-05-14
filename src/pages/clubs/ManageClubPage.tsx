@@ -112,6 +112,7 @@ export default function ManageClubPage() {
       return {
         id: club.id,
         name: club.name,
+        logoUrl: club.logoUrl,
         membersCount: club.membersCount,
         eventsCount: club.eventsCount,
         courtCount: club.courtCount,

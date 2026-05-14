@@ -17,6 +17,7 @@ const COURT_PLACEMENTS: CourtPlacement[] = ["indoor", "outdoor"];
 
 interface ClubFormState {
   name: string;
+  logoUrl: string;
   website: string;
   bookingSystemUrl: string;
   address: string;
@@ -80,6 +81,7 @@ export function useAddEditClubForm({ editClubId, onOpenChange }: UseAddEditClubF
     if (isEdit && clubData) {
       return {
         name: clubData.club.name,
+        logoUrl: clubData.club.logoUrl ?? "",
         website: clubData.club.website ?? "",
         bookingSystemUrl: clubData.club.bookingSystemUrl ?? "",
         address: clubData.club.address,
@@ -100,6 +102,7 @@ export function useAddEditClubForm({ editClubId, onOpenChange }: UseAddEditClubF
 
     return {
       name: "",
+      logoUrl: "",
       website: "",
       bookingSystemUrl: "",
       address: "",
@@ -193,6 +196,7 @@ export function useAddEditClubForm({ editClubId, onOpenChange }: UseAddEditClubF
           clubId: editClubId,
           data: {
             name: currentForm.name.trim(),
+            logoUrl: currentForm.logoUrl.trim() || null,
             website: currentForm.website.trim() || null,
             bookingSystemUrl: currentForm.bookingSystemUrl.trim() || null,
             address: currentForm.address.trim(),
@@ -204,6 +208,7 @@ export function useAddEditClubForm({ editClubId, onOpenChange }: UseAddEditClubF
       } else {
         await createClub.mutateAsync({
           name: currentForm.name.trim(),
+          logoUrl: currentForm.logoUrl.trim() || null,
           website: currentForm.website.trim() || null,
           bookingSystemUrl: currentForm.bookingSystemUrl.trim() || null,
           address: currentForm.address.trim(),
@@ -231,6 +236,7 @@ export function useAddEditClubForm({ editClubId, onOpenChange }: UseAddEditClubF
     loadingClub,
     isPending,
     currentForm,
+    updateClub,
     setField,
     handleAddCourt,
     handleRemoveCourt,

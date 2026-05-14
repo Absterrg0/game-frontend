@@ -5,6 +5,7 @@ import { queryKeys } from "@/lib/api/queryKeys";
 export interface AdminClub {
   id: string;
   name: string;
+  logoUrl: string | null;
   courtCount: number;
   membersCount: number;
   eventsCount: number;

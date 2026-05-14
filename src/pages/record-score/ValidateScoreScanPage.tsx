@@ -1,7 +1,7 @@
 import { Scanner } from "@yudiel/react-qr-scanner";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import ScannerIcon from "@/assets/icons/figma/vuesax/bold/scanner.svg?react";
 import { IconChevronLeft } from "@/icons/figma-icons";
 import { usePromoteScoreQrTokenFromQuery } from "./hooks/usePromoteScoreQrTokenFromQuery";
@@ -39,7 +39,6 @@ function ScanPageSpinner() {
 export default function ValidateScoreScanPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
   const tokenFromQuery = searchParams.get("token")?.trim() ?? "";
 
@@ -71,10 +70,11 @@ export default function ValidateScoreScanPage() {
   });
 
   const onBack = () => {
-    const params = new URLSearchParams(location.search);
-    params.delete("token");
-    const qs = params.toString();
-    navigate(`/record-score/validate${qs ? `?${qs}` : ""}`);
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+    navigate("/record-score", { replace: true });
   };
 
   const backLabel = t(

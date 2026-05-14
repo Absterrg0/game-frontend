@@ -186,7 +186,11 @@ function SortableParticipantsMobileRow({
             participant
           )} text-[11px] font-semibold text-[#010a04]/80`}
         >
-          {initialsFromName(displayName)}
+          {participant.profilePictureUrl ? (
+            <img src={participant.profilePictureUrl} alt="" className="size-full rounded-full object-cover" />
+          ) : (
+            initialsFromName(displayName)
+          )}
         </span>
         <div className="min-w-0">
           <PlayerNameText name={displayName} className="text-[14px] font-medium text-[#010a04]" focusable />
@@ -254,7 +258,11 @@ function SortableParticipantsDesktopRow({
               participant
             )} text-[9px] font-semibold text-[#010a04]/80`}
           >
-            {initialsFromName(displayName)}
+            {participant.profilePictureUrl ? (
+              <img src={participant.profilePictureUrl} alt="" className="size-full rounded-full object-cover" />
+            ) : (
+              initialsFromName(displayName)
+            )}
           </span>
           <PlayerNameText name={displayName} className="text-[14px] text-[#010a04]" focusable />
         </div>
@@ -355,7 +363,11 @@ export function ScheduleParticipantsTable({
                         firstPlayer ?? { id: "unknown", alias: null, name: null }
                       )}`}
                     >
-                      <UserCircle2 size={24} className="text-white/80" />
+                      {firstPlayer?.profilePictureUrl ? (
+                        <img src={firstPlayer.profilePictureUrl} alt="" className="size-full rounded-full object-cover" />
+                      ) : (
+                        <UserCircle2 size={24} className="text-white/80" />
+                      )}
                     </div>
                     <span className="min-w-0 leading-tight">
                       <span className="block truncate text-[14px] font-medium text-[#010a04]">
@@ -370,7 +382,11 @@ export function ScheduleParticipantsTable({
                         secondPlayer ?? { id: "unknown", alias: null, name: null }
                       )}`}
                     >
-                      <UserCircle2 size={24} className="text-white/80" />
+                      {secondPlayer?.profilePictureUrl ? (
+                        <img src={secondPlayer.profilePictureUrl} alt="" className="size-full rounded-full object-cover" />
+                      ) : (
+                        <UserCircle2 size={24} className="text-white/80" />
+                      )}
                     </div>
                     <span className="min-w-0 leading-tight">
                       <span className="block truncate text-[14px] font-medium text-[#010a04]">

@@ -2,7 +2,16 @@ import { useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { PLAY_MODES } from "@/constants/tournament";
 import { useAuth } from "@/pages/auth/hooks";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { TournamentPlayMode } from "@/models/tournament/types";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +28,7 @@ import {
   playModeTranslationKey,
 } from "./enter-match-score/helpers";
 import { useEnterMatchScoreController } from "./enter-match-score/hooks/useEnterMatchScoreController";
+import { cn } from "@/lib/utils";
 
 export default function EnterMatchScorePage() {
   const { t, i18n } = useTranslation();
@@ -41,24 +51,27 @@ export default function EnterMatchScorePage() {
     confirmRedirectReason,
     onGoBack,
     onMatchChange,
+    onIndependentPlayModeChange,
     effectiveRows,
     onScoreChange,
     expiresAtLabel,
-    hasUnsavedQrChanges,
     activeQrDataUrl,
     shouldShowLoadingSkeleton,
     isConfirmSubmitting,
     canSubmitConfirmedScore,
     onSubmitConfirmedScore,
     onGenerateOrOpenValidationLink,
-    isPrimaryGenerateDisabled,
     isGenerating,
     hasValidationLink,
+    isPrimaryGenerateDisabled,
   } = useEnterMatchScoreController({
     t,
     language: i18n.language,
     userId: user?.id ?? null,
   });
+
+  const showIndependentScoringPreset =
+    mode === "generate" && effectiveSelectedOption.kind === "independent";
 
   const invalidConfirmToastShownRef = useRef(false);
   useEffect(() => {
@@ -110,9 +123,9 @@ export default function EnterMatchScorePage() {
               </div>
 
               <section className="mx-auto mt-3 w-full max-w-[784px] rounded-[12px] border border-[rgba(1,10,4,0.08)] bg-white p-4 shadow-[0_3px_7.5px_rgba(0,0,0,0.06)] sm:p-[18px]">
-                <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="h-7 w-52 animate-skeleton-soft rounded bg-[#010a04]/10 sm:h-8 sm:w-64" />
-                  <div className="h-4 w-36 animate-skeleton-soft rounded bg-[#010a04]/8" />
+                <div className="mt-2 flex min-w-0 flex-row flex-wrap items-center gap-2">
+                  <div className="h-7 w-52 shrink-0 animate-skeleton-soft rounded bg-[#010a04]/10 sm:h-8 sm:w-64" />
+                  <div className="h-7 w-36 shrink-0 animate-skeleton-soft rounded-full bg-[#010a04]/8 sm:h-8" />
                 </div>
 
                 <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start">
@@ -183,35 +196,73 @@ export default function EnterMatchScorePage() {
               </div>
 
               <div className="mt-5 flex flex-col gap-5 border-t border-[#010a04]/[0.06] pt-5 sm:mt-4 sm:flex-row sm:items-start sm:gap-6 sm:border-t-0 sm:pt-0">
-                <div className="relative flex shrink-0 justify-center sm:justify-start">
-                  <QrPreview
-                    dataUrl={activeQrDataUrl}
-                    onOpenLarge={() => setIsQrDialogOpen(true)}
-                    t={t}
-                    emptyText={
-                      mode === "confirm"
-                        ? t(
-                            "recordScorePage.enter.qrPreviewValidateFallback",
-                            "Validate score",
-                          )
-                        : undefined
-                    }
-                  />
-                </div>
+                {activeQrDataUrl ? (
+                  <div className="relative flex shrink-0 justify-center sm:justify-start">
+                    <QrPreview
+                      dataUrl={activeQrDataUrl}
+                      onOpenLarge={() => setIsQrDialogOpen(true)}
+                      t={t}
+                    />
+                  </div>
+                ) : null}
 
                 <div className="min-w-0 flex-1 space-y-4">
                   <div className="space-y-2.5">
-                    <MatchSelector
-                      isConfirmLocked={isConfirmLocked}
-                      isMatchPopoverOpen={isMatchPopoverOpen}
-                      setIsMatchPopoverOpen={setIsMatchPopoverOpen}
-                      matchSearch={matchSearch}
-                      setMatchSearch={setMatchSearch}
-                      filteredMatchOptions={filteredMatchOptions}
-                      effectiveSelectedOption={effectiveSelectedOption}
-                      onMatchChange={onMatchChange}
-                      t={t}
-                    />
+                    <div
+                      className={cn(
+                        "grid min-w-0 grid-cols-1 gap-2.5 sm:items-end",
+                        showIndependentScoringPreset &&
+                          "sm:grid-cols-[minmax(0,1fr)_190px]",
+                      )}
+                    >
+                      <div className="min-w-0">
+                        <MatchSelector
+                          isConfirmLocked={isConfirmLocked}
+                          isMatchPopoverOpen={isMatchPopoverOpen}
+                          setIsMatchPopoverOpen={setIsMatchPopoverOpen}
+                          matchSearch={matchSearch}
+                          setMatchSearch={setMatchSearch}
+                          filteredMatchOptions={filteredMatchOptions}
+                          effectiveSelectedOption={effectiveSelectedOption}
+                          onMatchChange={onMatchChange}
+                          t={t}
+                        />
+                      </div>
+
+                      {showIndependentScoringPreset ? (
+                        <div className="min-w-0 w-full space-y-1.5">
+                          <label
+                            htmlFor="independent-play-mode"
+                            className="text-[12px] font-medium text-[#010a04]/65"
+                          >
+                            {t("recordScorePage.enter.matchTypeLabel")}
+                          </label>
+                          <Select
+                            value={effectiveSelectedOption.playMode}
+                            onValueChange={(value: TournamentPlayMode) =>
+                              onIndependentPlayModeChange(value)
+                            }
+                          >
+                            <SelectTrigger
+                              id="independent-play-mode"
+                              className="h-9 rounded-[10px] border-[#010a04]/[0.12] bg-white text-[13px] font-medium text-[#010a04] shadow-none"
+                            >
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PLAY_MODES.map((playMode) => (
+                                <SelectItem
+                                  key={playMode.value}
+                                  value={playMode.value}
+                                >
+                                  {t(playMode.labelKey)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      ) : null}
+                    </div>
 
                     <p className="text-[12px] leading-relaxed text-[#010a04]/55 sm:leading-[1.35]">
                       {effectiveSelectedOption.kind === "independent"
@@ -228,19 +279,14 @@ export default function EnterMatchScorePage() {
                     ) : null}
                   </div>
 
-                  <div className="relative min-h-[120px] pt-1">
-                    <div className="space-y-4 transition-opacity">
-                      <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-baseline sm:justify-between sm:gap-x-4">
-                        <h2 className="min-w-0 text-base font-semibold leading-tight text-[#010a04] sm:text-2xl">
+                  <div className="relative pt-1">
+                    <div className="space-y-3 transition-opacity">
+                      <div className="flex min-w-0 flex-row flex-wrap items-center gap-2">
+                        <h2 className="min-w-0 text-[20px] font-semibold leading-tight text-[#010a04] sm:text-2xl">
                           {t("recordScorePage.enter.matchScores")}
-                          {mode === "generate" && hasUnsavedQrChanges ? (
-                            <span className="ml-2 text-[12px] font-medium text-[#010a04]/55 sm:text-[13px]">
-                              ({t("recordScorePage.enter.unsavedChangesInline", "unsaved changes")})
-                            </span>
-                          ) : null}
                         </h2>
                         <p
-                          className="min-w-0 max-w-full truncate text-[13px] font-semibold leading-snug text-[#010a04] sm:text-[14px]"
+                          className="w-fit max-w-full shrink-0 whitespace-normal rounded-full bg-[#010a04]/[0.04] px-2.5 py-1 text-center text-[12px] font-semibold leading-snug text-[#010a04]/70 sm:text-[13px]"
                           title={matchMetaLabel}
                         >
                           {matchMetaLabel}
@@ -252,6 +298,9 @@ export default function EnterMatchScorePage() {
                         playMode={effectiveSelectedOption.playMode}
                         playerOneRowLabel={effectiveSelectedOption.playerOneRowLabel}
                         playerTwoRowLabel={effectiveSelectedOption.playerTwoRowLabel}
+                        playerOneAvatarUrl={effectiveSelectedOption.playerOneAvatarUrl}
+                        playerTwoAvatarUrl={effectiveSelectedOption.playerTwoAvatarUrl}
+                        avatarToneSeedPrefix={effectiveSelectedOption.id}
                         isConfirmLocked={isConfirmLocked}
                         openScorePickerKey={openScorePickerKey}
                         setOpenScorePickerKey={setOpenScorePickerKey}
@@ -272,7 +321,6 @@ export default function EnterMatchScorePage() {
                 isPrimaryGenerateDisabled={isPrimaryGenerateDisabled}
                 isGenerating={isGenerating}
                 hasValidationLink={hasValidationLink}
-                hasUnsavedQrChanges={hasUnsavedQrChanges}
                 t={(key: string) => t(key)}
               />
             </section>

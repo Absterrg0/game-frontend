@@ -87,6 +87,7 @@ export const tournamentParticipantSchema = z.object({
   id: z.string(),
   name: wireJsonNullableString(),
   alias: wireJsonNullableString(),
+  profilePictureUrl: wireJsonNullableString(),
 });
 
 export const tournamentProgressSchema = z.object({
@@ -116,6 +117,7 @@ export const tournamentMatchPlayerSchema = tournamentParticipantSchema
     id: true,
     name: true,
     alias: true,
+    profilePictureUrl: true,
   })
   .extend({
     /**
@@ -360,6 +362,7 @@ export const tournamentScheduleParticipantSchema = z.object({
   id: z.string(),
   name: wireJsonNullableString(),
   alias: wireJsonNullableString(),
+  profilePictureUrl: wireJsonNullableString(),
   skillLabel: z.string(),
   rating: z.number(),
   rd: z.number().optional(),
@@ -414,6 +417,7 @@ export const tournamentSchedulePairPlayerSchema = z.object({
   id: z.string(),
   name: wireJsonNullableString(),
   alias: wireJsonNullableString(),
+  profilePictureUrl: wireJsonNullableString(),
   skillLabel: z.string(),
   rating: z.number(),
 });

@@ -31,7 +31,7 @@ type ParticipationSummary =
 
 type ParticipationActorMeta = {
   mode: "join" | "leave";
-  actor: Pick<AuthUser, "id" | "name" | "alias"> | null;
+  actor: Pick<AuthUser, "id" | "name" | "alias" | "profilePictureUrl"> | null;
 };
 
 function resolveParticipantsAfterParticipation(
@@ -56,6 +56,7 @@ function resolveParticipantsAfterParticipation(
         id: actorId,
         name: meta.actor?.name ?? null,
         alias: meta.actor?.alias ?? null,
+        profilePictureUrl: meta.actor?.profilePictureUrl ?? null,
       },
     ];
   }

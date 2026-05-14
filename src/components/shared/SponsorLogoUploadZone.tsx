@@ -9,6 +9,9 @@ interface SponsorLogoUploadZoneProps {
 	disabled?: boolean;
 	label?: string;
 	hint?: string;
+	successMessage?: string;
+	uploadFailedMessage?: string;
+	invalidFileTypeMessage?: string;
 }
 
 const MAX_FILE_SIZE_MB = 2;
@@ -29,6 +32,9 @@ export function SponsorLogoUploadZone({
 	disabled = false,
 	label,
 	hint,
+	successMessage,
+	uploadFailedMessage,
+	invalidFileTypeMessage,
 }: SponsorLogoUploadZoneProps) {
 	const { t } = useTranslation();
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -42,7 +48,7 @@ export function SponsorLogoUploadZone({
 		if (!file) return;
 
 		if (!ACCEPTED_IMAGE_MIME_SET.has(file.type)) {
-			toast.error(t('sponsors.logoUpload.invalidFileType'));
+			toast.error(invalidFileTypeMessage ?? t('sponsors.logoUpload.invalidFileType'));
 			return;
 		}
 
@@ -63,9 +69,9 @@ export function SponsorLogoUploadZone({
 			});
 
 			onLogoUrlChange(base64);
-			toast.success(t('sponsors.logoUpload.toastSuccess'));
+			toast.success(successMessage ?? t('sponsors.logoUpload.toastSuccess'));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : t('sponsors.logoUpload.toastUploadFailed');
+			const message = error instanceof Error ? error.message : uploadFailedMessage ?? t('sponsors.logoUpload.toastUploadFailed');
 			toast.error(message);
 		} finally {
 			setIsProcessingFile(false);

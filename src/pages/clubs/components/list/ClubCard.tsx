@@ -14,9 +14,13 @@ export function ClubCard({ club }: ClubCardProps) {
     <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-shadow hover:shadow-md">
       <div className="flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-t-xl bg-[#f3f4f6]">
         <div className="flex h-full w-full items-center justify-center rounded-t-xl bg-[#e5e7eb]">
-          <span className="text-2xl font-semibold text-[#9ca3af]">
-            {club.name.charAt(0) || "?"}
-          </span>
+          {club.logoUrl ? (
+            <img src={club.logoUrl} alt={club.name} className="size-full object-cover" />
+          ) : (
+            <span className="text-2xl font-semibold text-[#9ca3af]">
+              {club.name.charAt(0) || "?"}
+            </span>
+          )}
         </div>
       </div>
       <div className="flex flex-1 flex-col p-4">

@@ -21,6 +21,11 @@ import {
   type ValidateTournamentScoreQrResponse,
 } from "@/models/tournament/types";
 
+type GenerateIndependentScoreQrInput = RecordTournamentMatchScoreInput & {
+  independentMatchType?: TournamentScheduleMode;
+  independentPlayMode?: TournamentPlayMode;
+};
+
 /** Opaque cache segment so query keys are not keyed by the raw token string. */
 function scoreQrTokenOpaqueKeyPart(token: string): string {
   const s = token.trim();
@@ -62,9 +67,18 @@ async function generateTournamentScoreQr(
 }
 
 async function generateIndependentScoreQr(
-  input: RecordTournamentMatchScoreInput,
+  input: GenerateIndependentScoreQrInput,
 ): Promise<GenerateTournamentScoreQrResponse> {
-  const payload = recordTournamentMatchScoreInputSchema.parse(input);
+  const scorePayload = recordTournamentMatchScoreInputSchema.parse(input);
+  const payload = {
+    ...scorePayload,
+    ...(input.independentMatchType
+      ? { independentMatchType: input.independentMatchType }
+      : {}),
+    ...(input.independentPlayMode
+      ? { independentPlayMode: input.independentPlayMode }
+      : {}),
+  };
 
   const response = await api.post(
     "/api/tournaments/score-qr/independent",
@@ -192,7 +206,7 @@ export function useGenerateIndependentScoreQr() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (input: RecordTournamentMatchScoreInput) =>
+    mutationFn: (input: GenerateIndependentScoreQrInput) =>
       generateIndependentScoreQr(input),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
