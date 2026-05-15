@@ -73,9 +73,15 @@ export function AddEditClubModal({
         reader.onerror = () => reject(new Error(t("settings.adminClubsLogoUploadError")));
         reader.readAsDataURL(file);
       });
+      const previousLogo = currentForm.logoUrl;
       setField("logoUrl", base64);
       if (isEdit && editClubId) {
-        await updateClub.mutateAsync({ clubId: editClubId, data: { logoUrl: base64 } });
+        try {
+          await updateClub.mutateAsync({ clubId: editClubId, data: { logoUrl: base64 } });
+        } catch (error) {
+          setField("logoUrl", previousLogo);
+          throw error;
+        }
       }
       toast.success(t("settings.adminClubsLogoUploadSuccess"));
     } catch (error) {

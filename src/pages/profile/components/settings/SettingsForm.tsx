@@ -94,6 +94,7 @@ export function SettingsForm({ user }: { user: AuthUser }) {
     }
 
     setIsProcessingImage(true);
+    const prev = inputs.profilePictureUrl;
     try {
       const base64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -102,14 +103,16 @@ export function SettingsForm({ user }: { user: AuthUser }) {
         reader.readAsDataURL(file);
       });
 
-      setInputs((prev) => ({ ...prev, profilePictureUrl: base64 }));
+      setInputs((prevInputs) => ({ ...prevInputs, profilePictureUrl: base64 }));
       const result = await updateProfile({ profilePictureUrl: base64 });
       if (!result.success) {
+        setInputs((prevInputs) => ({ ...prevInputs, profilePictureUrl: prev }));
         toast.error(result.message);
         return;
       }
       toast.success(t("settings.profilePictureUploadSuccess"));
     } catch (error) {
+      setInputs((prevInputs) => ({ ...prevInputs, profilePictureUrl: prev }));
       toast.error(error instanceof Error ? error.message : t("settings.profilePictureUploadError"));
     } finally {
       setIsProcessingImage(false);

@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
   formatScoreCellValue,
@@ -21,6 +21,27 @@ type Props = {
   columns: ScoreColumn[];
   rows: [MatchCardReadOnlyRow, MatchCardReadOnlyRow];
 };
+
+function RowAvatar({
+  profilePictureUrl,
+  displayName,
+}: {
+  profilePictureUrl?: string | null;
+  displayName: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  if (profilePictureUrl && !imageFailed) {
+    return (
+      <img
+        src={profilePictureUrl}
+        alt={`Avatar for ${displayName}`}
+        className="size-full rounded-full object-cover"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+  return initialsFromName(displayName);
+}
 
 export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
   const visibleColumns = columns
@@ -48,15 +69,7 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
                 tone
               )}
             >
-              {row.profilePictureUrl ? (
-                <img
-                  src={row.profilePictureUrl}
-                  alt={`Avatar for ${row.name}`}
-                  className="size-full rounded-full object-cover"
-                />
-              ) : (
-                initialsFromName(row.name)
-              )}
+              <RowAvatar profilePictureUrl={row.profilePictureUrl} displayName={row.name} />
             </span>
 
             {row.nameSuffix != null ? (

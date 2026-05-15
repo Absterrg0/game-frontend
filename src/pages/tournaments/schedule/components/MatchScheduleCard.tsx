@@ -1,5 +1,5 @@
 import type { Locale } from "date-fns";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +22,37 @@ import {
 import { teamSideDisplayName } from "@/pages/tournaments/schedule/utils/matchTeamDisplay";
 import { teamEloRating } from "@/pages/tournaments/components/details-tabs/matches-tab/ratingSummary";
 import { AVATAR_TONES, hashSeed, initialsFromName } from "@/pages/tournaments/schedule/utils/avatarUtils";
+
+function EditorAvatar({
+  avatarUrl,
+  displayName,
+  tone,
+}: {
+  avatarUrl: string | null;
+  displayName: string;
+  tone: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <span
+      className={cn(
+        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-semibold text-[#010a04]/70",
+        tone,
+      )}
+    >
+      {avatarUrl && !imageFailed ? (
+        <img
+          src={avatarUrl}
+          alt={`Avatar of ${displayName}`}
+          className="size-full rounded-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        initialsFromName(displayName)
+      )}
+    </span>
+  );
+}
 
 export interface MatchScheduleCardProps {
   match: TournamentScheduleMatch;
@@ -168,22 +199,7 @@ export function MatchScheduleCard({
                   className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-[10px] px-2.5 py-2"
                 >
                   <div className="flex min-w-[80px] flex-1 items-center gap-2.5">
-                    <span
-                      className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-semibold text-[#010a04]/70",
-                        tone
-                      )}
-                    >
-                      {avatarUrl ? (
-                        <img
-                          src={avatarUrl}
-                          alt={`Avatar of ${name}`}
-                          className="size-full rounded-full object-cover"
-                        />
-                      ) : (
-                        initialsFromName(name)
-                      )}
-                    </span>
+                    <EditorAvatar avatarUrl={avatarUrl} displayName={name} tone={tone} />
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-[14px] font-medium leading-tight text-[#010a04]">
                         {name}

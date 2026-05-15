@@ -180,7 +180,7 @@ function TournamentListContent() {
   return (
     <div
       ref={pullContainerRef}
-      className="flex min-h-[calc(100vh-56px)] flex-col overscroll-y-contain bg-[#f8fbf8] touch-pan-y lg:min-h-[calc(100vh-60px)]"
+      className="flex min-h-[calc(100vh-56px)] flex-col overscroll-y-contain bg-[#f8fbf8] [touch-action:pan-y] lg:min-h-[calc(100vh-60px)]"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={resetPullState}
