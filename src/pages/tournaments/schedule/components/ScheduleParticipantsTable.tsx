@@ -9,6 +9,7 @@ import {
   type DragEndEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
+import { useState } from "react";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   SortableContext,
@@ -54,6 +55,58 @@ interface ScheduleParticipantsTableProps {
 
 function participantToneClass(participant: Pick<ScheduleParticipantRow, "id" | "alias" | "name">): string {
   return avatarToneClass(`${participant.id}:${participant.alias ?? participant.name ?? ""}`);
+}
+
+function ScheduleParticipantAvatar({
+  profilePictureUrl,
+  displayName,
+  wrapperClassName,
+}: {
+  profilePictureUrl: string | null | undefined;
+  displayName: string;
+  wrapperClassName: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <span className={wrapperClassName}>
+      {profilePictureUrl && !imageFailed ? (
+        <img
+          src={profilePictureUrl}
+          alt={`Avatar for ${displayName}`}
+          className="size-full rounded-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        initialsFromName(displayName)
+      )}
+    </span>
+  );
+}
+
+function DoublesPairPlayerAvatar({
+  profilePictureUrl,
+  displayName,
+  wrapperClassName,
+}: {
+  profilePictureUrl: string | null | undefined;
+  displayName: string;
+  wrapperClassName: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <div className={wrapperClassName}>
+      {profilePictureUrl && !imageFailed ? (
+        <img
+          src={profilePictureUrl}
+          alt={`Avatar for ${displayName}`}
+          className="size-full rounded-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        <UserCircle2 size={24} className="text-white/80" />
+      )}
+    </div>
+  );
 }
 
 function glickoSkillLevel(participant: ScheduleParticipantRow) {
@@ -186,7 +239,11 @@ function SortableParticipantsMobileRow({
             participant
           )} text-[11px] font-semibold text-[#010a04]/80`}
         >
-          {initialsFromName(displayName)}
+          <ScheduleParticipantAvatar
+            profilePictureUrl={participant.profilePictureUrl}
+            displayName={displayName}
+            wrapperClassName="contents"
+          />
         </span>
         <div className="min-w-0">
           <PlayerNameText name={displayName} className="text-[14px] font-medium text-[#010a04]" focusable />
@@ -254,7 +311,11 @@ function SortableParticipantsDesktopRow({
               participant
             )} text-[9px] font-semibold text-[#010a04]/80`}
           >
-            {initialsFromName(displayName)}
+            <ScheduleParticipantAvatar
+              profilePictureUrl={participant.profilePictureUrl}
+              displayName={displayName}
+              wrapperClassName="contents"
+            />
           </span>
           <PlayerNameText name={displayName} className="text-[14px] text-[#010a04]" focusable />
         </div>
@@ -350,13 +411,15 @@ export function ScheduleParticipantsTable({
                 </p>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <div
-                      className={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
+                    <DoublesPairPlayerAvatar
+                      profilePictureUrl={firstPlayer?.profilePictureUrl}
+                      displayName={
+                        firstPlayer?.alias ?? firstPlayer?.name ?? t("tournaments.unknownPlayer")
+                      }
+                      wrapperClassName={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
                         firstPlayer ?? { id: "unknown", alias: null, name: null }
                       )}`}
-                    >
-                      <UserCircle2 size={24} className="text-white/80" />
-                    </div>
+                    />
                     <span className="min-w-0 leading-tight">
                       <span className="block truncate text-[14px] font-medium text-[#010a04]">
                         {firstPlayer?.alias ?? firstPlayer?.name ?? t("tournaments.unknownPlayer")}
@@ -365,13 +428,15 @@ export function ScheduleParticipantsTable({
                   </div>
                   <span className="shrink-0 text-[14px] font-medium text-[#010a04]/40">+</span>
                   <div className="flex min-w-0 items-center gap-2.5">
-                    <div
-                      className={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
+                    <DoublesPairPlayerAvatar
+                      profilePictureUrl={secondPlayer?.profilePictureUrl}
+                      displayName={
+                        secondPlayer?.alias ?? secondPlayer?.name ?? t("tournaments.unknownPlayer")
+                      }
+                      wrapperClassName={`flex h-[32px] w-[32px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
                         secondPlayer ?? { id: "unknown", alias: null, name: null }
                       )}`}
-                    >
-                      <UserCircle2 size={24} className="text-white/80" />
-                    </div>
+                    />
                     <span className="min-w-0 leading-tight">
                       <span className="block truncate text-[14px] font-medium text-[#010a04]">
                         {secondPlayer?.alias ?? secondPlayer?.name ?? t("tournaments.unknownPlayer")}

@@ -66,6 +66,13 @@ export function AdminClubsSection() {
                 key={club.id}
                 className="flex items-center justify-between gap-3 rounded-lg border border-[#e5e7eb] bg-white px-4 py-3 shadow-sm"
               >
+                <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-[8px] bg-[#e5e7eb] text-sm font-semibold text-[#9ca3af]">
+                  {club.logoUrl ? (
+                    <img src={club.logoUrl} alt="" className="size-full object-cover" />
+                  ) : (
+                    <span>{club.name.charAt(0) || "?"}</span>
+                  )}
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-foreground truncate">
                     {club.name}

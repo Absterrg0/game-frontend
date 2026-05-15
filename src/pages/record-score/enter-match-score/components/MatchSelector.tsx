@@ -51,7 +51,7 @@ export function MatchSelector({
           type="button"
           variant="outline"
           disabled={isConfirmLocked}
-          className="min-h-[44px] h-auto w-full justify-between rounded-[10px] border-[#010a04]/10 bg-[#f2f4f3] px-3 py-2.5 text-left text-[14px] font-normal text-[#010a04] hover:bg-[#edf0ef] sm:h-[34px] sm:min-h-[34px] sm:rounded-[8px] sm:py-0"
+          className="min-h-[44px] h-auto min-w-0 w-full justify-between rounded-[10px] border-[#010a04]/10 bg-[#f2f4f3] px-3 py-2.5 text-left text-[14px] font-normal text-[#010a04] hover:bg-[#edf0ef] sm:h-[34px] sm:min-h-[34px] sm:rounded-[8px] sm:py-0"
           title={selectedLabel}
         >
           <span className="min-w-0 truncate">{selectedLabel}</span>

@@ -5,6 +5,7 @@ import { useAuth } from "@/pages/auth/hooks";
 export interface UpdateProfileInput {
   alias?: string;
   name?: string;
+  profilePictureUrl?: string | null;
   dateOfBirth?: string | null;
   gender?: "male" | "female" | "other" | "" | null;
 }
@@ -13,6 +14,7 @@ async function updateProfileMutation(data: UpdateProfileInput) {
   const payload: Record<string, unknown> = {};
   if (data.alias !== undefined) payload.alias = data.alias;
   if (data.name !== undefined) payload.name = data.name;
+  if (data.profilePictureUrl !== undefined) payload.profilePictureUrl = data.profilePictureUrl ?? null;
   if (data.dateOfBirth !== undefined) payload.dateOfBirth = data.dateOfBirth ?? null;
   if (data.gender !== undefined) payload.gender = data.gender === "" ? null : data.gender;
 

@@ -51,7 +51,7 @@ export default function RecordScorePage() {
 
   const onActionCardClick = (id: ActionCardConfig["id"]) => {
     if (id === "validate") {
-      navigate("/record-score/validate");
+      navigate("/record-score/validate/scan");
       return;
     }
 

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import type { TournamentPlayMode, TournamentScheduleMatch } from "@/models/tournament/types";
 
 export type ScoreWinnerSide = "one" | "two" | null;
@@ -114,6 +115,41 @@ export function scoreCellClass(
   }
 
   return "border border-border bg-muted/50 text-foreground";
+}
+
+/** Set winner for styling while editing — only when both sides parse and form a valid finished set. */
+export function winnerSideForScoreEditorSet(
+  row: ScoreEditorRow,
+  setIndex: number,
+  playMode: TournamentPlayMode,
+): ScoreWinnerSide {
+  const first = parseScoreInputValue(row.playerOne);
+  const second = parseScoreInputValue(row.playerTwo);
+  if (first == null || second == null) {
+    return null;
+  }
+  if (first === "wo" && second === "wo") {
+    return null;
+  }
+  return resolveSetWinnerFromValues(first, second, scoreRuleForSet(playMode, setIndex));
+}
+
+/** Compact square score trigger — same visual language as {@link MatchCardReadOnlyRows}. */
+export function scoreEditorSelectTriggerClassName(
+  row: ScoreEditorRow,
+  setIndex: number,
+  playMode: TournamentPlayMode,
+  side: "one" | "two",
+): string {
+  const raw = side === "one" ? row.playerOne : row.playerTwo;
+  const hasValue = parseScoreInputValue(raw) != null;
+  const winner = winnerSideForScoreEditorSet(row, setIndex, playMode);
+  return cn(
+    "h-8 w-8 min-h-8 min-w-8 max-w-8 shrink-0 justify-center gap-0 rounded-[6px] p-0 shadow-none",
+    "*:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:flex-none *:data-[slot=select-value]:justify-center *:data-[slot=select-value]:truncate *:data-[slot=select-value]:text-center",
+    scoreCellClass(winner, side, hasValue),
+    "focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50",
+  );
 }
 
 function serializeScoreValue(value: MatchScoreValue | null): string {

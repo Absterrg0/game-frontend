@@ -93,7 +93,15 @@ export default function ProfilePage() {
               border: "1px solid oklch(0.9 0.02 260)",
             }}
           >
-            {initials}
+            {user?.profilePictureUrl ? (
+              <img
+                src={user.profilePictureUrl}
+                alt={user.name ?? user.alias ?? t("profile.title")}
+                className="size-full rounded-2xl object-cover"
+              />
+            ) : (
+              initials
+            )}
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
             {t("profile.title")}

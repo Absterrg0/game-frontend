@@ -1,5 +1,5 @@
 import type { Locale } from "date-fns";
-import type { CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,7 @@ import { matchScheduleDateTimeLabels } from "@/pages/tournaments/schedule/utils/
 import { MatchCardReadOnlyRows } from "./MatchCardReadOnlyRows";
 import {
   getScoreSelectOptions,
+  scoreEditorSelectTriggerClassName,
   SCORE_SELECT_EMPTY_VALUE,
   scoreColumns,
   visibleScoreEditorRows,
@@ -21,6 +22,37 @@ import {
 import { teamSideDisplayName } from "@/pages/tournaments/schedule/utils/matchTeamDisplay";
 import { teamEloRating } from "@/pages/tournaments/components/details-tabs/matches-tab/ratingSummary";
 import { AVATAR_TONES, hashSeed, initialsFromName } from "@/pages/tournaments/schedule/utils/avatarUtils";
+
+function EditorAvatar({
+  avatarUrl,
+  displayName,
+  tone,
+}: {
+  avatarUrl: string | null;
+  displayName: string;
+  tone: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  return (
+    <span
+      className={cn(
+        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-semibold text-[#010a04]/70",
+        tone,
+      )}
+    >
+      {avatarUrl && !imageFailed ? (
+        <img
+          src={avatarUrl}
+          alt={`Avatar of ${displayName}`}
+          className="size-full rounded-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      ) : (
+        initialsFromName(displayName)
+      )}
+    </span>
+  );
+}
 
 export interface MatchScheduleCardProps {
   match: TournamentScheduleMatch;
@@ -51,6 +83,8 @@ export function MatchScheduleCard({
   
   const firstPlayerRating = teamEloRating(match.side1);
   const secondPlayerRating = teamEloRating(match.side2);
+  const firstPlayerAvatarUrl = match.side1[0]?.profilePictureUrl ?? null;
+  const secondPlayerAvatarUrl = match.side2[0]?.profilePictureUrl ?? null;
   const firstPlayerSubtext = firstPlayerRating != null ? `G3: ${firstPlayerRating}` : undefined;
   const secondPlayerSubtext = secondPlayerRating != null ? `G3: ${secondPlayerRating}` : undefined;
 
@@ -75,7 +109,7 @@ export function MatchScheduleCard({
   const hasStatusBadge = isLive || isPendingScore || isCancelled;
   const scoreGridStyle = {
     "--score-column-count": Math.max(editableRowsToRender.length, 1),
-    gridTemplateColumns: `repeat(${Math.max(editableRowsToRender.length, 1)}, minmax(calc(3ch + 1rem), max-content))`,
+    gridTemplateColumns: `repeat(${Math.max(editableRowsToRender.length, 1)}, 2rem)`,
   } as CSSProperties;
 
   return (
@@ -154,9 +188,9 @@ export function MatchScheduleCard({
         {isEditing && canEditScores && !isFromPreviousRound ? (
           <div className="flex min-w-0 flex-col gap-0.5">
             {[
-              { name: firstPlayer, subtext: firstPlayerSubtext, idx: 0 },
-              { name: secondPlayer, subtext: secondPlayerSubtext, idx: 1 },
-            ].map(({ name, subtext, idx: playerIdx }) => {
+              { name: firstPlayer, subtext: firstPlayerSubtext, avatarUrl: firstPlayerAvatarUrl, idx: 0 },
+              { name: secondPlayer, subtext: secondPlayerSubtext, avatarUrl: secondPlayerAvatarUrl, idx: 1 },
+            ].map(({ name, subtext, avatarUrl, idx: playerIdx }) => {
               const side = playerIdx === 0 ? "one" : "two";
               const sideKey = playerIdx === 0 ? "playerOne" : "playerTwo";
               return (
@@ -165,14 +199,7 @@ export function MatchScheduleCard({
                   className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-[10px] px-2.5 py-2"
                 >
                   <div className="flex min-w-[80px] flex-1 items-center gap-2.5">
-                    <span
-                      className={cn(
-                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br text-[10px] font-semibold text-[#010a04]/70",
-                        tone
-                      )}
-                    >
-                      {initialsFromName(name)}
-                    </span>
+                    <EditorAvatar avatarUrl={avatarUrl} displayName={name} tone={tone} />
                     <div className="flex min-w-0 flex-col">
                       <span className="truncate text-[14px] font-medium leading-tight text-[#010a04]">
                         {name}
@@ -185,12 +212,11 @@ export function MatchScheduleCard({
                     </div>
                   </div>
 
-                  <div
-                    className="flex min-w-0 flex-col gap-1 justify-self-end"
-                  >
+                  <div className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+                    <div className="flex min-w-0 flex-col gap-1 justify-self-end">
                     {playerIdx === 0 ? (
                       <div
-                        className="inline-grid min-w-0 gap-1"
+                        className="ml-auto inline-grid min-w-0 gap-1"
                         style={scoreGridStyle}
                       >
                         {editableRowsToRender.map((_, i) => (
@@ -204,7 +230,7 @@ export function MatchScheduleCard({
                       </div>
                     ) : null}
                     <div
-                      className="inline-grid min-w-0 gap-1"
+                      className="ml-auto inline-grid min-w-0 gap-1"
                       style={scoreGridStyle}
                     >
                     {editableRowsToRender.map((row, rowIndex) => {
@@ -212,14 +238,22 @@ export function MatchScheduleCard({
                       const options = getScoreSelectOptions(row, sideKey, match.playMode, rowIndex);
                       return (
                         <Select
-                          key={`${row.id}-${side}`}
+                          key={`${row.id}-${sideKey}-${rowIndex}`}
                           value={value === "" ? SCORE_SELECT_EMPTY_VALUE : value}
                           onValueChange={(v) => onScoreInputChange(row.id, sideKey, v, rowIndex)}
                         >
                           <SelectTrigger
                             hideIcon
                             aria-label={t("tournaments.scoreInputLabel", { playerName: name, setNumber: rowIndex + 1 })}
-                            className="h-8 min-w-[calc(3ch+1rem)] justify-center gap-0 rounded-[6px] border border-[#010a04]/[0.14] bg-white px-1 text-center text-[13px] font-semibold text-[#010a04] shadow-none focus:border-[#067429] *:data-[slot=select-value]:justify-center *:data-[slot=select-value]:text-center"
+                            className={cn(
+                              scoreEditorSelectTriggerClassName(
+                                row,
+                                rowIndex,
+                                match.playMode,
+                                sideKey === "playerOne" ? "one" : "two",
+                              ),
+                              "data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground",
+                            )}
                           >
                             <SelectValue placeholder="–" />
                           </SelectTrigger>
@@ -241,6 +275,7 @@ export function MatchScheduleCard({
                       );
                     })}
                     </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -252,8 +287,8 @@ export function MatchScheduleCard({
             tone={tone}
             columns={columns}
             rows={[
-              { name: firstPlayer, subtext: firstPlayerSubtext, side: "one" },
-              { name: secondPlayer, subtext: secondPlayerSubtext, side: "two" },
+              { name: firstPlayer, profilePictureUrl: firstPlayerAvatarUrl, subtext: firstPlayerSubtext, side: "one" },
+              { name: secondPlayer, profilePictureUrl: secondPlayerAvatarUrl, subtext: secondPlayerSubtext, side: "two" },
             ]}
           />
         )}

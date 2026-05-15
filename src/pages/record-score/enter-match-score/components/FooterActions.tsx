@@ -9,7 +9,6 @@ type FooterActionsProps = {
   isPrimaryGenerateDisabled: boolean;
   isGenerating: boolean;
   hasValidationLink: boolean;
-  hasUnsavedQrChanges: boolean;
   t: (key: string) => string;
 };
 
@@ -22,7 +21,6 @@ export function FooterActions({
   isPrimaryGenerateDisabled,
   isGenerating,
   hasValidationLink,
-  hasUnsavedQrChanges,
   t,
 }: FooterActionsProps) {
   return (
@@ -43,21 +41,13 @@ export function FooterActions({
           type="button"
           onClick={onGenerateOrOpenValidationLink}
           disabled={isPrimaryGenerateDisabled}
-          className={`min-h-[48px] w-full rounded-[12px] text-[15px] font-medium text-white sm:h-[34px] sm:min-h-[34px] sm:rounded-[10px] sm:text-[14px] ${
-            hasUnsavedQrChanges
-              ? "bg-[#b45309] hover:bg-[#92400e]"
-              : hasValidationLink
-                ? "bg-[#1d8ced] hover:bg-[#1476cc]"
-                : "bg-[#067429] hover:bg-[#056320]"
-          }`}
+          className="min-h-[48px] w-full rounded-[12px] bg-[#1d8ced] text-[15px] font-medium text-white hover:bg-[#1476cc] disabled:cursor-not-allowed disabled:bg-[#010a04]/20 sm:h-[34px] sm:min-h-[34px] sm:rounded-[10px] sm:text-[14px]"
         >
           {isGenerating
             ? t("recordScorePage.enter.generatingQr")
-            : hasValidationLink && hasUnsavedQrChanges
-              ? t("recordScorePage.enter.saveChanges")
-              : hasValidationLink
-                ? t("recordScorePage.enter.shareValidationLink")
-                : t("recordScorePage.enter.generateQr")}
+            : hasValidationLink
+              ? t("recordScorePage.enter.shareValidationLink")
+              : t("recordScorePage.enter.preparingQr")}
         </Button>
       )}
     </footer>

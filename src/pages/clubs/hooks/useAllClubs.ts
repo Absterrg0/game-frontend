@@ -6,6 +6,7 @@ export interface ClubListItem {
   id: string;
   name: string;
   address: string;
+  logoUrl: string | null;
   website: string | null;
 }
 

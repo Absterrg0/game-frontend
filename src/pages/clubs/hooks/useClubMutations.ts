@@ -21,6 +21,7 @@ export interface CourtInput {
 
 export interface CreateClubInput {
   name: string;
+  logoUrl?: string | null;
   website?: string | null;
   bookingSystemUrl?: string | null;
   address: string;
@@ -31,6 +32,7 @@ export interface CreateClubInput {
 
 export interface UpdateClubInput {
   name?: string;
+  logoUrl?: string | null;
   website?: string | null;
   bookingSystemUrl?: string | null;
   address?: string;
@@ -42,6 +44,7 @@ interface ClubResponse {
   club: {
     id: string;
     name: string;
+    logoUrl: string | null;
     address?: string;
     website?: string | null;
     bookingSystemUrl?: string | null;
@@ -53,6 +56,7 @@ interface ClubDetailResponse {
   club: {
     id: string;
     name: string;
+    logoUrl: string | null;
     address: string;
     website: string | null;
     bookingSystemUrl: string | null;

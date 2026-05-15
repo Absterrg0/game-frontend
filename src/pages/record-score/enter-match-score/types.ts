@@ -9,6 +9,7 @@ export type MatchMode = TournamentScheduleMode;
 export type MatchOption = {
   id: string;
   label: string;
+  startTime: string | null;
   playMode: AllowedPlayMode;
   mode: MatchMode;
   kind: "tournament" | "independent";
@@ -17,6 +18,9 @@ export type MatchOption = {
   round: number | null;
   playerOneRowLabel: string;
   playerTwoRowLabel: string;
+  /** First team member photo (singles or doubles), same as schedule match cards. */
+  playerOneAvatarUrl: string | null;
+  playerTwoAvatarUrl: string | null;
   isLive: boolean;
   isPendingScore: boolean;
 };

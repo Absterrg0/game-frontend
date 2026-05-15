@@ -1,12 +1,7 @@
-
 import { Trans, useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-const GLICKMAN_URL = "https://datascience.harvard.edu/directory/mark-glickman/";
-const GLICKO_WIKI_URL = "https://de.wikipedia.org/wiki/Glicko-System#Schritt_1";
-const ELO_WIKI_URL = "https://en.wikipedia.org/wiki/Arpad_Elo";
-const TB10_URL = "https://www.tiebreak10.eu";
+import { GLOBAL_PARAMETERS } from "@/constants/constants";
 
 const footnoteClassName =
   "align-super text-[10px] font-semibold leading-none text-[#067429]";
@@ -20,7 +15,7 @@ export default function AboutPage() {
         await navigator.share({
           title: t("about.inviteShareTitle"),
           text: t("about.inviteShareText"),
-          url: TB10_URL,
+          url: GLOBAL_PARAMETERS.TB10_URL,
         });
         return;
       } catch (error) {
@@ -30,7 +25,7 @@ export default function AboutPage() {
 
     if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
       try {
-        await navigator.clipboard.writeText(TB10_URL);
+        await navigator.clipboard.writeText(GLOBAL_PARAMETERS.TB10_URL);
         toast.success(t("about.linkCopied"));
         return;
       } catch {
@@ -38,21 +33,21 @@ export default function AboutPage() {
       }
     }
 
-    window.open(TB10_URL, "_blank", "noopener,noreferrer");
+    window.open(GLOBAL_PARAMETERS.TB10_URL, "_blank", "noopener,noreferrer");
   };
 
   return (
-    <div
-      className="min-h-full bg-[#f8fbf8] px-5 pb-8 pt-[30px] sm:px-6 sm:pb-10 sm:pt-[45px]"
-    >
-      <div className="mx-auto w-full max-w-[880px] min-w-0">
-        <div className="rounded-[12px] border border-[#010a0414] bg-white p-5 shadow-[0_3px_15px_0_rgba(0,0,0,0.06)]">
-          <h1 className="sr-only text-[20px] font-semibold leading-[1] text-[#010a04] lg:not-sr-only lg:mb-5 lg:block">
-            {t("about.title")}
-          </h1>
+    <div className="min-h-screen bg-[#dfe2e0] px-4 pb-10 pt-7 sm:px-6">
+      <div className="mx-auto w-full max-w-[1120px] min-w-0">
+        <div className="overflow-hidden rounded-[10px] border border-[#010a04]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+          <header className="border-b border-[#010a04]/8 px-4 py-3 sm:px-5">
+            <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[#010a04] sm:text-[28px]">
+              {t("about.title")}
+            </h1>
+          </header>
 
-          <div className="flex flex-col gap-3 sm:gap-[15px]">
-            <section className="rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] p-[15px] sm:p-[18px]">
+          <div className="flex flex-col gap-2.5 p-4 sm:gap-3 sm:p-5">
+            <section className="rounded-[10px] border border-[#010a04]/10 bg-[#f9faf9] p-4 sm:p-[18px]">
               <h2 className="mb-3 text-[18px] font-medium leading-normal text-[#010a04]">
                 {t("about.allowsYouTo")}
               </h2>
@@ -63,7 +58,7 @@ export default function AboutPage() {
               </ul>
             </section>
 
-            <section className="rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] p-[15px] sm:p-[18px]">
+            <section className="rounded-[10px] border border-[#010a04]/10 bg-[#f9faf9] p-4 sm:p-[18px]">
               <h2 className="mb-3 text-[18px] font-medium leading-normal text-[#010a04]">
                 {t("about.howToUse")}
               </h2>
@@ -76,7 +71,7 @@ export default function AboutPage() {
                         components={{
                           link: (
                             <a
-                              href="mailto:service.tb10@gmail.com"
+                              href={GLOBAL_PARAMETERS.CONTACT_US_MAILTO}
                               className="underline"
                               aria-label={t("about.contactUs")}
                             />
@@ -91,7 +86,7 @@ export default function AboutPage() {
               </ul>
             </section>
 
-            <section className="rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] p-[15px] sm:p-[18px]">
+            <section className="rounded-[10px] border border-[#010a04]/10 bg-[#f9faf9] p-4 sm:p-[18px]">
               <h2 className="mb-3 text-[18px] font-medium leading-normal text-[#010a04]">
                 {t("about.glicko2Title")}
               </h2>
@@ -115,7 +110,7 @@ export default function AboutPage() {
                     components={{
                       eloLink: (
                         <a
-                          href={ELO_WIKI_URL}
+                          href={GLOBAL_PARAMETERS.ELO_WIKI_URL}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[#067429] underline underline-offset-2"
@@ -128,7 +123,7 @@ export default function AboutPage() {
 
               <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[14px] leading-[1.5] text-[#010a0499]">
                 <a
-                  href={GLICKMAN_URL}
+                  href={GLOBAL_PARAMETERS.GLICKMAN_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#067429] underline underline-offset-2"
@@ -136,7 +131,7 @@ export default function AboutPage() {
                   {t("about.glickmanProfile")}
                 </a>
                 <a
-                  href={GLICKO_WIKI_URL}
+                  href={GLOBAL_PARAMETERS.GLICKO_WIKI_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-[#067429] underline underline-offset-2"
@@ -146,21 +141,24 @@ export default function AboutPage() {
               </div>
             </section>
 
-            <section id="contact" className="rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] p-[18px]">
+            <section
+              id="contact"
+              className="rounded-[10px] border border-[#010a04]/10 bg-[#f9faf9] p-4 sm:p-[18px]"
+            >
               <h2 className="mb-3 text-[18px] font-medium leading-normal text-[#010a04]">
                 {t("about.otherInformation")}
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2.5">
                 <Button
                   asChild
-                  className="h-[30px] rounded-[8px] border border-[#010a041f] bg-brand-accent px-[15px] py-2 text-[12px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
+                  className="h-8 rounded-[7px] border border-[#010a04]/15 bg-brand-accent px-3 text-[11px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
                 >
-                  <a href="mailto:service.tb10@gmail.com">{t("about.contactUs")}</a>
+                  <a href={GLOBAL_PARAMETERS.CONTACT_US_MAILTO}>{t("about.contactUs")}</a>
                 </Button>
                 <Button
                   type="button"
                   onClick={handleInviteFriends}
-                  className="h-[30px] rounded-[8px] border border-[#010a041f] bg-brand-accent px-[15px] py-2 text-[12px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
+                  className="h-8 rounded-[7px] bg-[#010a04] px-3 text-[11px] font-medium text-white hover:bg-[#1d241d]"
                 >
                   {t("about.inviteFriends")}
                 </Button>

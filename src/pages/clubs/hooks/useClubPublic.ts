@@ -18,6 +18,7 @@ export interface ClubPublic {
   id: string;
   name: string;
   description: string | null;
+  logoUrl: string | null;
   address: string;
   website: string | null;
   bookingSystemUrl: string | null;

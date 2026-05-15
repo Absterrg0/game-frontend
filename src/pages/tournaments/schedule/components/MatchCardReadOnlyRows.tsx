@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import {
   formatScoreCellValue,
@@ -10,6 +10,7 @@ import { initialsFromName } from "../utils/avatarUtils";
 export type MatchCardReadOnlyRow = {
   name: string;
   side: "one" | "two";
+  profilePictureUrl?: string | null;
   nameSuffix?: ReactNode;
   subtext?: ReactNode;
 };
@@ -21,6 +22,27 @@ type Props = {
   rows: [MatchCardReadOnlyRow, MatchCardReadOnlyRow];
 };
 
+function RowAvatar({
+  profilePictureUrl,
+  displayName,
+}: {
+  profilePictureUrl?: string | null;
+  displayName: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+  if (profilePictureUrl && !imageFailed) {
+    return (
+      <img
+        src={profilePictureUrl}
+        alt={`Avatar for ${displayName}`}
+        className="size-full rounded-full object-cover"
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
+  return initialsFromName(displayName);
+}
+
 export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
   const visibleColumns = columns
     .map((column, index) => ({ column, index }))
@@ -30,7 +52,7 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
   const hasCols = visibleColumns.length > 0;
   const scoreGridStyle = {
     "--score-column-count": Math.max(visibleColumns.length, 1),
-    gridTemplateColumns: `repeat(${Math.max(visibleColumns.length, 1)}, minmax(calc(3ch + 1rem), max-content))`,
+    gridTemplateColumns: `repeat(${Math.max(visibleColumns.length, 1)}, 2rem)`,
   } as CSSProperties;
 
   return (
@@ -47,7 +69,7 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
                 tone
               )}
             >
-              {initialsFromName(row.name)}
+              <RowAvatar profilePictureUrl={row.profilePictureUrl} displayName={row.name} />
             </span>
 
             {row.nameSuffix != null ? (
@@ -79,14 +101,15 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
           </div>
 
           {hasCols && (
-            <div className="inline-grid min-w-0 justify-self-end gap-1" style={scoreGridStyle}>
+            <div className="max-w-full min-w-0 overflow-x-auto overscroll-x-contain [-webkit-overflow-scrolling:touch]">
+              <div className="ml-auto inline-grid min-w-0 gap-1" style={scoreGridStyle}>
               {visibleColumns.map(({ column, index }) => {
                 const value = row.side === "one" ? column.playerOne : column.playerTwo;
                 return (
                   <span
                     key={`${matchId}-${row.side}-${index}`}
                     className={cn(
-                      "inline-flex h-8 min-w-[calc(3ch+1rem)] items-center justify-center rounded-[6px] px-1 text-[13px] font-semibold",
+                      "inline-flex h-8 w-8 min-h-8 min-w-8 max-w-8 shrink-0 items-center justify-center rounded-[6px] px-0 text-[13px] font-semibold",
                       scoreCellClass(column.winner, row.side, value != null)
                     )}
                   >
@@ -94,6 +117,7 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
                   </span>
                 );
               })}
+              </div>
             </div>
           )}
         </div>
