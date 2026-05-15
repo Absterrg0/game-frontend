@@ -175,7 +175,11 @@ export function MatchScheduleCard({
                       )}
                     >
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="" className="size-full rounded-full object-cover" />
+                        <img
+                          src={avatarUrl}
+                          alt={`Avatar of ${name}`}
+                          className="size-full rounded-full object-cover"
+                        />
                       ) : (
                         initialsFromName(name)
                       )}

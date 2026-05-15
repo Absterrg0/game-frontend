@@ -156,7 +156,14 @@ export function useJoinTournament() {
       const me = queryClient.getQueryData<AuthUser | null>(queryKeys.auth.me());
       const meta: ParticipationActorMeta = {
         mode: "join",
-        actor: me ? { id: me.id, name: me.name ?? null, alias: me.alias ?? null } : null,
+        actor: me
+          ? {
+              id: me.id,
+              name: me.name ?? null,
+              alias: me.alias ?? null,
+              profilePictureUrl: me.profilePictureUrl ?? null,
+            }
+          : null,
       };
       queryClient.setQueryData<TournamentDetailResponse>(queryKey, (currentData) => {
         if (!currentData) {
@@ -187,7 +194,14 @@ export function useLeaveTournament() {
       const me = queryClient.getQueryData<AuthUser | null>(queryKeys.auth.me());
       const meta: ParticipationActorMeta = {
         mode: "leave",
-        actor: me ? { id: me.id, name: me.name ?? null, alias: me.alias ?? null } : null,
+        actor: me
+          ? {
+              id: me.id,
+              name: me.name ?? null,
+              alias: me.alias ?? null,
+              profilePictureUrl: me.profilePictureUrl ?? null,
+            }
+          : null,
       };
       queryClient.setQueryData<TournamentDetailResponse>(queryKey, (currentData) => {
         if (!currentData) {

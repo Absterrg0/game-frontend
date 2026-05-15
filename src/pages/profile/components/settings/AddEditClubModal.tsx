@@ -196,14 +196,18 @@ export function AddEditClubModal({
                       variant="outline"
                       disabled={isPending || isProcessingLogo}
                       onClick={async () => {
-                        setField("logoUrl", "");
                         if (isEdit && editClubId) {
                           try {
                             await updateClub.mutateAsync({ clubId: editClubId, data: { logoUrl: null } });
-                          } catch (e) {
-                            // Error toast is handled by caller or fallback
+                            setField("logoUrl", "");
+                          } catch (error) {
+                            toast.error(
+                              error instanceof Error ? error.message : t("settings.adminClubsLogoUploadError"),
+                            );
                           }
+                          return;
                         }
+                        setField("logoUrl", "");
                       }}
                       className="h-[30px] rounded-[7px] border-[#ead1d1] bg-white px-2.5 text-[12px] font-medium text-[#b42318] shadow-none hover:bg-[#fff5f5]"
                     >

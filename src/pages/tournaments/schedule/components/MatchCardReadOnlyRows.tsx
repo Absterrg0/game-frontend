@@ -49,7 +49,11 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
               )}
             >
               {row.profilePictureUrl ? (
-                <img src={row.profilePictureUrl} alt="" className="size-full rounded-full object-cover" />
+                <img
+                  src={row.profilePictureUrl}
+                  alt={`Avatar for ${row.name}`}
+                  className="size-full rounded-full object-cover"
+                />
               ) : (
                 initialsFromName(row.name)
               )}

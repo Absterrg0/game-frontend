@@ -71,7 +71,9 @@ export function SponsorLogoUploadZone({
 			onLogoUrlChange(base64);
 			toast.success(successMessage ?? t('sponsors.logoUpload.toastSuccess'));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : uploadFailedMessage ?? t('sponsors.logoUpload.toastUploadFailed');
+			const message =
+				uploadFailedMessage ??
+				(error instanceof Error ? error.message : t('sponsors.logoUpload.toastUploadFailed'));
 			toast.error(message);
 		} finally {
 			setIsProcessingFile(false);

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, type TouchEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
@@ -83,6 +83,7 @@ function TournamentListContent() {
     effectiveFilters()
   );
   const pullStartYRef = useRef<number | null>(null);
+  const pullContainerRef = useRef<HTMLDivElement | null>(null);
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
@@ -116,7 +117,7 @@ function TournamentListContent() {
   }, []);
 
   const handleTouchStart = useCallback(
-    (event: TouchEvent<HTMLDivElement>) => {
+    (event: ReactTouchEvent<HTMLDivElement>) => {
       if (!canUsePullToRefresh || isFetching || isPending) return;
       if (event.touches.length !== 1) return;
       if (window.scrollY > 0) return;
@@ -127,8 +128,11 @@ function TournamentListContent() {
     [canUsePullToRefresh, isFetching, isPending]
   );
 
-  const handleTouchMove = useCallback(
-    (event: TouchEvent<HTMLDivElement>) => {
+  useEffect(() => {
+    const el = pullContainerRef.current;
+    if (!el) return;
+
+    const listener = (event: globalThis.TouchEvent) => {
       const startY = pullStartYRef.current;
       if (!canUsePullToRefresh || !isPulling || startY == null || isPullRefreshing) return;
 
@@ -136,6 +140,8 @@ function TournamentListContent() {
         resetPullState();
         return;
       }
+
+      if (event.touches.length !== 1) return;
 
       const deltaY = event.touches[0].clientY - startY;
       if (deltaY <= 0) {
@@ -146,9 +152,11 @@ function TournamentListContent() {
       const nextDistance = Math.min(PULL_TO_REFRESH_MAX_PX, deltaY * PULL_TO_REFRESH_DAMPING);
       setPullDistance(nextDistance);
       if (event.cancelable) event.preventDefault();
-    },
-    [canUsePullToRefresh, isPulling, isPullRefreshing, resetPullState]
-  );
+    };
+
+    el.addEventListener("touchmove", listener, { passive: false });
+    return () => el.removeEventListener("touchmove", listener);
+  }, [canUsePullToRefresh, isPulling, isPullRefreshing, resetPullState]);
 
   const triggerPullRefresh = useCallback(async () => {
     setIsPullRefreshing(true);
@@ -171,9 +179,9 @@ function TournamentListContent() {
 
   return (
     <div
-      className="flex min-h-[calc(100vh-56px)] flex-col bg-[#f8fbf8] lg:min-h-[calc(100vh-60px)]"
+      ref={pullContainerRef}
+      className="flex min-h-[calc(100vh-56px)] flex-col overscroll-y-contain bg-[#f8fbf8] touch-pan-y lg:min-h-[calc(100vh-60px)]"
       onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={resetPullState}
     >

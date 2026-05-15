@@ -217,9 +217,15 @@ export function SettingsForm({ user }: { user: AuthUser }) {
                       type="button"
                       variant="outline"
                       disabled={isLoading || isProcessingImage}
-                      onClick={() => {
-                        setInputs((prev) => ({ ...prev, profilePictureUrl: "" }));
-                        void updateProfile({ profilePictureUrl: null });
+                      onClick={async () => {
+                        const previousUrl = inputs.profilePictureUrl;
+                        const result = await updateProfile({ profilePictureUrl: null });
+                        if (result.success) {
+                          setInputs((prev) => ({ ...prev, profilePictureUrl: "" }));
+                        } else {
+                          setInputs((prev) => ({ ...prev, profilePictureUrl: previousUrl }));
+                          toast.error(result.message);
+                        }
                       }}
                       className="h-[30px] rounded-[7px] border-[#ead1d1] bg-white px-2.5 text-[12px] font-medium text-[#b42318] shadow-none hover:bg-[#fff5f5] hover:text-[#b42318]"
                     >

@@ -137,7 +137,7 @@ export function ScoreGrid({
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
-                    alt=""
+                    alt={`${label} avatar`}
                     className="size-full rounded-full object-cover"
                   />
                 ) : (

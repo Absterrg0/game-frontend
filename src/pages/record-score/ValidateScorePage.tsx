@@ -135,7 +135,7 @@ export default function ValidateScorePage() {
   }
 
   if (confirmForbidden) {
-    return <Navigate to="/record-score" replace />;
+    return <Navigate to="/record-score/validate/scan" replace />;
   }
 
   return (
