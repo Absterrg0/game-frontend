@@ -54,7 +54,6 @@ export function useMyScore(filters: MyScoreFilters, options?: UseMyScoreOptions)
     queryKey: queryKeys.user.myScore(filters),
     queryFn: () => fetchMyScore(filters),
     enabled,
-    placeholderData: (previousData) => previousData,
   });
 
   return {

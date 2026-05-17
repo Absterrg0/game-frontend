@@ -8,6 +8,8 @@
     "signUp": "Registrieren",
     "language": "Sprache",
     "loading": "Laden...",
+    "pullToRefreshPull": "Zum Aktualisieren nach unten ziehen",
+    "pullToRefreshRelease": "Zum Aktualisieren loslassen",
     "comingSoon": "Demnächst verfügbar!",
     "openMenu": "Menü öffnen"
   },
@@ -400,6 +402,8 @@
     "becomeMember": "Mitglied werden",
     "clubDetails": "Vereinsdetails",
     "filters": "Filter",
+    "filterClub": "Verein",
+    "filterDistance": "Entfernung vom Heimatverein",
     "filterScopeHome": "Heimatverein",
     "filterScopeFavorites": "Favoritenvereine",
     "filterScopeAll": "Alle Vereine",

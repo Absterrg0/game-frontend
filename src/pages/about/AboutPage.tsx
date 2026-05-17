@@ -13,7 +13,10 @@ const FRONTEND_SHA = import.meta.env.VITE_COMMIT_SHA ?? "dev";
 
 export default function AboutPage() {
   const { t } = useTranslation();
-  const { data: versionData } = useQuery<{ sha: string }>({ queryKey: ["version"], queryFn: () => api.get("/api/version").then((r) => r.data), staleTime: Infinity });
+  const { data: versionData } = useQuery<{ sha: string }>({
+    queryKey: ["version"],
+    queryFn: () => api.get("/api/version").then((r) => r.data),
+  });
   const backendSha = versionData?.sha ?? "…";
 
   const handleInviteFriends = async () => {

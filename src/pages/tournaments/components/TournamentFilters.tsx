@@ -274,16 +274,6 @@ export function TournamentFilters({
       >
         <div className="space-y-5 px-5 pb-6 pt-5">
           <div>
-            <SectionLabel>{t("tournaments.filterWhen")}</SectionLabel>
-            <PillRow options={whenOptions} value={draftWhen} onChange={setDraftWhen} />
-          </div>
-
-          <div>
-            <SectionLabel>{t("tournaments.filterDistance")}</SectionLabel>
-            <PillRow options={distanceOptions} value={draftDistance} onChange={setDraftDistance} />
-          </div>
-
-          <div>
             <SectionLabel id={clubFilterLabelId}>{t("tournaments.filterClub")}</SectionLabel>
             <PillRow
               options={clubPillOptions}
@@ -457,6 +447,16 @@ export function TournamentFilters({
                 </div>
               )}
             </div>
+          </div>
+
+          <div>
+            <SectionLabel>{t("tournaments.filterWhen")}</SectionLabel>
+            <PillRow options={whenOptions} value={draftWhen} onChange={setDraftWhen} />
+          </div>
+
+          <div>
+            <SectionLabel>{t("tournaments.filterDistance")}</SectionLabel>
+            <PillRow options={distanceOptions} value={draftDistance} onChange={setDraftDistance} />
           </div>
         </div>
 

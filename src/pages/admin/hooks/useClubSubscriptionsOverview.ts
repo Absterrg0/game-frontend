@@ -62,8 +62,6 @@ export function useClubSubscriptionsOverview(enabled = true) {
     queryKey: queryKeys.admin.clubSubscriptions(),
     queryFn: fetchClubSubscriptionsOverview,
     enabled,
-    staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 }

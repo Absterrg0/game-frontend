@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,14 @@ function DistancePillGroup({
   );
 }
 
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-black/40">
+      {children}
+    </p>
+  );
+}
+
 export function ClubsListFiltersPopover({
   open,
   onOpenChange,
@@ -154,15 +162,13 @@ export function ClubsListFiltersPopover({
         sideOffset={10}
         className="w-[min(92vw,26rem)] overflow-visible rounded-2xl border border-black/[0.08] bg-white p-0 shadow-[0_8px_40px_-8px_rgba(0,0,0,0.18),0_2px_8px_-2px_rgba(0,0,0,0.06)]"
       >
-        <div className="px-5 pt-6 pb-2">
-          <h4 className="text-xl font-bold text-foreground">{t("clubs.filters")}</h4>
-        </div>
-
-        <div className="space-y-6 px-5 pb-6 pt-2">
+        <div className="space-y-5 px-5 pb-6 pt-5">
           <div>
+            <SectionLabel>{t("clubs.filterClub")}</SectionLabel>
             <ScopePillGroup options={scopeOptions} value={draftScope} onChange={setDraftScope} />
           </div>
           <div>
+            <SectionLabel>{t("clubs.filterDistance")}</SectionLabel>
             {!hasHomeClub && (
               <p className="mb-2 text-xs text-muted-foreground">{t("clubs.filterDistanceRequiresHome")}</p>
             )}

@@ -37,6 +37,5 @@ export function useSearchUsers(query: string, enabled: boolean) {
     queryKey: queryKeys.user.search(trimmedQuery),
     queryFn: () => searchUsers(trimmedQuery),
     enabled: enabled && isUserSearchQueryValid(trimmedQuery),
-    placeholderData: (prev) => prev,
   });
 }

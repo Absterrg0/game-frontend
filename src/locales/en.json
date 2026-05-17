@@ -8,6 +8,8 @@
     "signUp": "Sign up",
     "language": "Language",
     "loading": "Loading...",
+    "pullToRefreshPull": "Pull down to refresh",
+    "pullToRefreshRelease": "Release to refresh",
     "comingSoon": "Coming soon!",
     "openMenu": "Open menu"
   },
@@ -401,6 +403,8 @@
     "becomeMember": "Become Member",
     "clubDetails": "Club Details",
     "filters": "Filters",
+    "filterClub": "Club",
+    "filterDistance": "Distance from home club",
     "filterScopeHome": "Home club",
     "filterScopeFavorites": "Favourite clubs",
     "filterScopeAll": "All clubs",

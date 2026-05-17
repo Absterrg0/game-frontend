@@ -6,6 +6,9 @@ import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
 import { parseScoreQrTokenFromPayload } from "../scoreQrCameraScan";
 
+/** Public asset: `game-frontend/public/soundreality-tennis-ball-hit-151257.mp3` */
+const SCORE_QR_SCAN_SOUND_SRC = `${import.meta.env.BASE_URL}soundreality-tennis-ball-hit-151257.mp3`;
+
 type UseScoreQrScannerOptions = {
   /** When true, camera scanning is paused (e.g. token already supplied via URL). */
   scanBlocked: boolean;
@@ -88,6 +91,7 @@ export function useScoreQrScanner({
       formats: ["qr_code"],
       scanDelay: 250,
       allowMultiple: true,
+      sound: SCORE_QR_SCAN_SOUND_SRC,
       components: {
         finder: false,
         torch: true,

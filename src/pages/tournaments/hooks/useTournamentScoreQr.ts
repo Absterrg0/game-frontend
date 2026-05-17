@@ -238,7 +238,6 @@ export function useValidateTournamentScoreQr(
     ] as const,
     queryFn: () => validateTournamentScoreQr(normalized),
     enabled: enabled && normalized.length > 0,
-    staleTime: 15_000,
     retry: false,
   });
 }
@@ -258,7 +257,6 @@ export function useValidateTournamentScoreQrConfirmContext(
     ] as const,
     queryFn: () => validateTournamentScoreQrConfirmContext(normalized),
     enabled: enabled && normalized.length > 0,
-    staleTime: 15_000,
     refetchInterval: 5000,
     retry: false,
   });
@@ -323,7 +321,6 @@ export function useActiveTournamentScoreQrSession(
     ] as const,
     queryFn: () => getActiveTournamentScoreQrSession(input),
     enabled,
-    staleTime: 10_000,
     // Poll so the generator's page detects when the session is consumed or expired
     // (e.g. opponent confirmed the QR) without requiring a manual refresh.
     refetchInterval: 8_000,

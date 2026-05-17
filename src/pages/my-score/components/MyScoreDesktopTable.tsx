@@ -58,6 +58,10 @@ export function MyScoreDesktopTable({
         <TableBody>
           {entries.map((entry) => {
             const isPending = entry.status === "pendingScore";
+            const tournamentDisplay =
+              entry.tournament.id == null
+                ? t("myScorePage.table.independentMatch")
+                : entry.tournament.name;
             return (
               <TableRow
                 key={entry.id}
@@ -75,7 +79,7 @@ export function MyScoreDesktopTable({
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
                     <span className="block truncate text-[12px] font-medium text-[#010a04]">
-                      {entry.tournament.name}
+                      {tournamentDisplay}
                     </span>
                   </div>
                 </TableCell>
@@ -95,7 +99,7 @@ export function MyScoreDesktopTable({
                         <Link
                           to="/record-score/manual"
                           className="inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium text-[#067429] underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#067429]/40"
-                          aria-label={`${t("myScorePage.table.resumeQr")} ${entry.tournament.name}`}
+                          aria-label={`${t("myScorePage.table.resumeQr")} ${tournamentDisplay}`}
                         >
                           {t("myScorePage.table.resumeQr")}
                         </Link>

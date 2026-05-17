@@ -28,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: authMeQueryKey,
     queryFn: fetchMe,
     retry: false,
-    staleTime: 5 * 60 * 1000,
   });
 
   const logout = async () => {
@@ -55,11 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  /**
-   * Re-reads the current session from the server. Must invalidate first: a
-   * successful `fetchQuery` can return cached `null` for up to `staleTime` after
-   * the initial unauthenticated `/me` (e.g. after complete-signup sets the cookie).
-   */
+  /** Re-read the current session from the server. */
   const checkAuth = async () => {
     await queryClient.invalidateQueries({ queryKey: authMeQueryKey });
     return queryClient.fetchQuery<AuthUser | null>({
