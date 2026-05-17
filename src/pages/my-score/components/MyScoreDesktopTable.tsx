@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Table,
@@ -7,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import type { MyScoreEntry } from "@/models/myScore/types";
 
 interface MyScoreDesktopTableProps {
@@ -21,6 +23,7 @@ export function MyScoreDesktopTable({
   formatScore,
 }: MyScoreDesktopTableProps) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <div className="hidden sm:block">
@@ -54,38 +57,54 @@ export function MyScoreDesktopTable({
         </TableHeader>
 
         <TableBody>
-          {entries.map((entry) => (
-            <TableRow
-              key={entry.id}
-              className="border-[#010a04]/8 hover:bg-[#010a04]/[0.015]"
-            >
-              <TableCell className="px-4 py-2 text-[12px] text-[#010a04]/82">
-                {formatPlayedAt(entry.playedAt, i18n.language)}
-              </TableCell>
-              <TableCell className="px-4 py-2">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
-                  <span className="block truncate text-[12px] font-medium text-[#010a04]">
-                    {entry.tournament.name}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="px-4 py-2">
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
-                  <span className="block truncate text-[12px] text-[#010a04]/85">
-                    {entry.opponent.name}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="px-4 py-2 text-[12px] font-medium text-[#010a04]">
-                {formatScore(entry.myScore)}
-              </TableCell>
-              <TableCell className="px-4 py-2 text-[12px] font-medium text-[#010a04]">
-                {formatScore(entry.opponentScore)}
-              </TableCell>
-            </TableRow>
-          ))}
+          {entries.map((entry) => {
+            const isPending = entry.status === "pendingScore";
+            return (
+              <TableRow
+                key={entry.id}
+                onClick={isPending ? () => navigate("/record-score/manual") : undefined}
+                className={cn(
+                  "border-[#010a04]/8",
+                  isPending
+                    ? "cursor-pointer hover:bg-[rgba(6,116,41,0.04)]"
+                    : "hover:bg-[#010a04]/[0.015]",
+                )}
+              >
+                <TableCell className="px-4 py-2 text-[12px] text-[#010a04]/82">
+                  {formatPlayedAt(entry.playedAt, i18n.language)}
+                </TableCell>
+                <TableCell className="px-4 py-2">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
+                    <span className="block truncate text-[12px] font-medium text-[#010a04]">
+                      {entry.tournament.name}
+                    </span>
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-2">
+                  <div className="flex min-w-0 flex-col gap-0.5">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
+                      <span className="block truncate text-[12px] text-[#010a04]/85">
+                        {entry.opponent.name}
+                      </span>
+                    </div>
+                    {isPending && (
+                      <span className="ml-7 inline-flex items-center rounded-full bg-[rgba(214,171,63,0.15)] px-1.5 py-0.5 text-[10px] font-medium text-[#9a7620]">
+                        {t("myScorePage.table.pendingConfirmation")}
+                      </span>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="px-4 py-2 text-[12px] font-medium text-[#010a04]">
+                  {formatScore(entry.myScore)}
+                </TableCell>
+                <TableCell className="px-4 py-2 text-[12px] font-medium text-[#010a04]">
+                  {formatScore(entry.opponentScore)}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

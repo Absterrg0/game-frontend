@@ -167,11 +167,26 @@
   }
 }
 
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 @layer utilities {
   /** Softer than `animate-pulse` for loading placeholders (longer, eased breathe). */
   .animate-skeleton-soft {
     animation: skeleton-soft 2.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     will-change: opacity;
+  }
+
+  /** Linear sweep used for shimmer/skeleton loading effects. */
+  .animate-shimmer {
+    animation: shimmer 1.4s ease-in-out infinite;
+    will-change: transform;
   }
 
   @media (prefers-reduced-motion: reduce) {
