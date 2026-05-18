@@ -10,7 +10,6 @@ COPY . .
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 
-# Install dependencies
 RUN yarn install
 
 # Build the React application
