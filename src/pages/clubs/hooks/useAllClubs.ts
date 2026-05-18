@@ -66,6 +66,5 @@ export function useAllClubs(options: UseAllClubsOptions = {}) {
     queryKey: queryKeys.club.list({ page, limit, q, clubScope, distance }),
     queryFn: () => fetchAllClubs(page, limit, q, clubScope, distance),
     enabled,
-    placeholderData: (previousData) => previousData,
   });
 }

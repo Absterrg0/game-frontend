@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import ListFilterIcon from "@/assets/icons/figma/misc/list-filter.svg?react";
@@ -24,7 +25,7 @@ function ScopePillGroup({
   onChange: (v: ClubListClubScope) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="grid grid-cols-3 gap-1">
       {options.map((opt) => {
         const active = value === opt.value;
         return (
@@ -32,9 +33,10 @@ function ScopePillGroup({
             key={opt.value}
             type="button"
             aria-pressed={active}
+            title={opt.label}
             onClick={() => onChange(opt.value)}
             className={[
-              "relative h-8 select-none rounded-full px-3.5 text-[12.5px] font-medium transition-all duration-150",
+              "relative h-7 min-w-0 truncate select-none rounded-full px-1.5 text-center text-[11px] font-medium transition-all duration-150",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60",
               active
                 ? "bg-brand-primary text-white shadow-sm shadow-brand-primary/30"
@@ -53,33 +55,40 @@ function DistancePillGroup({
   options,
   value,
   onChange,
-  disabled,
+  hasHomeClub,
+  onRequiresHomeClub,
 }: {
   options: { value: ClubListDistanceFilter; label: string }[];
   value: ClubListDistanceFilter;
   onChange: (v: ClubListDistanceFilter) => void;
-  disabled: boolean;
+  hasHomeClub: boolean;
+  onRequiresHomeClub: () => void;
 }) {
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.map((opt) => {
         const active = value === opt.value;
-        const optionDisabled = disabled && opt.value !== "all";
+        const requiresHomeClub = !hasHomeClub && opt.value !== "all";
         return (
           <button
             key={opt.value}
             type="button"
             aria-pressed={active}
-            aria-disabled={optionDisabled}
-            disabled={optionDisabled}
-            onClick={() => onChange(opt.value)}
+            aria-disabled={requiresHomeClub}
+            onClick={() => {
+              if (requiresHomeClub) {
+                onRequiresHomeClub();
+                return;
+              }
+              onChange(opt.value);
+            }}
             className={[
               "relative h-8 select-none rounded-full px-3.5 text-[12.5px] font-medium transition-all duration-150",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/60",
               active
                 ? "bg-brand-primary text-white shadow-sm shadow-brand-primary/30"
                 : "bg-[#9CA3AF] text-white hover:bg-[#8B9099]",
-              optionDisabled ? "cursor-not-allowed opacity-45" : "",
+              requiresHomeClub ? "cursor-not-allowed opacity-45" : "",
             ].join(" ")}
           >
             {opt.label}
@@ -87,6 +96,14 @@ function DistancePillGroup({
         );
       })}
     </div>
+  );
+}
+
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.06em] text-black/40">
+      {children}
+    </p>
   );
 }
 
@@ -154,23 +171,21 @@ export function ClubsListFiltersPopover({
         sideOffset={10}
         className="w-[min(92vw,26rem)] overflow-visible rounded-2xl border border-black/[0.08] bg-white p-0 shadow-[0_8px_40px_-8px_rgba(0,0,0,0.18),0_2px_8px_-2px_rgba(0,0,0,0.06)]"
       >
-        <div className="px-5 pt-6 pb-2">
-          <h4 className="text-xl font-bold text-foreground">{t("clubs.filters")}</h4>
-        </div>
-
-        <div className="space-y-6 px-5 pb-6 pt-2">
+        <div className="space-y-5 px-5 pb-6 pt-5">
           <div>
+            <SectionLabel>{t("clubs.filterClub")}</SectionLabel>
             <ScopePillGroup options={scopeOptions} value={draftScope} onChange={setDraftScope} />
           </div>
           <div>
-            {!hasHomeClub && (
-              <p className="mb-2 text-xs text-muted-foreground">{t("clubs.filterDistanceRequiresHome")}</p>
-            )}
+            <SectionLabel>{t("clubs.filterDistance")}</SectionLabel>
             <DistancePillGroup
               options={distanceOptions}
               value={draftDistance}
               onChange={setDraftDistance}
-              disabled={!hasHomeClub}
+              hasHomeClub={hasHomeClub}
+              onRequiresHomeClub={() =>
+                toast.info(t("clubs.filterDistanceRequiresHome"))
+              }
             />
           </div>
         </div>

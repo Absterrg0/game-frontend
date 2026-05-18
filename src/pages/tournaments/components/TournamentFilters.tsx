@@ -47,7 +47,7 @@ function PillRow({
   onChange: (v: string) => void;
 }) {
   return (
-    <div className="flex flex-nowrap gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
         const active = !opt.disabled && value === opt.value;
         return (
@@ -273,75 +273,10 @@ export function TournamentFilters({
         className="w-[min(92vw,26rem)] overflow-visible rounded-2xl border border-black/[0.08] bg-white p-0 shadow-[0_8px_40px_-8px_rgba(0,0,0,0.18),0_2px_8px_-2px_rgba(0,0,0,0.06)]"
       >
         <div className="space-y-5 px-5 pb-6 pt-5">
-          <div>
-            <SectionLabel>{t("tournaments.filterWhen")}</SectionLabel>
-            <PillRow options={whenOptions} value={draftWhen} onChange={setDraftWhen} />
-          </div>
-
-          <div>
-            <SectionLabel>{t("tournaments.filterDistance")}</SectionLabel>
-            <PillRow options={distanceOptions} value={draftDistance} onChange={setDraftDistance} />
-          </div>
-
-          <div>
+          <div className="min-w-0">
             <SectionLabel id={clubFilterLabelId}>{t("tournaments.filterClub")}</SectionLabel>
-            <PillRow
-              options={clubPillOptions}
-              value={clubPillValue === "custom" ? "" : clubPillValue}
-              onChange={(v) => {
-                if (v === "home" && homeClubId) {
-                  setDraftClubScope(undefined);
-                  setDraftClubId(homeClubId);
-                  setSelectedClubState(null);
-                  setClubSearch("");
-                  setClubSearchOpen(false);
-                } else if (v === "favorites") {
-                  setDraftClubScope("favorites");
-                  setDraftClubId(undefined);
-                  setSelectedClubState(null);
-                  setClubSearch("");
-                  setClubSearchOpen(false);
-                } else if (v === "all") {
-                  setDraftClubScope(undefined);
-                  setDraftClubId(undefined);
-                  setSelectedClubState(null);
-                  setClubSearch("");
-                  setClubSearchOpen(false);
-                }
-              }}
-            />
 
-            {draftClubId && selectedClub && !draftClubScope ? (
-              <div className="mt-3 flex items-center gap-1.5">
-                <span className="inline-flex h-6 max-w-[16rem] items-center gap-1.5 truncate rounded-full bg-[#006B2B]/10 px-2.5 text-[11.5px] font-medium text-[#006B2B]">
-                  <span className="block truncate">{selectedClub.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDraftClubId(undefined);
-                      setSelectedClubState(null);
-                      setClubSearch("");
-                    }}
-                    className="shrink-0 leading-none text-[#006B2B]/60 hover:text-[#006B2B]"
-                    aria-label={t("tournaments.removeClubFilter")}
-                  >
-                    ×
-                  </button>
-                </span>
-              </div>
-            ) : null}
-            {draftClubId &&
-            !selectedClub &&
-            (clubsLoading || selectedClubLoading) &&
-            !draftClubScope ? (
-              <div className="mt-3 flex items-center gap-1.5">
-                <span className="inline-flex h-6 max-w-[16rem] truncate rounded-full bg-[#006B2B]/10 px-2.5 text-[11.5px] font-medium text-[#006B2B]">
-                  {t("common.loading")}
-                </span>
-              </div>
-            ) : null}
-
-            <div className="relative mt-3">
+            <div className="relative">
               <Search01Icon
                 size={14}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/35"
@@ -457,6 +392,74 @@ export function TournamentFilters({
                 </div>
               )}
             </div>
+
+            <div className="mt-3">
+              <PillRow
+                options={clubPillOptions}
+                value={clubPillValue === "custom" ? "" : clubPillValue}
+                onChange={(v) => {
+                  if (v === "home" && homeClubId) {
+                    setDraftClubScope(undefined);
+                    setDraftClubId(homeClubId);
+                    setSelectedClubState(null);
+                    setClubSearch("");
+                    setClubSearchOpen(false);
+                  } else if (v === "favorites") {
+                    setDraftClubScope("favorites");
+                    setDraftClubId(undefined);
+                    setSelectedClubState(null);
+                    setClubSearch("");
+                    setClubSearchOpen(false);
+                  } else if (v === "all") {
+                    setDraftClubScope(undefined);
+                    setDraftClubId(undefined);
+                    setSelectedClubState(null);
+                    setClubSearch("");
+                    setClubSearchOpen(false);
+                  }
+                }}
+              />
+            </div>
+
+            {draftClubId && selectedClub && !draftClubScope ? (
+              <div className="mt-3 flex items-center gap-1.5">
+                <span className="inline-flex h-6 max-w-[16rem] items-center gap-1.5 truncate rounded-full bg-[#006B2B]/10 px-2.5 text-[11.5px] font-medium text-[#006B2B]">
+                  <span className="block truncate">{selectedClub.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDraftClubId(undefined);
+                      setSelectedClubState(null);
+                      setClubSearch("");
+                    }}
+                    className="shrink-0 leading-none text-[#006B2B]/60 hover:text-[#006B2B]"
+                    aria-label={t("tournaments.removeClubFilter")}
+                  >
+                    ×
+                  </button>
+                </span>
+              </div>
+            ) : null}
+            {draftClubId &&
+            !selectedClub &&
+            (clubsLoading || selectedClubLoading) &&
+            !draftClubScope ? (
+              <div className="mt-3 flex items-center gap-1.5">
+                <span className="inline-flex h-6 max-w-[16rem] truncate rounded-full bg-[#006B2B]/10 px-2.5 text-[11.5px] font-medium text-[#006B2B]">
+                  {t("common.loading")}
+                </span>
+              </div>
+            ) : null}
+          </div>
+
+          <div>
+            <SectionLabel>{t("tournaments.filterWhen")}</SectionLabel>
+            <PillRow options={whenOptions} value={draftWhen} onChange={setDraftWhen} />
+          </div>
+
+          <div>
+            <SectionLabel>{t("tournaments.filterDistance")}</SectionLabel>
+            <PillRow options={distanceOptions} value={draftDistance} onChange={setDraftDistance} />
           </div>
         </div>
 

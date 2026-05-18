@@ -24,6 +24,10 @@ export function MyScoreMobileCards({
     <div className="space-y-2.5 p-2.5 sm:hidden">
       {entries.map((entry) => {
         const isPending = entry.status === "pendingScore";
+        const tournamentDisplay =
+          entry.tournament.id == null
+            ? t("myScorePage.table.independentMatch")
+            : entry.tournament.name;
         return (
           <Card
             key={`mobile-card-${entry.id}`}
@@ -42,7 +46,7 @@ export function MyScoreMobileCards({
             role={isPending ? "button" : undefined}
             aria-label={
               isPending
-                ? `${t("myScorePage.table.resumeQr")} ${entry.tournament.name}`
+                ? `${t("myScorePage.table.resumeQr")} ${tournamentDisplay}`
                 : undefined
             }
             className={cn(
@@ -58,7 +62,7 @@ export function MyScoreMobileCards({
                   <span className="h-8 w-8 shrink-0 rounded-[6px] bg-[#cfd3d0]" />
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-[#010a04]">
-                      {entry.tournament.name}
+                      {tournamentDisplay}
                     </p>
                     <p className="text-[11px] text-[#010a04]/55">
                       {formatPlayedAt(entry.playedAt, i18n.language)}

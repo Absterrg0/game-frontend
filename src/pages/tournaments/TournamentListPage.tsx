@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState, type TouchEvent as ReactTouchEvent } from "react";
+import { useCallback, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
-import InlineLoader from "@/components/shared/InlineLoader";
 import { PaginationBar } from "@/components/pagination/PaginationBar";
 import { CreateTournamentModal } from "@/pages/tournaments/components/CreateTournamentModal";
 import { useIsOrganiserOrAbove, useAuth } from "@/pages/auth/hooks";
@@ -33,10 +32,6 @@ const DEFAULT_PAGINATION = {
   limit: 10,
   totalPages: 0,
 } as const;
-
-const PULL_TO_REFRESH_THRESHOLD_PX = 72;
-const PULL_TO_REFRESH_MAX_PX = 112;
-const PULL_TO_REFRESH_DAMPING = 0.45;
 
 function TournamentListContent() {
   const { t, i18n } = useTranslation();
@@ -91,11 +86,6 @@ function TournamentListContent() {
   const { data, error, isPending, isFetching, refetch, isLoadingError } = useTournaments(
     effectiveFilters()
   );
-  const pullStartYRef = useRef<number | null>(null);
-  const pullContainerRef = useRef<HTMLDivElement | null>(null);
-  const [pullDistance, setPullDistance] = useState(0);
-  const [isPulling, setIsPulling] = useState(false);
-  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   const tournaments = data?.tournaments ?? [];
   const pagination = data?.pagination ?? DEFAULT_PAGINATION;
@@ -118,99 +108,8 @@ function TournamentListContent() {
     },
     [setClubFilter, setDistanceFromValue, setWhenFromValue]
   );
-  const canUsePullToRefresh = !isDesktop && !filtersOpen;
-  const pullReadyToRefresh = pullDistance >= PULL_TO_REFRESH_THRESHOLD_PX;
-  const pullIndicatorMessage = isPullRefreshing
-    ? t("common.loading")
-    : pullReadyToRefresh
-      ? t("tournaments.pullToRefreshRelease")
-      : t("tournaments.pullToRefreshPull");
-
-  const resetPullState = useCallback(() => {
-    pullStartYRef.current = null;
-    setIsPulling(false);
-    setPullDistance(0);
-  }, []);
-
-  const handleTouchStart = useCallback(
-    (event: ReactTouchEvent<HTMLDivElement>) => {
-      if (!canUsePullToRefresh || isFetching || isPending) return;
-      if (event.touches.length !== 1) return;
-      if (window.scrollY > 0) return;
-
-      pullStartYRef.current = event.touches[0].clientY;
-      setIsPulling(true);
-    },
-    [canUsePullToRefresh, isFetching, isPending]
-  );
-
-  useEffect(() => {
-    const el = pullContainerRef.current;
-    if (!el) return;
-
-    const listener = (event: globalThis.TouchEvent) => {
-      const startY = pullStartYRef.current;
-      if (!canUsePullToRefresh || !isPulling || startY == null || isPullRefreshing) return;
-
-      if (window.scrollY > 0) {
-        resetPullState();
-        return;
-      }
-
-      if (event.touches.length !== 1) return;
-
-      const deltaY = event.touches[0].clientY - startY;
-      if (deltaY <= 0) {
-        setPullDistance(0);
-        return;
-      }
-
-      const nextDistance = Math.min(PULL_TO_REFRESH_MAX_PX, deltaY * PULL_TO_REFRESH_DAMPING);
-      setPullDistance(nextDistance);
-      if (event.cancelable) event.preventDefault();
-    };
-
-    el.addEventListener("touchmove", listener, { passive: false });
-    return () => el.removeEventListener("touchmove", listener);
-  }, [canUsePullToRefresh, isPulling, isPullRefreshing, resetPullState]);
-
-  const triggerPullRefresh = useCallback(async () => {
-    setIsPullRefreshing(true);
-    try {
-      await refetch();
-    } finally {
-      setIsPullRefreshing(false);
-      resetPullState();
-    }
-  }, [refetch, resetPullState]);
-
-  const handleTouchEnd = useCallback(() => {
-    if (!isPulling || isPullRefreshing) return;
-    if (pullReadyToRefresh) {
-      void triggerPullRefresh();
-      return;
-    }
-    resetPullState();
-  }, [isPulling, isPullRefreshing, pullReadyToRefresh, resetPullState, triggerPullRefresh]);
-
   return (
-    <div
-      ref={pullContainerRef}
-      className="flex min-h-[calc(100vh-56px)] flex-col overscroll-y-contain bg-[#f8fbf8] [touch-action:pan-y] lg:min-h-[calc(100vh-60px)]"
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={resetPullState}
-    >
-      <div
-        aria-live="polite"
-        className="overflow-hidden px-4 text-center text-xs text-muted-foreground transition-[height] duration-150 lg:hidden"
-        style={{ height: canUsePullToRefresh && (pullDistance > 0 || isPullRefreshing) ? 40 : 0 }}
-      >
-        <div className="flex h-10 items-center justify-center gap-2">
-          {isPullRefreshing ? <InlineLoader size="sm" /> : null}
-          <span>{pullIndicatorMessage}</span>
-        </div>
-      </div>
+    <div className="flex min-h-[calc(100vh-56px)] flex-col bg-[#f8fbf8] lg:min-h-[calc(100vh-60px)]">
       <div className="mx-auto w-full max-w-[440px] flex-1 px-3 pb-6 pt-6 sm:max-w-none sm:px-4 sm:pb-8 sm:pt-7 lg:max-w-[1060px] lg:px-6 lg:py-8">
         <div className="overflow-hidden rounded-[12px] border border-[rgba(1,10,4,0.08)] bg-white shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)]">
           <div className="px-4 pb-4 pt-5 sm:px-5 lg:py-4">
@@ -285,15 +184,6 @@ function TournamentListContent() {
             </div>
           </div>
 
-          {isFetching && !isPending ? (
-            <div className="px-4 pb-2 sm:px-5">
-              <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground">
-                <InlineLoader size="sm" />
-                {t("common.loading")}
-              </div>
-            </div>
-          ) : null}
-
           {isPending ? (
             <TournamentTableSkeleton />
           ) : showFullPageLoadError ? (
@@ -312,9 +202,10 @@ function TournamentListContent() {
                 variant="outline"
                 size="sm"
                 disabled={isFetching}
+                aria-busy={isFetching}
                 onClick={() => void refetch()}
               >
-                {isFetching ? t("common.loading") : t("tournaments.retry")}
+                {t("tournaments.retry")}
               </Button>
             </div>
           ) : (
@@ -340,9 +231,10 @@ function TournamentListContent() {
                     size="sm"
                     className="shrink-0 self-start sm:self-auto"
                     disabled={isFetching}
+                    aria-busy={isFetching}
                     onClick={() => void refetch()}
                   >
-                    {isFetching ? t("common.loading") : t("tournaments.retry")}
+                    {t("tournaments.retry")}
                   </Button>
                 </div>
               ) : null}

@@ -33,7 +33,7 @@ export function PlatformSponsorFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="max-w-[416px] gap-0 overflow-visible rounded-[12px] border-black/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)]"
+        className="w-[min(calc(100vw-2rem),416px)] max-w-none gap-0 overflow-visible rounded-[12px] border-black/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)]"
       >
         <PlatformSponsorFormDialogHeader title={title} />
 

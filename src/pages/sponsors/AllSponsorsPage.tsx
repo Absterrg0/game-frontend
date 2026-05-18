@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { ExternalLink } from "@/icons/figma-icons";
+import { ExternalLink, PlusSignIcon } from "@/icons/figma-icons";
 import { useAllSponsors } from "@/pages/sponsors/hooks";
 import InlineLoader from "@/components/shared/InlineLoader";
 import { GLOBAL_PARAMETERS } from "@/constants/constants";
@@ -37,8 +37,8 @@ export default function AllSponsorsPage() {
               href={buildBecomeSponsorHref()}
               className="ml-auto inline-flex items-center gap-2 rounded-lg bg-[#0a9f43] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#088a38] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a9f43]"
             >
+              <PlusSignIcon size={16} className="shrink-0 text-white" />
               {t("sponsors.becomeSponsor")}
-              <ExternalLink className="size-4 text-white" />
             </a>
           </div>
 

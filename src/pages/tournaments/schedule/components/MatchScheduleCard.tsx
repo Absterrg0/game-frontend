@@ -1,18 +1,24 @@
 import type { Locale } from "date-fns";
 import { useState, type CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import {
-  IconCalendarDays, IconClock, IconMap, PencilEdit01Icon,
+  IconCalendarDays,
+  IconClock,
+  IconMap,
+  IconScanBarcode,
+  PencilEdit01Icon,
 } from "@/icons/figma-icons";
 import type { TournamentScheduleMatch } from "@/models/tournament/types";
 import { matchScheduleDateTimeLabels } from "@/pages/tournaments/schedule/utils/matchScheduleLabels";
 import { MatchCardReadOnlyRows } from "./MatchCardReadOnlyRows";
 import {
   getScoreSelectOptions,
+  hasRecordedMatchScore,
   scoreEditorSelectTriggerClassName,
   SCORE_SELECT_EMPTY_VALUE,
   scoreColumns,
@@ -59,6 +65,9 @@ export interface MatchScheduleCardProps {
   locale: Locale;
   timeZone?: string | null;
   t: (key: string, options?: Record<string, unknown>) => string;
+  /** When set and the viewer cannot inline-edit, show “Record score” (QR flow). */
+  tournamentId?: string | null;
+  tournamentName?: string | null;
   canEditScores: boolean;
   isEditing: boolean;
   editableRows: ScoreEditorRow[];
@@ -74,8 +83,19 @@ export interface MatchScheduleCardProps {
 }
 
 export function MatchScheduleCard({
-  match, locale, timeZone, t, canEditScores, isEditing, editableRows,
-  isSavePending, saveErrorMessage, onToggleEdit, onScoreInputChange,
+  match,
+  locale,
+  timeZone,
+  t,
+  tournamentId,
+  tournamentName,
+  canEditScores,
+  isEditing,
+  editableRows,
+  isSavePending,
+  saveErrorMessage,
+  onToggleEdit,
+  onScoreInputChange,
 }: MatchScheduleCardProps) {
   const unknown = t("tournaments.unknownPlayer");
   const firstPlayer = teamSideDisplayName(match, 0, t) || unknown;
@@ -105,12 +125,27 @@ export function MatchScheduleCard({
   const isPendingScore = match.status === "pendingScore";
   const isCancelled = match.status === "cancelled";
   const isFromPreviousRound = match.detachedFromRound != null;
+  const hasScore = hasRecordedMatchScore(match);
   const showHistoricalBadge = isFromPreviousRound || match.isHistorical;
   const hasStatusBadge = isLive || isPendingScore || isCancelled;
   const scoreGridStyle = {
     "--score-column-count": Math.max(editableRowsToRender.length, 1),
     gridTemplateColumns: `repeat(${Math.max(editableRowsToRender.length, 1)}, 2rem)`,
   } as CSSProperties;
+
+  const recordScoreSearch = new URLSearchParams();
+  if (tournamentId) {
+    recordScoreSearch.set("tournamentId", tournamentId);
+    recordScoreSearch.set("matchId", match.id);
+    const name = tournamentName?.trim();
+    if (name) {
+      recordScoreSearch.set("tournamentName", name);
+    }
+  }
+  const recordScoreTo =
+    tournamentId != null && tournamentId !== ""
+      ? `/record-score/manual?${recordScoreSearch.toString()}`
+      : null;
 
   return (
     <article
@@ -126,7 +161,7 @@ export function MatchScheduleCard({
       )}
     >
       {/* Header: metadata + edit button */}
-      <div className="mb-2.5 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+      <div className="mb-2.5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
           {[
             { Icon: IconCalendarDays, label: dateLabel, timeZone: null },
@@ -173,6 +208,18 @@ export function MatchScheduleCard({
               : isEditing
                 ? t("tournaments.saveChanges")
                 : t("tournaments.editScore")}
+          </Button>
+        )}
+        {!canEditScores && recordScoreTo && !isCancelled && !isFromPreviousRound && !hasScore && (
+          <Button
+            asChild
+            size="sm"
+            className="h-7 min-w-0 justify-self-end rounded-[7px] border border-[#010a04]/[0.12] bg-white px-2.5 text-[12px] font-medium text-[#010a04] shadow-none hover:bg-[#010a04]/[0.04]"
+          >
+            <Link to={recordScoreTo} className="inline-flex items-center gap-1.5">
+              <IconScanBarcode size={13} aria-hidden className="shrink-0 text-current" />
+              {t("tournaments.recordScoreCta")}
+            </Link>
           </Button>
         )}
       </div>

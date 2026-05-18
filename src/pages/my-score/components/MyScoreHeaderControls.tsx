@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { ShareTextButton } from "@/components/shared/ShareTextButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -9,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Share2 } from "@/icons/figma-icons";
 import { cn } from "@/lib/utils";
 import type { MyScoreDateRange, MyScoreFilterMode } from "@/models/myScore/types";
 import { DATE_RANGES, FILTER_MODES } from "../constants";
@@ -41,13 +41,11 @@ export function MyScoreHeaderControls({
             <CardTitle className="shrink-0 text-[22px] font-semibold tracking-[-0.02em] text-[#010a04]">
               {t("myScorePage.title")}
             </CardTitle>
-            <Button
+            <ShareTextButton
+              className="shrink-0"
+              label={t("myScorePage.share")}
               onClick={onShare}
-              className="flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] bg-brand-accent px-3 text-[11px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
-            >
-              <Share2 className="size-3.5" aria-hidden />
-              {t("myScorePage.share")}
-            </Button>
+            />
           </div>
 
           <div className="hidden items-center gap-2 sm:flex">
@@ -58,13 +56,11 @@ export function MyScoreHeaderControls({
               <ModeFilterPills mode={mode} onChangeMode={onChangeMode} />
               <RangeFilterSelect range={range} onChangeRange={onChangeRange} />
             </div>
-            <Button
+            <ShareTextButton
+              className="shrink-0"
+              label={t("myScorePage.share")}
               onClick={onShare}
-              className="flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] bg-brand-accent px-3 text-[11px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
-            >
-              <Share2 className="size-3.5" aria-hidden />
-              {t("myScorePage.share")}
-            </Button>
+            />
           </div>
 
           <div className="flex flex-wrap items-center gap-1.5 sm:hidden">

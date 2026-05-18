@@ -6,6 +6,7 @@ import ScannerIcon from "@/assets/icons/figma/vuesax/bold/scanner.svg?react";
 import { IconChevronLeft } from "@/icons/figma-icons";
 import { usePromoteScoreQrTokenFromQuery } from "./hooks/usePromoteScoreQrTokenFromQuery";
 import { useScanEnvironment } from "./hooks/useScanEnvironment";
+import { unlockScoreQrScanSound } from "@/lib/scoreQrScanSound";
 import { useScoreQrScanner } from "./hooks/useScoreQrScanner";
 import { storeScoreQrToken } from "./scoreQrTokenSession";
 
@@ -70,11 +71,16 @@ export default function ValidateScoreScanPage() {
   });
 
   const onBack = () => {
+    unlockScoreQrScanSound();
     if (window.history.length > 1) {
       navigate(-1);
       return;
     }
     navigate("/record-score", { replace: true });
+  };
+
+  const unlockScanAudio = () => {
+    unlockScoreQrScanSound();
   };
 
   const backLabel = t(
@@ -122,7 +128,10 @@ export default function ValidateScoreScanPage() {
           <ScanPageSpinner />
         </div>
       ) : scanEnvironment === "ready" ? (
-        <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div
+          className="relative min-h-0 flex-1 overflow-hidden"
+          onPointerDown={unlockScanAudio}
+        >
           <Scanner {...scannerProps} />
           <div
             className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"

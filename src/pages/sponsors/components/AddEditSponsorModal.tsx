@@ -100,7 +100,7 @@ export function AddEditSponsorModal({
         onOpenChange(nextOpen);
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="w-[min(calc(100vw-2rem),416px)] max-w-none">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? t("sponsors.editTitle") : t("sponsors.addTitle")}

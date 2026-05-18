@@ -9,9 +9,22 @@ import { execSync } from 'child_process'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-const commitSha = process.env.VITE_COMMIT_SHA ?? (() => {
-  try { return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim() } catch { return 'dev' }
-})()
+function shortSha(value: string): string {
+  const trimmed = value.trim()
+  return trimmed.length <= 7 ? trimmed : trimmed.slice(0, 7)
+}
+
+const commitSha =
+  process.env.VITE_COMMIT_SHA ??
+  (process.env.VERCEL_GIT_COMMIT_SHA
+    ? shortSha(process.env.VERCEL_GIT_COMMIT_SHA)
+    : (() => {
+        try {
+          return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+        } catch {
+          return 'dev'
+        }
+      })())
 
 export default defineConfig({
   envPrefix: ['VITE_', 'REACT_APP_'],

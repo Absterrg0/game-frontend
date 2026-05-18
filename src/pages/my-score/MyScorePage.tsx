@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
+import { shareDataWithUrlInText } from "@/lib/webShare";
 
 import type {
   MyScoreDateRange,
@@ -85,15 +86,33 @@ export default function MyScorePage() {
   }, [location.pathname, location.search, mode, navigate, page, range]);
 
   const onShare = async () => {
+    const baseUrl = `${window.location.origin}${window.location.pathname}`;
+    const shareUrl = new URL(baseUrl);
+
+    shareUrl.searchParams.set("mode", mode);
+    shareUrl.searchParams.set("range", range);
+    shareUrl.searchParams.set("page", String(effectivePage));
+
+    const urlString = shareUrl.toString();
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share(
+          shareDataWithUrlInText({
+            textBeforeUrl: t("myScorePage.title"),
+            url: urlString,
+          }),
+        );
+        return;
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          return;
+        }
+      }
+    }
+
     try {
-      const baseUrl = `${window.location.origin}${window.location.pathname}`;
-      const shareUrl = new URL(baseUrl);
-
-      shareUrl.searchParams.set("mode", mode);
-      shareUrl.searchParams.set("range", range);
-      shareUrl.searchParams.set("page", String(effectivePage));
-
-      await navigator.clipboard.writeText(shareUrl.toString());
+      await navigator.clipboard.writeText(urlString);
 
       toast.success(t("myScorePage.shareSuccess"));
     } catch {

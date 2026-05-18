@@ -31,15 +31,11 @@ async function fetchAdminClubs(): Promise<AdminClubsResponse> {
   };
 }
 
-/** Shorter stale time + refetch on focus so counts stay plausible across admins/tabs. */
-const ADMIN_CLUBS_STALE_MS = 60 * 1000;
-
 export function useAdminClubs(enabled = true) {
   return useQuery({
     queryKey: queryKeys.user.adminClubs(),
     queryFn: fetchAdminClubs,
     enabled,
-    staleTime: ADMIN_CLUBS_STALE_MS,
     gcTime: 30 * 60 * 1000,
   });
 }
@@ -48,6 +44,5 @@ export function useAdminClubsSuspense() {
   return useSuspenseQuery({
     queryKey: queryKeys.user.adminClubs(),
     queryFn: fetchAdminClubs,
-    staleTime: ADMIN_CLUBS_STALE_MS,
   });
 }

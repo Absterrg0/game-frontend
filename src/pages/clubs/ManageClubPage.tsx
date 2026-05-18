@@ -399,7 +399,7 @@ export default function ManageClubPage() {
         >
           ← {t("clubs.goBack")}
         </button>
-        <div className="flex flex-col gap-[25px] lg:flex-row lg:gap-[34px]">
+        <div className="flex min-w-0 flex-col gap-[25px] lg:flex-row lg:gap-[34px]">
         {!clubsLoading && clubsError && adminClubsData != null && (
           <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive" role="alert">
             <p>{getErrorMessage(adminClubsQueryError) ?? t("settings.adminClubsLoadError")}</p>
@@ -448,7 +448,7 @@ export default function ManageClubPage() {
 
             <main
               className={cn(
-                "flex-1",
+                "min-w-0 flex-1",
                 mobileView === "clubs" && "hidden lg:block"
               )}
             >
@@ -460,7 +460,7 @@ export default function ManageClubPage() {
                 <MainContentSkeleton />
               ) : (
                 <>
-                  <div className="rounded-[12px] border border-black/8 bg-white px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-5">
+                  <div className="min-w-0 overflow-hidden rounded-[12px] border border-black/8 bg-white px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] lg:px-3 lg:py-5">
                     <ManageClubHeader
                       clubId={effectiveClubId}
                       selectedClub={selectedClub}

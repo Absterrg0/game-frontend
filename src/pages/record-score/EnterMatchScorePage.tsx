@@ -66,6 +66,7 @@ export default function EnterMatchScorePage() {
     hasValidationLink,
     isPrimaryGenerateDisabled,
     hasActiveIndependentSession,
+    manualPrefillSummaryLabel,
   } = useEnterMatchScoreController({
     t,
     language: i18n.language,
@@ -196,11 +197,21 @@ export default function EnterMatchScorePage() {
               aria-busy={isGenerating}
             >
               <div className="mt-1 flex flex-col gap-1 sm:mt-2 sm:flex-row sm:items-start sm:justify-between">
-                <h1 className="text-[1.125rem] font-semibold leading-snug tracking-tight text-[#010a04] sm:text-2xl">
-                  {mode === "confirm"
-                    ? t("recordScorePage.enter.validateTitle")
-                    : t("recordScorePage.enter.title")}
-                </h1>
+                <div className="min-w-0">
+                  <h1 className="text-[1.125rem] font-semibold leading-snug tracking-tight text-[#010a04] sm:text-2xl">
+                    {mode === "confirm"
+                      ? t("recordScorePage.enter.validateTitle")
+                      : t("recordScorePage.enter.title")}
+                  </h1>
+                  {mode === "generate" && manualPrefillSummaryLabel ? (
+                    <p
+                      className="mt-2 max-w-full rounded-[10px] border border-[#010a04]/[0.08] bg-[#f8fbf8] px-3 py-2 text-[12px] font-medium leading-snug text-[#010a04]/85 sm:text-[13px]"
+                      role="status"
+                    >
+                      {manualPrefillSummaryLabel}
+                    </p>
+                  ) : null}
+                </div>
                 {expiresAtLabel ? (
                   <p className="text-[12px] leading-[1.35] text-[#010a04]/65 sm:pt-1 sm:text-right">
                     {t("recordScorePage.enter.qrExpiresAt", {

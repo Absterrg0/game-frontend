@@ -1,8 +1,9 @@
 import { Trans, useTranslation } from "react-i18next";
+import { ShareTextButton } from "@/components/shared/ShareTextButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Share2 } from "@/icons/figma-icons";
 import { GLOBAL_PARAMETERS } from "@/constants/constants";
+import { shareDataWithUrlInText } from "@/lib/webShare";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
@@ -13,17 +14,21 @@ const FRONTEND_SHA = import.meta.env.VITE_COMMIT_SHA ?? "dev";
 
 export default function AboutPage() {
   const { t } = useTranslation();
-  const { data: versionData } = useQuery<{ sha: string }>({ queryKey: ["version"], queryFn: () => api.get("/api/version").then((r) => r.data), staleTime: Infinity });
+  const { data: versionData } = useQuery<{ sha: string }>({
+    queryKey: ["version"],
+    queryFn: () => api.get("/api/version").then((r) => r.data),
+  });
   const backendSha = versionData?.sha ?? "…";
 
   const handleInviteFriends = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({
-          title: t("about.inviteShareTitle"),
-          text: t("about.inviteShareText"),
-          url: GLOBAL_PARAMETERS.TB10_SHARE_URL,
-        });
+        await navigator.share(
+          shareDataWithUrlInText({
+            textBeforeUrl: t("about.inviteShareText"),
+            url: GLOBAL_PARAMETERS.TB10_SHARE_URL,
+          }),
+        );
         return;
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
@@ -52,14 +57,11 @@ export default function AboutPage() {
               <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[#010a04] sm:text-[28px]">
                 {t("about.title")}
               </h1>
-              <Button
-                type="button"
+              <ShareTextButton
+                className="shrink-0"
+                label={t("about.share")}
                 onClick={handleInviteFriends}
-                className="flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] bg-brand-accent px-3 text-[11px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
-              >
-                <Share2 className="size-3.5" aria-hidden />
-                {t("about.share")}
-              </Button>
+              />
             </div>
           </header>
 
