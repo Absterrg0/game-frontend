@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { getErrorMessage } from "@/lib/errors";
+import { playScoreQrScanSound } from "@/lib/scoreQrScanSound";
 import { parseScoreQrTokenFromPayload } from "../scoreQrCameraScan";
 
 type UseScoreQrScannerOptions = {
@@ -62,6 +63,7 @@ export function useScoreQrScanner({
 
       detectedRef.current = true;
       setHasDetectedToken(true);
+      playScoreQrScanSound();
       onTokenDetected(detectedToken);
     },
     [onTokenDetected, scanBlocked],
@@ -87,7 +89,8 @@ export function useScoreQrScanner({
       },
       formats: ["qr_code"],
       scanDelay: 250,
-      allowMultiple: true,
+      allowMultiple: false,
+      sound: false,
       components: {
         finder: false,
         torch: true,

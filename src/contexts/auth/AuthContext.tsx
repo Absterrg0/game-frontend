@@ -28,7 +28,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: authMeQueryKey,
     queryFn: fetchMe,
     retry: false,
-    staleTime: 5 * 60 * 1000,
   });
 
   const logout = async () => {
@@ -38,28 +37,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // ignore network errors; still clear client state
     }
 
-    await queryClient.cancelQueries();
+    // Cancel only auth/user/admin observers. A blanket `cancelQueries()` waits on
+    // every in-flight query (tournaments, clubs, …) and can freeze the UI on mobile.
+    await Promise.all([
+      queryClient.cancelQueries({ queryKey: queryKeys.auth.all }),
+      queryClient.cancelQueries({ queryKey: queryKeys.user.all }),
+      queryClient.cancelQueries({ queryKey: queryKeys.admin.all }),
+    ]);
 
     queryClient.setQueryData(authMeQueryKey, null);
-  
+
     queryClient.removeQueries({ queryKey: queryKeys.user.all });
 
     // Only evict admin/auth-sensitive club-related caches. Do not remove
     // public club caches (list/detail/sponsors) which use the `club` prefix.
     queryClient.removeQueries({ queryKey: queryKeys.admin.all });
     queryClient.removeQueries({ queryKey: queryKeys.user.adminClubs(), exact: true });
-  
+
     void queryClient.invalidateQueries({
       queryKey: authMeQueryKey,
       refetchType: "none",
     });
   };
 
-  /**
-   * Re-reads the current session from the server. Must invalidate first: a
-   * successful `fetchQuery` can return cached `null` for up to `staleTime` after
-   * the initial unauthenticated `/me` (e.g. after complete-signup sets the cookie).
-   */
+  /** Re-read the current session from the server. */
   const checkAuth = async () => {
     await queryClient.invalidateQueries({ queryKey: authMeQueryKey });
     return queryClient.fetchQuery<AuthUser | null>({

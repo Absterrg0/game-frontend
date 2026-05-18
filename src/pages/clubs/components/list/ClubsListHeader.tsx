@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Settings01Icon } from "@/icons/figma-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import InlineLoader from "@/components/shared/InlineLoader";
@@ -46,11 +45,12 @@ export function ClubsListHeader({
           hasHomeClub={hasHomeClub}
         />
         {canManage ? (
-          <Button variant="outline" size="sm" className="h-9 shrink-0" asChild>
-            <Link to="/clubs/manage">
-              <Settings01Icon size={16} className="mr-2" />
-              {t("clubs.manageClubs")}
-            </Link>
+          <Button
+            size="sm"
+            className="h-9 shrink-0 rounded-[8px] border border-[rgba(1,10,4,0.12)] bg-brand-accent px-3 font-medium text-[#010a04] shadow-xs hover:bg-brand-accent-hover"
+            asChild
+          >
+            <Link to="/clubs/manage">{t("clubs.manageClubs")}</Link>
           </Button>
         ) : null}
       </div>

@@ -63,6 +63,7 @@ const pathToTitleKey: Record<string, string> = {
   "/settings-preview": "settings.title",
   "/tournaments": "settings.nav.tournaments",
   "/my-score": "settings.nav.myScore",
+  "/players/": "myScorePage.sharedTitle",
   "/record-score": "settings.nav.recordScore",
   "/clubs/manage/sponsors/": "sponsors.title",
   "/clubs/manage": "manageClub.title",
@@ -390,7 +391,15 @@ export function AppNavbar() {
           "relative mx-auto grid h-full w-full max-w-[1440px] grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-2 px-3 lg:gap-x-2 lg:px-6 xl:px-[72px] xl:gap-x-3"
         )}
       >
-        <div className="flex shrink-0 lg:h-[33px] xl:h-[39px]">
+        {/* True horizontal center on small screens: grid side columns are unequal widths (logo vs menu),
+            so the title must not live in the middle grid cell. */}
+        <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center px-[3.25rem] py-1 sm:px-20 lg:hidden">
+          <span className="min-w-0 max-w-[min(72vw,18rem)] truncate pb-px text-center text-[22px] font-semibold leading-tight text-[#F4C95D] sm:max-w-[min(70vw,20rem)] sm:text-[24px]">
+            {pageTitle}
+          </span>
+        </div>
+
+        <div className="relative z-10 flex shrink-0 lg:h-[33px] xl:h-[39px]">
           <Link
             to="/"
             className="inline-flex shrink-0 items-center"
@@ -404,10 +413,7 @@ export function AppNavbar() {
           </Link>
         </div>
 
-        <div className="flex min-w-0 w-full justify-center overflow-hidden px-1 lg:overflow-visible">
-          <span className="block w-full min-w-0 truncate text-center text-[22px] font-semibold leading-none text-[#F4C95D] sm:text-[24px] lg:hidden">
-            {pageTitle}
-          </span>
+        <div className="relative z-0 flex min-w-0 w-full justify-center overflow-hidden px-1 lg:z-auto lg:overflow-visible">
           <nav
             className={cn(
               "hidden items-center justify-center lg:flex",
@@ -423,7 +429,7 @@ export function AppNavbar() {
           </nav>
         </div>
 
-        <div className="flex shrink-0 justify-end gap-2 lg:gap-2">
+        <div className="relative z-10 flex shrink-0 justify-end gap-2 lg:gap-2">
           <div className="hidden items-center gap-2 lg:flex">
             {!isAuthenticated && (
               <DropdownMenu>

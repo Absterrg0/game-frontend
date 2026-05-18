@@ -1,8 +1,8 @@
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
-import { ChevronLeft, PencilEdit01Icon, Share2 } from "@/icons/figma-icons";
-import { Upload01Icon } from "@/icons/figma-icons";
+import { ShareTextButton } from "@/components/shared/ShareTextButton";
+import { ChevronLeft, PencilEdit01Icon, Upload01Icon } from "@/icons/figma-icons";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { shareDataWithUrlInText } from "@/lib/webShare";
 import { useAuth } from "@/pages/auth/hooks";
 import { TournamentDetailsPageSkeleton } from "@/pages/tournaments/components/TournamentDetailsLoadingSkeletons";
 import { TournamentDetailsTabs } from "@/pages/tournaments/components/details-tabs/TournamentDetailsTabs";
@@ -165,21 +166,24 @@ export default function TournamentDetailsPage() {
   };
 
   const onShare = async () => {
-    const shareData = {
-      title: tournament.name,
-      text: tournament.descriptionInfo || tournament.name,
-      url: window.location.href,
-    };
+    const url = window.location.href;
+    const shareData = shareDataWithUrlInText({
+      textBeforeUrl: tournament.descriptionInfo?.trim() || tournament.name,
+      url,
+    });
     if (navigator.share) {
       try {
         await navigator.share(shareData);
         return;
-      } catch {
-        // Fall back to clipboard when share is aborted/unavailable.
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          return;
+        }
+        // Fall back to clipboard when share is unavailable or fails.
       }
     }
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(url);
       toast.success(t("tournaments.linkCopied"));
     } catch {
       toast.error(t("tournaments.shareError"));
@@ -221,18 +225,7 @@ export default function TournamentDetailsPage() {
                 {t("tournaments.publish")}
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onShare}
-              className="group inline-flex h-auto gap-1.5 rounded-md px-2 py-1 text-[14px] font-medium text-[#010a04] transition-[background-color,transform] duration-200 ease-out hover:bg-[#010a04]/[0.07] hover:text-[#010a04] active:bg-[#010a04]/[0.1]"
-            >
-              <Share2
-                size={16}
-                className="text-[#010a04] transition-transform duration-200 ease-out group-hover:scale-[1.05]"
-              />
-              {t("tournaments.share")}
-            </Button>
+            <ShareTextButton label={t("tournaments.share")} onClick={onShare} />
           </div>
         </div>
 

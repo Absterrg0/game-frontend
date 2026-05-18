@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import MoveRightIcon from "@/assets/icons/figma/lucide/move-right.svg?react";
 import {
   IconChevronLeft,
@@ -20,6 +21,20 @@ type ActionCardConfig = {
 export default function RecordScorePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const tournamentId = searchParams.get("tournamentId")?.trim() ?? "";
+    const matchId = searchParams.get("matchId")?.trim() ?? "";
+    if (!tournamentId || !matchId) return;
+    navigate(
+      {
+        pathname: "/record-score/manual",
+        search: searchParams.toString(),
+      },
+      { replace: true },
+    );
+  }, [navigate, searchParams]);
 
   const actionCards: ActionCardConfig[] = [
     {

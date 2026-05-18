@@ -130,6 +130,120 @@ export function buildMatchLabel(
     : base;
 }
 
+export function isScorableMatchOption(option: MatchOption): boolean {
+  return option.kind === "independent" || !option.hasRecordedScore;
+}
+
+function toStartTimeMs(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  const time = parsed.getTime();
+  return Number.isNaN(time) ? null : time;
+}
+
+function isIsoOnCurrentLocalDay(
+  value: string | null | undefined,
+  referenceDate: Date,
+): boolean {
+  if (!value) return false;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return false;
+
+  return (
+    parsed.getFullYear() === referenceDate.getFullYear() &&
+    parsed.getMonth() === referenceDate.getMonth() &&
+    parsed.getDate() === referenceDate.getDate()
+  );
+}
+
+function pickEarliestByStartTime(options: MatchOption[]): MatchOption | null {
+  return options.reduce<MatchOption | null>((earliest, option) => {
+    if (!earliest) return option;
+
+    const earliestTs = toStartTimeMs(earliest.startTime);
+    const optionTs = toStartTimeMs(option.startTime);
+    if (earliestTs == null) return option;
+    if (optionTs == null) return earliest;
+    return optionTs < earliestTs ? option : earliest;
+  }, null);
+}
+
+/** Prefer today's earliest match, then live, pending score, next upcoming, then flexible (no start time). */
+export function pickDefaultScorableTournamentOption(
+  options: MatchOption[],
+  referenceDate = new Date(),
+): MatchOption | null {
+  const scorable = options.filter(
+    (option) =>
+      option.kind === "tournament" &&
+      option.matchId != null &&
+      isScorableMatchOption(option),
+  );
+  if (scorable.length === 0) return null;
+
+  const nowMs = referenceDate.getTime();
+  const matchOnCurrentDay = pickEarliestByStartTime(
+    scorable.filter((option) => isIsoOnCurrentLocalDay(option.startTime, referenceDate)),
+  );
+  const nextUpcoming = pickEarliestByStartTime(
+    scorable.filter((option) => {
+      const ts = toStartTimeMs(option.startTime);
+      return ts != null && ts > nowMs;
+    }),
+  );
+  const flexibleUnscheduled = scorable.find((option) => option.startTime == null);
+
+  return (
+    matchOnCurrentDay ??
+    scorable.find((option) => option.isLive) ??
+    scorable.find((option) => option.isPendingScore) ??
+    nextUpcoming ??
+    flexibleUnscheduled ??
+    scorable[0] ??
+    null
+  );
+}
+
+/** Enrolled tournaments with no match rows yet — prefer today, then next tournament date. */
+export function pickDefaultEligibleTournamentOption(
+  options: MatchOption[],
+  referenceDate = new Date(),
+): MatchOption | null {
+  const pending = options.filter(
+    (option) =>
+      option.kind === "tournament" &&
+      option.matchId == null &&
+      isScorableMatchOption(option),
+  );
+  if (pending.length === 0) return null;
+
+  const onToday = pending.filter((option) =>
+    isIsoOnCurrentLocalDay(option.startTime, referenceDate),
+  );
+  const earliestOnToday = pickEarliestByStartTime(onToday);
+  if (earliestOnToday) return earliestOnToday;
+
+  const nowMs = referenceDate.getTime();
+  const nextByDate = pickEarliestByStartTime(
+    pending.filter((option) => {
+      const ts = toStartTimeMs(option.startTime);
+      return ts != null && ts >= nowMs;
+    }),
+  );
+
+  return nextByDate ?? pending[0] ?? null;
+}
+
+export const PENDING_TOURNAMENT_OPTION_PREFIX = "pending-tournament-";
+
+export function pendingTournamentOptionId(tournamentId: string): string {
+  return `${PENDING_TOURNAMENT_OPTION_PREFIX}${tournamentId}`;
+}
+
+export function isPendingTournamentOptionId(optionId: string): boolean {
+  return optionId.startsWith(PENDING_TOURNAMENT_OPTION_PREFIX);
+}
+
 export function formatExpiry(
   expiresAtIso: string | null,
   locale: string,

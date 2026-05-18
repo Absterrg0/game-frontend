@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/api/queryKeys";
 import {
@@ -28,6 +28,7 @@ export function useTournaments(filters: TournamentListFilters = {}, enabled = tr
     queryKey: queryKeys.tournament.list(filters),
     queryFn: () => fetchTournaments(filters),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 

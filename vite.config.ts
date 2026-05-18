@@ -5,17 +5,45 @@ import svgr from 'vite-plugin-svgr'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { execSync } from 'child_process'
+import { readFileSync } from 'fs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const packageJson = JSON.parse(readFileSync(path.resolve(__dirname, 'package.json'), 'utf8')) as {
+  version?: string
+}
 
-const commitSha = process.env.VITE_COMMIT_SHA ?? (() => {
-  try { return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim() } catch { return 'dev' }
-})()
+function shortSha(value: string): string {
+  const trimmed = value.trim()
+  return trimmed.length <= 7 ? trimmed : trimmed.slice(0, 7)
+}
+
+const trimmedViteCommitSha = process.env.VITE_COMMIT_SHA?.trim()
+const commitShaFromVite =
+  trimmedViteCommitSha && trimmedViteCommitSha.length > 0
+    ? shortSha(trimmedViteCommitSha)
+    : null
+
+const trimmedVercelSha = process.env.VERCEL_GIT_COMMIT_SHA?.trim()
+
+const commitSha =
+  commitShaFromVite ??
+  (trimmedVercelSha && trimmedVercelSha.length > 0
+    ? shortSha(trimmedVercelSha)
+    : (() => {
+        try {
+          return execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+        } catch {
+          return 'dev'
+        }
+      })())
 
 export default defineConfig({
   envPrefix: ['VITE_', 'REACT_APP_'],
-  define: { 'import.meta.env.VITE_COMMIT_SHA': JSON.stringify(commitSha) },
+  define: {
+    'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version ?? 'dev'),
+    'import.meta.env.VITE_COMMIT_SHA': JSON.stringify(commitSha),
+  },
 
   plugins: [
     svgr({

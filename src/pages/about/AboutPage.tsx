@@ -1,29 +1,46 @@
 import { Trans, useTranslation } from "react-i18next";
+import { ShareTextButton } from "@/components/shared/ShareTextButton";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Share2 } from "@/icons/figma-icons";
 import { GLOBAL_PARAMETERS } from "@/constants/constants";
+import { shareDataWithUrlInText } from "@/lib/webShare";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 const footnoteClassName =
   "align-super text-[10px] font-semibold leading-none text-[#067429]";
 
+const FRONTEND_VERSION = import.meta.env.VITE_APP_VERSION ?? "dev";
 const FRONTEND_SHA = import.meta.env.VITE_COMMIT_SHA ?? "dev";
+
+type BackendVersion = {
+  version?: string;
+  commitSha?: string;
+  sha?: string;
+};
 
 export default function AboutPage() {
   const { t } = useTranslation();
-  const { data: versionData } = useQuery<{ sha: string }>({ queryKey: ["version"], queryFn: () => api.get("/api/version").then((r) => r.data), staleTime: Infinity });
-  const backendSha = versionData?.sha ?? "…";
+  const { data: versionData } = useQuery<BackendVersion>({
+    queryKey: ["version"],
+    queryFn: () => api.get("/api/version").then((r) => r.data),
+  });
+  const backendVersion = versionData?.version ?? "dev";
+  const backendSha = versionData?.commitSha ?? versionData?.sha ?? "...";
+  const frontendLabel = `${FRONTEND_VERSION} (${FRONTEND_SHA})`;
+  const backendLabel = versionData
+    ? `${backendVersion} (${backendSha})`
+    : "...";
 
   const handleInviteFriends = async () => {
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
-        await navigator.share({
-          title: t("about.inviteShareTitle"),
-          text: t("about.inviteShareText"),
-          url: GLOBAL_PARAMETERS.TB10_SHARE_URL,
-        });
+        await navigator.share(
+          shareDataWithUrlInText({
+            textBeforeUrl: t("about.inviteShareText"),
+            url: GLOBAL_PARAMETERS.TB10_SHARE_URL,
+          }),
+        );
         return;
       } catch (error) {
         if ((error as Error).name === "AbortError") return;
@@ -47,20 +64,12 @@ export default function AboutPage() {
     <div className="min-h-screen bg-[#dfe2e0] px-4 pb-10 pt-7 sm:px-6">
       <div className="mx-auto w-full max-w-[1120px] min-w-0">
         <div className="overflow-hidden rounded-[10px] border border-[#010a04]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-          <header className="border-b border-[#010a04]/8 px-4 py-3 sm:px-5">
-            <div className="flex items-center justify-between gap-3">
-              <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[#010a04] sm:text-[28px]">
-                {t("about.title")}
-              </h1>
-              <Button
-                type="button"
-                onClick={handleInviteFriends}
-                className="flex h-8 shrink-0 items-center gap-1.5 rounded-[7px] bg-brand-accent px-3 text-[11px] font-medium text-[#010a04] hover:bg-brand-accent-hover"
-              >
-                <Share2 className="size-3.5" aria-hidden />
-                {t("about.share")}
-              </Button>
-            </div>
+          <header className="flex justify-end border-b border-[#010a04]/8 px-4 py-3 sm:px-5">
+            <ShareTextButton
+              className="shrink-0"
+              label={t("about.share")}
+              onClick={handleInviteFriends}
+            />
           </header>
 
           <div className="flex flex-col gap-2.5 p-4 sm:gap-3 sm:p-5">
@@ -182,7 +191,7 @@ export default function AboutPage() {
               </div>
             </section>
             <div className="mt-2 text-center text-[10px] text-[#010a04]/50">
-              {t("about.version", { backend: backendSha, frontend: FRONTEND_SHA })}
+              {t("about.version", { backend: backendLabel, frontend: frontendLabel })}
             </div>
           </div>
         </div>

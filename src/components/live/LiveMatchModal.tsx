@@ -1,7 +1,8 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { IconScanBarcode } from "@/icons/figma-icons";
 import { PlayerNameText } from "@/components/shared/PlayerNameText";
 import {
   Dialog,
@@ -18,6 +19,8 @@ import { getDateFnsLocale } from "@/lib/dateFnsLocale";
 import type { TournamentLiveMatchItem } from "@/models/tournament/types";
 import { useTournamentLiveMatch, useTournamentMatches } from "@/pages/tournaments/hooks";
 import { parseIsoDateSafely } from "@/utils/date";
+
+const LIVE_MATCH_IDLE_REOPEN_MS = 10_000;
 
 function shouldSuppressLiveMatchModal(pathname: string): boolean {
   return pathname === "/record-score" || pathname.startsWith("/record-score/");
@@ -114,9 +117,10 @@ function LiveMatchEnterScoreButton({
         const query = params.toString();
         navigate(`/record-score/manual${query ? `?${query}` : ""}`);
       }}
-      className="h-11 w-full rounded-[10px] bg-[#067429] text-[15px] font-semibold text-white shadow-sm hover:bg-[#055a21]"
+      className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-[10px] bg-[#067429] text-[15px] font-semibold text-white shadow-sm hover:bg-[#055a21]"
     >
-      {enterScoreLabel}
+      <IconScanBarcode size={18} className="text-white" aria-hidden />
+      <span>{enterScoreLabel}</span>
     </Button>
   );
 }
@@ -125,12 +129,51 @@ export function LiveMatchModal() {
   const { t, i18n } = useTranslation();
   const { pathname } = useLocation();
   const [dismissedMatchId, setDismissedMatchId] = useState<string | null>(null);
+  const [lastActivityAt, setLastActivityAt] = useState(() => Date.now());
   const isModalSuppressedForRoute = shouldSuppressLiveMatchModal(pathname);
 
   const liveMatchQuery = useTournamentLiveMatch(!isModalSuppressedForRoute);
 
   const liveMatch = liveMatchQuery.data?.liveMatch ?? null;
   const nextMatch = liveMatchQuery.data?.nextMatch ?? null;
+
+  useEffect(() => {
+    const liveMatchId = liveMatch?.id ?? null;
+    if (isModalSuppressedForRoute || liveMatchId == null || dismissedMatchId !== liveMatchId) {
+      return;
+    }
+
+    const handleActivity = () => setLastActivityAt(Date.now());
+    const listenerOptions = { passive: true } as const;
+    const activityEvents = ["pointerdown", "touchstart", "keydown", "scroll"] as const;
+
+    activityEvents.forEach((eventName) => {
+      window.addEventListener(eventName, handleActivity, listenerOptions);
+    });
+
+    return () => {
+      activityEvents.forEach((eventName) => {
+        window.removeEventListener(eventName, handleActivity);
+      });
+    };
+  }, [dismissedMatchId, isModalSuppressedForRoute, liveMatch?.id]);
+
+  useEffect(() => {
+    const liveMatchId = liveMatch?.id ?? null;
+    if (isModalSuppressedForRoute || liveMatchId == null || dismissedMatchId !== liveMatchId) {
+      return;
+    }
+
+    const elapsedMs = Date.now() - lastActivityAt;
+    const remainingMs = Math.max(0, LIVE_MATCH_IDLE_REOPEN_MS - elapsedMs);
+    const timeoutId = window.setTimeout(() => {
+      setDismissedMatchId((currentDismissedMatchId) =>
+        currentDismissedMatchId === liveMatchId ? null : currentDismissedMatchId,
+      );
+    }, remainingMs);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [dismissedMatchId, isModalSuppressedForRoute, lastActivityAt, liveMatch?.id]);
 
   const liveTournamentId = liveMatch?.tournament.id ?? null;
   const tournamentMatchesQuery = useTournamentMatches(
@@ -203,6 +246,7 @@ export function LiveMatchModal() {
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
+      setLastActivityAt(Date.now());
       setDismissedMatchId(liveMatch.id);
     }
   };

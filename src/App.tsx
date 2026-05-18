@@ -67,7 +67,7 @@ function Home() {
 
 function App() {
   return (
-    <div className="w-screen h-screen bg-gray-50 overflow-x-hidden">
+    <div className="min-h-screen w-full bg-gray-50 overflow-x-hidden">
       <AuthProvider>
         <Suspense fallback={<Loader />}>
           <Routes>
@@ -77,6 +77,9 @@ function App() {
               <Route index element={<UserInformation />} />
             </Route>
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/players/:playerId/score" element={<MainLayout />}>
+              <Route index element={<MyScorePage />} />
+            </Route>
             <Route
               element={
                 <ProtectedRoute requireProfileComplete>

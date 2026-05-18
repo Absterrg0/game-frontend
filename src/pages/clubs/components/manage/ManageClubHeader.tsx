@@ -33,21 +33,23 @@ export function ManageClubHeader({
   const { t } = useTranslation();
 
   return (
-    <div className="mb-5 flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <h1 className="flex items-center gap-[10px] text-lg font-semibold leading-none text-[#010a04]">
-          {selectedClub?.name}
+    <div className="mb-5 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+      <div className="min-w-0 flex-1 basis-0 sm:pr-2">
+        <h1 className="flex min-w-0 items-center gap-2 text-lg font-semibold leading-tight text-[#010a04]">
+          <span className="min-w-0 truncate" title={selectedClub?.name}>
+            {selectedClub?.name}
+          </span>
           {showClubCrown && (
-            <CrownIcon size={18} className="text-[#ff8c00]" aria-hidden />
+            <CrownIcon size={18} className="shrink-0 text-[#ff8c00]" aria-hidden />
           )}
         </h1>
         <p className="mt-2 text-[14px] text-[#010a04]/60">{t("manageClub.manageAdminsSubtitle")}</p>
       </div>
-      <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+      <div className="flex w-full min-w-0 shrink-0 flex-col gap-2 sm:w-auto sm:max-w-full sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
         {canUpdateExpiry && (
           <Button
             variant="outline"
-            className="h-[30px] w-full rounded-[8px] border-black/[0.12] px-[14px] text-[14px] font-medium sm:w-auto sm:shrink-0"
+            className="h-[30px] w-full shrink-0 whitespace-nowrap rounded-[8px] border-black/[0.12] px-[14px] text-[14px] font-medium sm:w-auto"
             onClick={onOpenExpiryModal}
           >
             <Calendar03Icon size={16} className="mr-1.5" />
@@ -58,7 +60,7 @@ export function ManageClubHeader({
         {showSponsorsButton && (
           <Button
             variant="outline"
-            className="h-[30px] w-full rounded-[8px] border-black/[0.12] px-[14px] text-[14px] font-medium sm:w-auto sm:shrink-0"
+            className="h-[30px] w-full shrink-0 whitespace-nowrap rounded-[8px] border-black/[0.12] px-[14px] text-[14px] font-medium sm:w-auto"
             asChild
           >
             <Link to={`/clubs/manage/sponsors/${clubId}`}>
@@ -69,7 +71,7 @@ export function ManageClubHeader({
         )}
 
         <Button
-          className="h-[30px] w-full rounded-[8px] bg-brand-primary px-[14px] text-[14px] font-medium hover:bg-brand-primary-hover sm:w-auto sm:shrink-0"
+          className="h-[30px] w-full shrink-0 whitespace-nowrap rounded-[8px] bg-brand-primary px-[14px] text-[14px] font-medium hover:bg-brand-primary-hover sm:w-auto"
           onClick={onOpenAddModal}
           disabled={!canAddStaff}
           title={!canAddStaff ? t("manageClub.addMemberDisabledHint") : undefined}

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { PlayerNameText } from "@/components/shared/PlayerNameText";
 import { cn } from "@/lib/utils";
 import type { MyScoreEntry } from "@/models/myScore/types";
 
@@ -24,6 +25,10 @@ export function MyScoreMobileCards({
     <div className="space-y-2.5 p-2.5 sm:hidden">
       {entries.map((entry) => {
         const isPending = entry.status === "pendingScore";
+        const tournamentDisplay =
+          entry.tournament.id == null
+            ? t("myScorePage.table.independentMatch")
+            : entry.tournament.name;
         return (
           <Card
             key={`mobile-card-${entry.id}`}
@@ -42,7 +47,7 @@ export function MyScoreMobileCards({
             role={isPending ? "button" : undefined}
             aria-label={
               isPending
-                ? `${t("myScorePage.table.resumeQr")} ${entry.tournament.name}`
+                ? `${t("myScorePage.table.resumeQr")} ${tournamentDisplay}`
                 : undefined
             }
             className={cn(
@@ -58,7 +63,7 @@ export function MyScoreMobileCards({
                   <span className="h-8 w-8 shrink-0 rounded-[6px] bg-[#cfd3d0]" />
                   <div className="min-w-0">
                     <p className="truncate text-[13px] font-semibold text-[#010a04]">
-                      {entry.tournament.name}
+                      {tournamentDisplay}
                     </p>
                     <p className="text-[11px] text-[#010a04]/55">
                       {formatPlayedAt(entry.playedAt, i18n.language)}
@@ -84,25 +89,14 @@ export function MyScoreMobileCards({
                   </p>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <p className="text-[22px] font-semibold leading-none text-[#010a04]">
                     {formatScore(entry.opponentScore)}
                   </p>
-                  <p className="mt-1 text-[10px] text-[#010a04]/50">
-                    {t("myScorePage.table.opponentScore")}
-                  </p>
-                </div>
-              </div>
-
-              <Separator className="bg-[#010a04]/8" />
-
-              <div>
-                <p className="mb-1 text-[10px] text-[#010a04]/50">
-                  {t("myScorePage.table.opponent")}
-                </p>
-                <div className="flex min-w-0 items-center gap-2">
-                  <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-[#cfd3d0]" />
-                  <p className="truncate text-[12px] text-[#010a04]/85">{entry.opponent.name}</p>
+                  <PlayerNameText
+                    name={entry.opponent.name}
+                    className="mt-1 text-[10px] text-[#010a04]/50"
+                  />
                 </div>
               </div>
             </CardContent>

@@ -23,6 +23,7 @@ export type MatchOption = {
   playerTwoAvatarUrl: string | null;
   isLive: boolean;
   isPendingScore: boolean;
+  hasRecordedScore?: boolean;
 };
 
 export const INDEPENDENT_MATCH_ID = "independent-match";

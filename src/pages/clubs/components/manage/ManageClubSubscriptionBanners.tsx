@@ -55,7 +55,7 @@ export function ManageClubSubscriptionBanners({
   return (
     <>
       {showPremiumBanner && (
-        <div className="mt-4 flex items-center justify-between gap-4 rounded-[12px] border border-[rgba(48,131,234,0.10)] bg-[rgba(48,131,234,0.13)] px-[15px] py-[15px] text-[#00339a]">
+        <div className="mt-4 flex min-w-0 flex-col gap-3 rounded-[12px] border border-[rgba(48,131,234,0.10)] bg-[rgba(48,131,234,0.13)] px-[15px] py-[15px] text-[#00339a] sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="flex min-w-0 flex-1 items-start gap-[12px]">
             <CrownIcon size={20} className="mt-0.5 shrink-0" />
             <div className="min-w-0">
@@ -63,9 +63,9 @@ export function ManageClubSubscriptionBanners({
               <p className="text-[13px]">{t("manageClub.premiumEnabled")}</p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="shrink-0 text-left sm:text-right">
             <p className="text-[13px] opacity-80">{t("manageClub.expiresOn")}</p>
-            <p className="text-xl leading-none font-medium">
+            <p className="text-xl leading-tight font-medium">
               {subscription?.expiresAt ? format(subscription.expiresAt, "PPP", { locale }) : "--"}
             </p>
           </div>

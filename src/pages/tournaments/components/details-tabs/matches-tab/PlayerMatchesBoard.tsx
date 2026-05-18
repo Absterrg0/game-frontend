@@ -9,6 +9,8 @@ import { MatchScheduleCard } from "@/pages/tournaments/schedule/components/Match
 
 interface PlayerMatchesBoardProps {
   matches: TournamentScheduleMatch[];
+  tournamentId: string;
+  tournamentName: string;
   currentUserId: string | null;
   language: string;
   timeZone?: string | null;
@@ -38,6 +40,8 @@ function isCurrentUserInMatch(match: TournamentScheduleMatch, currentUserId: str
 
 export function PlayerMatchesBoard({
   matches,
+  tournamentId,
+  tournamentName,
   currentUserId,
   language,
   timeZone,
@@ -160,7 +164,10 @@ export function PlayerMatchesBoard({
               locale={locale}
               timeZone={timeZone}
               t={t}
+              tournamentId={tournamentId}
+              tournamentName={tournamentName}
               canEditScores={false}
+              canRecordScore={isCurrentUserInMatch(match, currentUserId)}
               isEditing={false}
               editableRows={[]}
               isSavePending={false}

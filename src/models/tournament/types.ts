@@ -177,10 +177,21 @@ export const tournamentLiveMatchItemSchema = z.object({
   opponentTeam: z.array(tournamentMatchPlayerSchema),
 });
 
+export const tournamentLiveMatchEligibleTournamentSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  date: wireJsonNullableString(),
+  playMode: tournamentPlayModeSchema,
+  tournamentMode: tournamentModeSchema,
+});
+
 export const tournamentLiveMatchResponseSchema = z.object({
   liveMatch: tournamentLiveMatchItemSchema.nullable(),
   nextMatch: tournamentLiveMatchItemSchema.nullable(),
   matches: z.array(tournamentLiveMatchItemSchema).default([]),
+  eligibleTournaments: z
+    .array(tournamentLiveMatchEligibleTournamentSchema)
+    .default([]),
 });
 
 export const recordTournamentMatchScoreInputSchema = z

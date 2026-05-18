@@ -48,6 +48,14 @@ export function requiredSetCountForPlayMode(playMode: TournamentPlayMode): numbe
   return 1;
 }
 
+export function hasRecordedMatchScore(match: TournamentScheduleMatch): boolean {
+  return (
+    match.score.playerOneScores.length > 0 ||
+    match.score.playerTwoScores.length > 0 ||
+    match.status === "completed"
+  );
+}
+
 function setsNeededToWin(playMode: TournamentPlayMode): number {
   if (playMode === "5set") {
     return 3;
