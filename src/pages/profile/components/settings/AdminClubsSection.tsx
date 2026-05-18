@@ -42,7 +42,7 @@ export function AdminClubsSection() {
             onClick={handleAddClub}
             className="h-10 w-full shrink-0 whitespace-nowrap rounded-lg bg-brand-accent px-4 font-medium text-black hover:bg-brand-accent-hover sm:w-auto"
           >
-            <PlusSignIcon size={16} className="mr-2 text-white" />
+            <PlusSignIcon size={16} className="mr-2 !text-[#010a04]" />
             {t("settings.adminClubsAddButton")}
           </Button>
         </div>

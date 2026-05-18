@@ -52,17 +52,12 @@ export default function AboutPage() {
     <div className="min-h-screen bg-[#dfe2e0] px-4 pb-10 pt-7 sm:px-6">
       <div className="mx-auto w-full max-w-[1120px] min-w-0">
         <div className="overflow-hidden rounded-[10px] border border-[#010a04]/10 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
-          <header className="border-b border-[#010a04]/8 px-4 py-3 sm:px-5">
-            <div className="flex items-center justify-between gap-3">
-              <h1 className="text-[22px] font-semibold tracking-[-0.02em] text-[#010a04] sm:text-[28px]">
-                {t("about.title")}
-              </h1>
-              <ShareTextButton
-                className="shrink-0"
-                label={t("about.share")}
-                onClick={handleInviteFriends}
-              />
-            </div>
+          <header className="flex justify-end border-b border-[#010a04]/8 px-4 py-3 sm:px-5">
+            <ShareTextButton
+              className="shrink-0"
+              label={t("about.share")}
+              onClick={handleInviteFriends}
+            />
           </header>
 
           <div className="flex flex-col gap-2.5 p-4 sm:gap-3 sm:p-5">

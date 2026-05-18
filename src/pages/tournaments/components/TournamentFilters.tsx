@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Popover,
@@ -121,12 +121,13 @@ export function TournamentFilters({
   const [draftClubScope, setDraftClubScope] = useState<"favorites" | undefined>(clubScope);
   const [selectedClubState, setSelectedClubState] = useState<{ id: string; name: string } | null>(null);
   const clubOptionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const clubSearchComboboxRef = useRef<HTMLDivElement>(null);
 
   const { data: clubsData, isLoading: clubsLoading } = useAllClubs({
     page: 1,
     limit: 200,
-    q: clubSearch.trim().length > 0 ? clubSearch : undefined,
-    enabled: open || clubSearch.trim().length > 0,
+    q: clubSearchOpen && clubSearch.trim().length > 0 ? clubSearch : undefined,
+    enabled: open && clubSearchOpen,
   });
 
   const handlePopoverOpenChange = (nextOpen: boolean) => {
@@ -137,11 +138,17 @@ export function TournamentFilters({
       setDraftClubScope(clubScope === "favorites" ? "favorites" : undefined);
       if (clubId && !clubScope && clubsData?.clubs) {
         const matchedClub = clubsData.clubs.find((c) => c.id === clubId);
-        setSelectedClubState(matchedClub ? { id: matchedClub.id, name: matchedClub.name } : null);
+        if (matchedClub) {
+          setSelectedClubState({ id: matchedClub.id, name: matchedClub.name });
+          setClubSearch(matchedClub.name);
+        } else {
+          setSelectedClubState(null);
+          setClubSearch("");
+        }
       } else if (!clubId || clubScope === "favorites") {
         setSelectedClubState(null);
+        setClubSearch("");
       }
-      setClubSearch("");
       setClubSearchOpen(false);
       setActiveClubOptionIndex(-1);
     }
@@ -153,7 +160,7 @@ export function TournamentFilters({
   };
 
   const clubs = clubsData?.clubs ?? [];
-  const clubOptionCount = clubs.length + 1;
+  const clubOptionCount = clubs.length;
   const selectedClubFromState =
     draftClubId && selectedClubState?.id === draftClubId ? selectedClubState : null;
   const selectedClubFromList =
@@ -177,6 +184,11 @@ export function TournamentFilters({
             }
           : null)
       : null;
+
+  useEffect(() => {
+    if (!open || clubSearchOpen || draftClubScope || !draftClubId || !selectedClub?.name) return;
+    setClubSearch(selectedClub.name);
+  }, [open, clubSearchOpen, draftClubScope, draftClubId, selectedClub?.name]);
 
   const appliedWhenIsActive = (when ?? "all") !== "all";
   const appliedDistanceIsActive = (distance ?? "all") !== "all" && distance !== "over80";
@@ -231,13 +243,26 @@ export function TournamentFilters({
     option.focus();
   };
 
+  const handleFilterPanelPointerDown = (event: PointerEvent<HTMLElement>) => {
+    if (!clubSearchOpen) return;
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+    if (clubSearchComboboxRef.current?.contains(target)) return;
+    setClubSearchOpen(false);
+    setActiveClubOptionIndex(-1);
+  };
+
   const handleClubListboxKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (clubOptionCount <= 0) return;
     if (event.key === "ArrowDown" || event.key === "ArrowUp") {
       event.preventDefault();
       const direction = event.key === "ArrowDown" ? 1 : -1;
       const currentIndex =
-        activeClubOptionIndex >= 0 ? activeClubOptionIndex : draftClubId ? clubs.findIndex((club) => club.id === draftClubId) + 1 : 0;
+        activeClubOptionIndex >= 0
+          ? activeClubOptionIndex
+          : draftClubId
+            ? Math.max(0, clubs.findIndex((club) => club.id === draftClubId))
+            : 0;
       const nextIndex = (currentIndex + direction + clubOptionCount) % clubOptionCount;
       focusClubOptionByIndex(nextIndex);
       return;
@@ -268,26 +293,48 @@ export function TournamentFilters({
       </PopoverTrigger>
 
       <PopoverContent
-        align="end"
+        align="center"
         sideOffset={10}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        onPointerDown={handleFilterPanelPointerDown}
         className="w-[min(92vw,26rem)] overflow-visible rounded-2xl border border-black/[0.08] bg-white p-0 shadow-[0_8px_40px_-8px_rgba(0,0,0,0.18),0_2px_8px_-2px_rgba(0,0,0,0.06)]"
       >
         <div className="space-y-5 px-5 pb-6 pt-5">
           <div className="min-w-0">
             <SectionLabel id={clubFilterLabelId}>{t("tournaments.filterClub")}</SectionLabel>
 
-            <div className="relative">
+            <div ref={clubSearchComboboxRef} className="relative">
               <Search01Icon
                 size={14}
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black/35"
               />
               <Input
-                value={clubSearch}
+                value={
+                  draftClubId &&
+                  !draftClubScope &&
+                  !selectedClub &&
+                  (clubsLoading || selectedClubLoading)
+                    ? t("common.loading")
+                    : clubSearch
+                }
                 onChange={(e) => {
-                  setClubSearch(e.target.value);
+                  const next = e.target.value;
+                  setClubSearch(next);
                   if (!clubSearchOpen) setClubSearchOpen(true);
+                  if (
+                    draftClubId &&
+                    !draftClubScope &&
+                    selectedClub &&
+                    next !== selectedClub.name
+                  ) {
+                    setDraftClubId(undefined);
+                    setSelectedClubState(null);
+                  }
                 }}
                 onFocus={() => {
+                  if (!clubSearchOpen) setClubSearchOpen(true);
+                }}
+                onClick={() => {
                   if (!clubSearchOpen) setClubSearchOpen(true);
                 }}
                 onKeyDown={(e) => {
@@ -317,34 +364,6 @@ export function TournamentFilters({
                   onKeyDown={handleClubListboxKeyDown}
                 >
                   <div className="max-h-52 overflow-y-auto">
-                    <button
-                      type="button"
-                      className={[
-                        "w-full border-b border-black/[0.06] px-3.5 py-2.5 text-left text-[13px] transition-colors",
-                        !draftClubId && !draftClubScope
-                          ? "bg-[#006B2B]/[0.07] font-semibold text-[#006B2B]"
-                          : "text-foreground/60 hover:bg-black/[0.03] hover:text-foreground",
-                      ].join(" ")}
-                      onClick={() => {
-                        setDraftClubId(undefined);
-                        setDraftClubScope(undefined);
-                        setSelectedClubState(null);
-                        setClubSearchOpen(false);
-                        setClubSearch("");
-                        setActiveClubOptionIndex(0);
-                      }}
-                      role="option"
-                      aria-selected={!draftClubId && !draftClubScope}
-                      tabIndex={-1}
-                      ref={(element) => {
-                        clubOptionRefs.current[0] = element;
-                      }}
-                      onFocus={() => setActiveClubOptionIndex(0)}
-                      id={`${clubOptionIdPrefix}-option-0`}
-                    >
-                      {t("tournaments.allClubs")}
-                    </button>
-
                     {clubsLoading ? (
                       <div className="px-3.5 py-4 text-center text-xs text-black/35">
                         {t("common.loading")}
@@ -369,20 +388,20 @@ export function TournamentFilters({
                             setDraftClubScope(undefined);
                             setSelectedClubState({ id: club.id, name: club.name });
                             setClubSearchOpen(false);
-                            setClubSearch("");
-                            setActiveClubOptionIndex(index + 1);
+                            setClubSearch(club.name);
+                            setActiveClubOptionIndex(index);
                           }}
                           title={club.name}
                           role="option"
                           aria-selected={club.id === draftClubId && !draftClubScope}
                           tabIndex={-1}
                           ref={(element) => {
-                            clubOptionRefs.current[index + 1] = element;
+                            clubOptionRefs.current[index] = element;
                           }}
                           onFocus={() => {
-                            setActiveClubOptionIndex(index + 1);
+                            setActiveClubOptionIndex(index);
                           }}
-                          id={`${clubOptionIdPrefix}-option-${index + 1}`}
+                          id={`${clubOptionIdPrefix}-option-${index}`}
                         >
                           <span className="block truncate">{club.name}</span>
                         </button>
@@ -421,35 +440,6 @@ export function TournamentFilters({
               />
             </div>
 
-            {draftClubId && selectedClub && !draftClubScope ? (
-              <div className="mt-3 flex items-center gap-1.5">
-                <span className="inline-flex h-6 max-w-[16rem] items-center gap-1.5 truncate rounded-full bg-[#006B2B]/10 px-2.5 text-[11.5px] font-medium text-[#006B2B]">
-                  <span className="block truncate">{selectedClub.name}</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setDraftClubId(undefined);
-                      setSelectedClubState(null);
-                      setClubSearch("");
-                    }}
-                    className="shrink-0 leading-none text-[#006B2B]/60 hover:text-[#006B2B]"
-                    aria-label={t("tournaments.removeClubFilter")}
-                  >
-                    ×
-                  </button>
-                </span>
-              </div>
-            ) : null}
-            {draftClubId &&
-            !selectedClub &&
-            (clubsLoading || selectedClubLoading) &&
-            !draftClubScope ? (
-              <div className="mt-3 flex items-center gap-1.5">
-                <span className="inline-flex h-6 max-w-[16rem] truncate rounded-full bg-[#006B2B]/10 px-2.5 text-[11.5px] font-medium text-[#006B2B]">
-                  {t("common.loading")}
-                </span>
-              </div>
-            ) : null}
           </div>
 
           <div>

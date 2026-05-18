@@ -40,9 +40,9 @@ export default function ClubsListPage() {
   const isRefreshingResults = isFetching && !isLoading;
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] justify-center bg-gray-50">
-      <div className="mx-auto w-full max-w-6xl p-4 sm:p-6">
-        <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
+    <div className="min-h-[calc(100vh-4rem)] bg-gray-50">
+      <div className="mx-auto box-border w-full min-w-0 max-w-6xl px-4 py-4 sm:px-6 sm:py-6">
+        <div className="min-w-0 w-full rounded-xl border border-border bg-white p-4 shadow-sm sm:p-6">
           <ClubsListHeader
             canManage={canManage}
             query={query}

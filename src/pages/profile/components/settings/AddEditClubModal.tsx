@@ -93,8 +93,9 @@ export function AddEditClubModal({
   };
 
   const inputClassName =
-    "h-[38px] rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] px-3 text-sm shadow-none placeholder:text-[#010a04]/50 focus-visible:ring-0 focus-visible:border-[#d5d8de]";
-  const labelClassName = "text-xs font-medium uppercase text-[#010a04]/70";
+    "h-[34px] rounded-[8px] border-[#e1e3e8] bg-[#f9fafc] px-2.5 text-xs shadow-none placeholder:text-[#010a04]/50 focus-visible:ring-0 focus-visible:border-[#d5d8de] sm:h-[38px] sm:px-3 sm:text-sm";
+  const labelClassName =
+    "text-[10px] font-medium uppercase tracking-wide text-[#010a04]/70 sm:text-xs sm:tracking-normal";
 
   return (
     <Dialog
@@ -102,13 +103,13 @@ export function AddEditClubModal({
       onOpenChange={handleDialogOpenChange}
     >
       <DialogContent
-        className="gap-0 rounded-[12px] border-[#010a04]/10 px-[15px] py-5 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] sm:max-w-[416px]"
+        className="gap-0 rounded-[12px] border-[#010a04]/10 px-3 py-4 shadow-[0px_3px_15px_0px_rgba(0,0,0,0.06)] sm:max-w-[416px] sm:px-[15px] sm:py-5"
         showCloseButton={false}
         onPointerDownOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="gap-[18px]">
+        <DialogHeader className="gap-3 sm:gap-[18px]">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-[21px] font-semibold text-[#010a04]">
+            <DialogTitle className="text-[17px] font-semibold leading-tight text-[#010a04] sm:text-[21px] sm:leading-normal">
               {t("settings.adminClubsModalTitle")}
             </DialogTitle>
             <DialogClose asChild>
@@ -116,10 +117,10 @@ export function AddEditClubModal({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="size-6 rounded-none p-0 text-[#010a04]/80 hover:bg-transparent hover:text-[#010a04]"
+                className="size-5 rounded-none p-0 text-[#010a04]/80 hover:bg-transparent hover:text-[#010a04] sm:size-6"
                 aria-label={t("common.close")}
               >
-                <XIcon className="size-5" />
+                <XIcon className="size-4 sm:size-5" />
               </Button>
             </DialogClose>
           </div>
@@ -131,8 +132,8 @@ export function AddEditClubModal({
             <InlineLoader />
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="mt-[22px] flex flex-col gap-[22px]">
-            <div className="grid gap-[10px]">
+          <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4 sm:mt-[22px] sm:gap-[22px]">
+            <div className="grid gap-2 sm:gap-[10px]">
               <Label htmlFor="club-name" className={labelClassName}>
                 {t("settings.adminClubsClubName")}
               </Label>
@@ -145,7 +146,7 @@ export function AddEditClubModal({
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3">
               <input
                 ref={logoInputRef}
                 type="file"
@@ -157,7 +158,7 @@ export function AddEditClubModal({
               {/* Logo preview */}
               <div
                 onClick={() => !(isPending || isProcessingLogo) && logoInputRef.current?.click()}
-                className="flex size-[64px] shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[8px] border border-[#e1e3e8] bg-[#f9fafc] text-[20px] font-semibold text-[#010a04]/50 transition-colors hover:border-[#067429]/40 hover:bg-[#06742908]"
+                className="flex size-14 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-[8px] border border-[#e1e3e8] bg-[#f9fafc] text-base font-semibold text-[#010a04]/50 transition-colors hover:border-[#067429]/40 hover:bg-[#06742908] sm:size-[64px] sm:text-[20px]"
                 title={t("settings.adminClubsLogo")}
               >
                 {currentForm.logoUrl ? (
@@ -172,22 +173,22 @@ export function AddEditClubModal({
               </div>
 
               {/* Label + action buttons */}
-              <div className="flex min-w-0 flex-col gap-1.5">
-                <p className="text-[11px] font-medium uppercase tracking-normal text-[#010a04]/60">
+              <div className="flex min-w-0 flex-col gap-1 sm:gap-1.5">
+                <p className="text-[10px] font-medium uppercase tracking-normal text-[#010a04]/60 sm:text-[11px]">
                   {t("settings.adminClubsLogo")}
                 </p>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={isPending || isProcessingLogo}
                     onClick={() => logoInputRef.current?.click()}
-                    className="h-[30px] rounded-[7px] border-[#cfd6dc] bg-white px-2.5 text-[12px] font-medium text-[#010a04] shadow-none hover:bg-[#f4f6f5]"
+                    className="h-7 rounded-[7px] border-[#cfd6dc] bg-white px-2 text-[11px] font-medium text-[#010a04] shadow-none hover:bg-[#f4f6f5] sm:h-[30px] sm:px-2.5 sm:text-[12px]"
                   >
                     {isProcessingLogo ? (
                       <InlineLoader size="sm" />
                     ) : (
-                      <Upload01Icon size={13} className="text-[#067429]" />
+                      <Upload01Icon size={12} className="text-[#067429] sm:size-[13px]" />
                     )}
                     <span>
                       {currentForm.logoUrl
@@ -215,20 +216,20 @@ export function AddEditClubModal({
                         }
                         setField("logoUrl", "");
                       }}
-                      className="h-[30px] rounded-[7px] border-[#ead1d1] bg-white px-2.5 text-[12px] font-medium text-[#b42318] shadow-none hover:bg-[#fff5f5]"
+                      className="h-7 rounded-[7px] border-[#ead1d1] bg-white px-2 text-[11px] font-medium text-[#b42318] shadow-none hover:bg-[#fff5f5] sm:h-[30px] sm:px-2.5 sm:text-[12px]"
                     >
-                      <Delete01Icon size={13} className="text-[#b42318]" />
+                      <Delete01Icon size={12} className="text-[#b42318] sm:size-[13px]" />
                       <span>{t("settings.profilePictureRemove")}</span>
                     </Button>
                   )}
                 </div>
-                <p className="text-[11px] leading-normal text-[#010a04]/45">
+                <p className="text-[10px] leading-normal text-[#010a04]/45 sm:text-[11px]">
                   PNG, JPEG, JPG · Max {MAX_CLUB_LOGO_SIZE_MB} MB
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-[10px]">
+            <div className="grid gap-2 sm:gap-[10px]">
               <Label htmlFor="club-website" className={labelClassName}>
                 {t("settings.adminClubsWebsite")}
               </Label>
@@ -241,7 +242,7 @@ export function AddEditClubModal({
               />
             </div>
 
-            <div className="grid gap-[10px]">
+            <div className="grid gap-2 sm:gap-[10px]">
               <Label htmlFor="club-booking-url" className={labelClassName}>
                 {t("settings.adminClubsBookingUrl")}
               </Label>
@@ -254,7 +255,7 @@ export function AddEditClubModal({
               />
             </div>
 
-            <div className="grid gap-[10px]">
+            <div className="grid gap-2 sm:gap-[10px]">
               <Label htmlFor="club-address" className={labelClassName}>
                 {t("settings.adminClubsAddress")}
               </Label>
@@ -277,19 +278,19 @@ export function AddEditClubModal({
               onCourtChange={handleCourtChange}
             />
 
-            <DialogFooter className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:justify-start">
+            <DialogFooter className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:justify-start sm:gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={close}
-                className="h-[38px] rounded-[8px] border-black/12 bg-white text-base font-medium text-[#010a04] shadow-none hover:bg-[#f9fafc]"
+                className="h-[34px] rounded-[8px] border-black/12 bg-white text-sm font-medium text-[#010a04] shadow-none hover:bg-[#f9fafc] sm:h-[38px] sm:text-base"
               >
                 {t("settings.adminClubsCancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isPending}
-                className="h-[38px] rounded-[8px] bg-linear-to-r from-[#0a6925] via-[#0c7b2c] to-[#0f8d33] text-base font-medium text-white hover:opacity-95"
+                className="h-[34px] rounded-[8px] bg-linear-to-r from-[#0a6925] via-[#0c7b2c] to-[#0f8d33] text-sm font-medium text-white hover:opacity-95 sm:h-[38px] sm:text-base"
               >
                 {isPending ? (
                   <InlineLoader size="sm" />
