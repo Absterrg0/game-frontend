@@ -167,6 +167,7 @@ export function PlayerMatchesBoard({
               tournamentId={tournamentId}
               tournamentName={tournamentName}
               canEditScores={false}
+              canRecordScore={isCurrentUserInMatch(match, currentUserId)}
               isEditing={false}
               editableRows={[]}
               isSavePending={false}

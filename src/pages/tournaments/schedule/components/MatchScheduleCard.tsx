@@ -65,10 +65,12 @@ export interface MatchScheduleCardProps {
   locale: Locale;
   timeZone?: string | null;
   t: (key: string, options?: Record<string, unknown>) => string;
-  /** When set and the viewer cannot inline-edit, show “Record score” (QR flow). */
+  /** When set and the viewer may record via QR, link to manual record-score for this match. */
   tournamentId?: string | null;
   tournamentName?: string | null;
   canEditScores: boolean;
+  /** Player flow: only true when the signed-in user is on this match. */
+  canRecordScore?: boolean;
   isEditing: boolean;
   editableRows: ScoreEditorRow[];
   isSavePending: boolean;
@@ -90,6 +92,7 @@ export function MatchScheduleCard({
   tournamentId,
   tournamentName,
   canEditScores,
+  canRecordScore = false,
   isEditing,
   editableRows,
   isSavePending,
@@ -210,7 +213,7 @@ export function MatchScheduleCard({
                 : t("tournaments.editScore")}
           </Button>
         )}
-        {!canEditScores && recordScoreTo && !isCancelled && !isFromPreviousRound && !hasScore && (
+        {canRecordScore && recordScoreTo && !isCancelled && !isFromPreviousRound && !hasScore && (
           <Button
             asChild
             size="sm"

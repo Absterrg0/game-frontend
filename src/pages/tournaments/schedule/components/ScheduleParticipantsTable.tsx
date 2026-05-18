@@ -142,7 +142,7 @@ function DoublesPairSkeleton({ index }: { index: number }) {
 interface ParticipantRowActionsProps {
   participant: ScheduleParticipantRow;
   displayName: string;
-  onEditParticipant: (id: string) => void;
+  onEditParticipant?: (id: string) => void;
   onRemoveParticipant: (id: string) => void;
   compact?: boolean;
 }
@@ -158,21 +158,19 @@ function ParticipantRowActions({
 
   return (
     <div className="flex items-center gap-1">
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        onClick={() => onEditParticipant(participant.id)}
-        className={cn(
-          compact
-            ? "h-7 w-7 px-0 text-[#067429] hover:bg-[#067429]/10"
-            : "h-7 px-2 text-[12px] text-[#067429] hover:bg-[#067429]/10"
-        )}
-        aria-label={t("tournaments.scheduleEditParticipant", { name: displayName })}
-      >
-        <PencilEdit01Icon size={compact ? 15 : 14} className={compact ? undefined : "mr-1"} />
-        {compact ? null : t("tournaments.edit")}
-      </Button>
+      {!compact && onEditParticipant ? (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onEditParticipant(participant.id)}
+          className="h-7 px-2 text-[12px] text-[#067429] hover:bg-[#067429]/10"
+          aria-label={t("tournaments.scheduleEditParticipant", { name: displayName })}
+        >
+          <PencilEdit01Icon size={14} className="mr-1" />
+          {t("tournaments.edit")}
+        </Button>
+      ) : null}
       <Button
         type="button"
         variant="ghost"
@@ -194,13 +192,11 @@ function ParticipantRowActions({
 
 interface SortableParticipantsMobileRowProps {
   participant: ScheduleParticipantRow;
-  onEditParticipant: (id: string) => void;
   onRemoveParticipant: (id: string) => void;
 }
 
 function SortableParticipantsMobileRow({
   participant,
-  onEditParticipant,
   onRemoveParticipant,
 }: SortableParticipantsMobileRowProps) {
   const { t } = useTranslation();
@@ -256,7 +252,6 @@ function SortableParticipantsMobileRow({
       <ParticipantRowActions
         participant={participant}
         displayName={displayName}
-        onEditParticipant={onEditParticipant}
         onRemoveParticipant={onRemoveParticipant}
         compact
       />
@@ -467,7 +462,6 @@ export function ScheduleParticipantsTable({
               <SortableParticipantsMobileRow
                 key={participant.id}
                 participant={participant}
-                onEditParticipant={onEditParticipant}
                 onRemoveParticipant={onRemoveParticipant}
               />
             ))}
