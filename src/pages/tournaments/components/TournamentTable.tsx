@@ -53,6 +53,7 @@ function ClubLogoBadge({
   className: string;
 }) {
   const nameInitial = name.trim().charAt(0).toUpperCase() || "?";
+  const normalizedLogo = logoUrl?.trim() ?? "";
 
   return (
     <span
@@ -62,9 +63,9 @@ function ClubLogoBadge({
       )}
       aria-hidden="true"
     >
-      {logoUrl ? (
+      {normalizedLogo ? (
         <img
-          src={logoUrl}
+          src={normalizedLogo}
           alt={name}
           className="h-full w-full object-cover"
           loading="lazy"

@@ -1,4 +1,4 @@
-import { CloudUpload } from '@/icons/figma-icons';
+import { CloudUpload, XIcon } from '@/icons/figma-icons';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -95,6 +95,14 @@ export function SponsorLogoUploadZone({
 		fileInputRef.current?.click();
 	};
 
+	const handleRemoveLogo = () => {
+		if (disabled || isProcessingFile) return;
+		onLogoUrlChange('');
+		if (fileInputRef.current) {
+			fileInputRef.current.value = '';
+		}
+	};
+
 	const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
 		event.preventDefault();
 		if (disabled || isProcessingFile) return;
@@ -121,32 +129,50 @@ export function SponsorLogoUploadZone({
 			/>
 
 			{hasLogoPreview ? (
-				<button
-					type="button"
-					onClick={handleBrowseClick}
-					disabled={disabled || isProcessingFile}
-					aria-label={t('sponsors.logoUpload.browseFile')}
+				<div
 					className={cn(
 						UPLOAD_ZONE_PREVIEW_CLASS,
 						UPLOAD_ZONE_HEIGHT_CLASS,
-						'flex items-center justify-center p-0 outline-none focus-visible:ring-2 focus-visible:ring-[#067429] focus-visible:ring-offset-2',
-						(disabled || isProcessingFile) && 'cursor-not-allowed opacity-70',
-						!disabled && !isProcessingFile && 'cursor-pointer',
+						'relative flex items-center justify-center',
 					)}
 				>
-					<img
-						src={trimmedLogo}
-						alt=""
-						className="max-h-full max-w-full object-contain"
-					/>
+					<button
+						type="button"
+						onClick={handleBrowseClick}
+						disabled={disabled || isProcessingFile}
+						aria-label={t('sponsors.logoUpload.browseFile')}
+						className={cn(
+							'flex h-full w-full items-center justify-center p-0 outline-none focus-visible:ring-2 focus-visible:ring-[#067429] focus-visible:ring-offset-2',
+							(disabled || isProcessingFile) && 'cursor-not-allowed opacity-70',
+							!disabled && !isProcessingFile && 'cursor-pointer',
+						)}
+					>
+						<img
+							src={trimmedLogo}
+							alt=""
+							className="max-h-full max-w-full object-contain"
+						/>
+					</button>
+					<button
+						type="button"
+						onClick={handleRemoveLogo}
+						disabled={disabled || isProcessingFile}
+						aria-label={t('sponsors.logoUpload.removeLogo')}
+						className={cn(
+							'absolute right-1.5 top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#010a04]/75 text-white outline-none transition-colors hover:bg-[#010a04]/90 focus-visible:ring-2 focus-visible:ring-[#067429] focus-visible:ring-offset-1',
+							(disabled || isProcessingFile) && 'cursor-not-allowed opacity-70',
+						)}
+					>
+						<XIcon size={14} aria-hidden />
+					</button>
 					{isProcessingFile ? (
-						<div className="absolute inset-0 flex items-center justify-center bg-white/70">
+						<div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white/70">
 							<span className="text-sm font-medium text-[#010a04]">
 								{t('sponsors.logoUpload.uploading')}
 							</span>
 						</div>
 					) : null}
-				</button>
+				</div>
 			) : (
 				<>
 				<div

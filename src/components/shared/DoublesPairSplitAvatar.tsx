@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserCircle2 } from "@/icons/figma-icons";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,11 @@ function PlayerHalfAvatar({
 }) {
   const [imageFailed, setImageFailed] = useState(false);
   const profilePictureUrl = player.profilePictureUrl?.trim() ?? "";
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [profilePictureUrl]);
+
   const showImage = profilePictureUrl.length > 0 && !imageFailed;
 
   return (

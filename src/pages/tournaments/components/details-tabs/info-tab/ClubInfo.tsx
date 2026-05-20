@@ -14,15 +14,16 @@ interface ClubInfoProps {
 
 export function ClubInfo({ clubId, clubName, clubLogoUrl, onGetDirection, t }: ClubInfoProps) {
   const nameInitial = clubName.trim().charAt(0).toUpperCase() || "?";
+  const trimmedLogo = clubLogoUrl?.trim() ?? "";
 
   return (
     <div className="mt-6 border-t border-[#dddddd] pt-5 sm:mt-[30px] sm:pt-[25px]">
       <div className="flex items-center justify-between gap-3 rounded-[12px] bg-[#010a04]/[0.04] px-3 py-2.5 sm:gap-3 sm:px-[15px] sm:py-3">
         <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-[15px]">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[18px] bg-[#dddddd] sm:h-10 sm:w-10 sm:rounded-[20px]">
-            {clubLogoUrl ? (
+            {trimmedLogo ? (
               <img
-                src={clubLogoUrl}
+                src={trimmedLogo}
                 alt={clubName}
                 className="h-full w-full object-cover"
                 loading="lazy"
