@@ -1,20 +1,17 @@
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { ExternalLink, PlusSignIcon } from "@/icons/figma-icons";
 import { useAllSponsors } from "@/pages/sponsors/hooks";
 import InlineLoader from "@/components/shared/InlineLoader";
 import { GLOBAL_PARAMETERS } from "@/constants/constants";
 
-const BECOME_SPONSOR_SUBJECT = "We would like to become a TB10 Sponsor";
-const BECOME_SPONSOR_BODY =
-  "Dear TB10, we would like our company to appear under sponsors in the Sponsors Tab at TB10. Please reply to us with information about the options for this. Best regards,";
-
-function buildBecomeSponsorHref() {
+function buildBecomeSponsorHref(t: TFunction) {
   return (
     GLOBAL_PARAMETERS.CONTACT_US_MAILTO +
     "?subject=" +
-    encodeURIComponent(BECOME_SPONSOR_SUBJECT) +
+    encodeURIComponent(t("sponsors.becomeSponsorEmailSubject")) +
     "&body=" +
-    encodeURIComponent(BECOME_SPONSOR_BODY)
+    encodeURIComponent(t("sponsors.becomeSponsorEmailBody"))
   );
 }
 
@@ -34,7 +31,7 @@ export default function AllSponsorsPage() {
             </h1>
             <a
               id="become-sponsor-btn"
-              href={buildBecomeSponsorHref()}
+              href={buildBecomeSponsorHref(t)}
               className="ml-auto inline-flex items-center gap-2 rounded-lg bg-[#0a9f43] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#088a38] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0a9f43]"
             >
               <PlusSignIcon size={16} className="shrink-0 text-white" />
