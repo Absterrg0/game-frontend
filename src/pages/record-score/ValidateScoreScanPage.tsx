@@ -1,12 +1,15 @@
 import { Scanner } from "@yudiel/react-qr-scanner";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import ScannerIcon from "@/assets/icons/figma/vuesax/bold/scanner.svg?react";
 import { IconChevronLeft } from "@/icons/figma-icons";
 import { usePromoteScoreQrTokenFromQuery } from "./hooks/usePromoteScoreQrTokenFromQuery";
 import { useScanEnvironment } from "./hooks/useScanEnvironment";
-import { unlockScoreQrScanSound } from "@/lib/scoreQrScanSound";
+import {
+  preloadScoreQrScanSound,
+  unlockScoreQrScanSound,
+} from "@/lib/scoreQrScanSound";
 import { useScoreQrScanner } from "./hooks/useScoreQrScanner";
 import { storeScoreQrToken } from "./scoreQrTokenSession";
 
@@ -70,6 +73,10 @@ export default function ValidateScoreScanPage() {
     onTokenDetected,
   });
 
+  useEffect(() => {
+    preloadScoreQrScanSound();
+  }, []);
+
   const onBack = () => {
     unlockScoreQrScanSound();
     if (window.history.length > 1) {
@@ -103,17 +110,20 @@ export default function ValidateScoreScanPage() {
       type="button"
       onClick={onBack}
       aria-label={backLabel}
-      className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/95 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400/80"
+      className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/95 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary/80"
     >
       <IconChevronLeft size={22} className="shrink-0" aria-hidden />
     </button>
   );
 
+  const pageShellClass =
+    "relative flex min-h-0 flex-1 flex-col bg-black";
+
   if (tokenFromQuery) {
     return (
-      <div className="relative flex min-h-dvh flex-col bg-black">
+      <div className={pageShellClass}>
         {backButton}
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex min-h-0 flex-1 items-center justify-center">
           <ScanPageSpinner />
         </div>
       </div>
@@ -121,10 +131,10 @@ export default function ValidateScoreScanPage() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col bg-black">
+    <div className={pageShellClass}>
       {backButton}
       {scanEnvironment === "checking" ? (
-        <div className="flex flex-1 items-center justify-center bg-[#0f1210]">
+        <div className="flex min-h-0 flex-1 items-center justify-center bg-[#0f1210]">
           <ScanPageSpinner />
         </div>
       ) : scanEnvironment === "ready" ? (
@@ -134,14 +144,14 @@ export default function ValidateScoreScanPage() {
         >
           <Scanner {...scannerProps} />
           <div
-            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+            className="pointer-events-none absolute inset-x-0 top-[max(3.5rem,calc(env(safe-area-inset-top)+3rem))] z-10 flex justify-center"
             aria-hidden
           >
-            <div className="aspect-square w-[min(72vmin,20rem)] rounded-lg border-2 border-[#10b981]/50 shadow-[0_0_24px_rgba(16,185,129,0.35)]" />
+            <div className="aspect-square w-[min(72vmin,20rem)] rounded-lg border-2 border-brand-primary/50 shadow-[0_0_24px_color-mix(in_srgb,var(--brand-primary)_40%,transparent)]" />
           </div>
         </div>
       ) : (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-8 pt-14 text-center">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6 pb-8 pt-14 text-center">
           <ScannerIcon className="h-10 w-10 text-white/35" aria-hidden />
           <p className="max-w-sm text-sm leading-relaxed text-white/75">
             {scanUnavailableMessage}
