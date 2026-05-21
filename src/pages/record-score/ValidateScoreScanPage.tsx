@@ -110,7 +110,7 @@ export default function ValidateScoreScanPage() {
       type="button"
       onClick={onBack}
       aria-label={backLabel}
-      className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/95 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400/80"
+      className="absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-20 inline-flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white/95 backdrop-blur-sm transition-colors hover:bg-black/60 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary/80"
     >
       <IconChevronLeft size={22} className="shrink-0" aria-hidden />
     </button>
@@ -135,17 +135,20 @@ export default function ValidateScoreScanPage() {
           <ScanPageSpinner />
         </div>
       ) : scanEnvironment === "ready" ? (
-        <div
-          className="relative min-h-0 flex-1 overflow-hidden"
-          onPointerDown={unlockScanAudio}
-        >
-          <Scanner {...scannerProps} />
+        <div className="flex min-h-0 flex-1 flex-col">
           <div
-            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
-            aria-hidden
+            className="relative h-[50dvh] min-h-0 shrink-0 overflow-hidden"
+            onPointerDown={unlockScanAudio}
           >
-            <div className="aspect-square w-[min(72vmin,20rem)] rounded-lg border-2 border-[#10b981]/50 shadow-[0_0_24px_rgba(16,185,129,0.35)]" />
+            <Scanner {...scannerProps} />
+            <div
+              className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+              aria-hidden
+            >
+              <div className="aspect-square w-[min(60vmin,18rem)] rounded-lg border-2 border-brand-primary/50 shadow-[0_0_24px_color-mix(in_srgb,var(--brand-primary)_40%,transparent)]" />
+            </div>
           </div>
+          <div className="min-h-0 flex-1 bg-black" aria-hidden />
         </div>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-8 pt-14 text-center">
