@@ -972,7 +972,7 @@ export function useEnterMatchScoreController({
         (shouldUseHydratedState ? hydratedQrSession?.expiresAt ?? null : null);
   const activeScoreQrRequestId =
     mode === "generate"
-      ? (hydratedQrSession?.requestId ?? generatedRequestId)
+      ? (generatedRequestId ?? hydratedQrSession?.requestId)
       : null;
 
   const activeQrDataUrl =
