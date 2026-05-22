@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import InlineLoader from "@/components/shared/InlineLoader";
 import { ClubCourtsSection } from "@/pages/clubs/components/detail/ClubCourtsSection";
 import { ClubDetailHeader } from "@/pages/clubs/components/detail/ClubDetailHeader";
@@ -6,10 +6,16 @@ import { ClubDetailNotFound } from "@/pages/clubs/components/detail/ClubDetailNo
 import { ClubInfoSection } from "@/pages/clubs/components/detail/ClubInfoSection";
 import { ClubSponsorsAside } from "@/pages/clubs/components/detail/ClubSponsorsAside";
 import { useClubDetailData } from "@/pages/clubs/hooks/useClubDetailData";
+import { useRequireAuth } from "@/pages/auth/hooks";
 
 export default function ClubDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const { requireAuth } = useRequireAuth();
   const { club, courts, sponsors, isLoading } = useClubDetailData(id);
+
+  if (id === "manage") {
+    return <Navigate to="/clubs/manage" replace />;
+  }
 
   if (isLoading) {
     return (
@@ -32,7 +38,7 @@ export default function ClubDetailPage() {
             <ClubInfoSection club={club} />
             <ClubCourtsSection courts={courts} />
           </div>
-          <ClubSponsorsAside club={club} sponsors={sponsors} />
+          <ClubSponsorsAside club={club} sponsors={sponsors} onRequireAuth={requireAuth} />
         </div>
       </div>
     </div>

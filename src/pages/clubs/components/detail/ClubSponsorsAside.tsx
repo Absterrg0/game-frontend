@@ -6,9 +6,10 @@ import type { ClubPublic } from "@/pages/clubs/hooks";
 interface ClubSponsorsAsideProps {
   club: ClubPublic;
   sponsors: ClubPublic["sponsors"];
+  onRequireAuth: () => boolean;
 }
 
-export function ClubSponsorsAside({ club, sponsors }: ClubSponsorsAsideProps) {
+export function ClubSponsorsAside({ club, sponsors, onRequireAuth }: ClubSponsorsAsideProps) {
   const { t } = useTranslation();
   const safeBookingLink = getSafeLink(club.bookingSystemUrl);
 
@@ -85,12 +86,18 @@ export function ClubSponsorsAside({ club, sponsors }: ClubSponsorsAsideProps) {
             type="button"
             variant="brand"
             className="w-full rounded-lg px-4 py-3"
+            onClick={() => {
+              onRequireAuth();
+            }}
           >
             {t("clubs.requestTennisLesson")}
           </Button>
           <button
             type="button"
             className="text-center text-sm font-medium text-muted-foreground underline hover:text-foreground"
+            onClick={() => {
+              onRequireAuth();
+            }}
           >
             {t("clubs.becomeMember")}
           </button>

@@ -2,7 +2,12 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useAuth } from "@/pages/auth/hooks";
-import { PENDING_SIGNUP_TOKEN_KEY, setAuthToken } from "@/lib/auth";
+import {
+  consumeReturnPath,
+  isValidJwtFormat,
+  PENDING_SIGNUP_TOKEN_KEY,
+  setAuthToken,
+} from "@/lib/auth";
 
 /** Whitelist of safe error codes from backend/auth flow (prevents XSS/open redirect). */
 const ALLOWED_ERROR_CODES = new Set([
@@ -28,13 +33,6 @@ function sanitizeErrorCode(raw: string | null): string | null {
   return ALLOWED_ERROR_CODES.has(trimmed) ? trimmed : "true";
 }
 
-/** Basic JWT format check (3 base64 parts) before storing. Backend does full verification. */
-function isValidJwtFormat(token: string): boolean {
-  if (!token || typeof token !== "string") return false;
-  const parts = token.split(".");
-  return parts.length === 3 && parts.every((p) => /^[A-Za-z0-9_-]+$/.test(p));
-}
-
 function isValidHandoffCode(code: string): boolean {
   return /^[A-Za-z0-9_-]{16,128}$/.test(code);
 }
@@ -43,6 +41,29 @@ function isValidHandoffCode(code: string): boolean {
 function parseHashParams(hash: string): URLSearchParams {
   const query = hash.startsWith("#") ? hash.slice(1) : hash;
   return new URLSearchParams(query);
+}
+
+/** Remove one-time OAuth secrets from the address bar without navigating away. */
+function scrubCallbackSecretsFromUrl(): void {
+  const params = new URLSearchParams(window.location.search);
+  params.delete("handoff");
+  params.delete("authToken");
+
+  let nextHash = "";
+  const rawHash = window.location.hash;
+  if (rawHash) {
+    const hashParams = new URLSearchParams(
+      rawHash.startsWith("#") ? rawHash.slice(1) : rawHash,
+    );
+    hashParams.delete("handoff");
+    hashParams.delete("authToken");
+    const serialized = hashParams.toString();
+    nextHash = serialized ? `#${serialized}` : "";
+  }
+
+  const search = params.toString();
+  const url = `${window.location.pathname}${search ? `?${search}` : ""}${nextHash}`;
+  window.history.replaceState(null, "", url);
 }
 
 /**
@@ -77,30 +98,45 @@ export default function AuthCallback() {
       exchangeStartedRef.current = true;
 
       void (async () => {
-        const trimmedHandoff = handoff?.trim() ?? "";
-        if (trimmedHandoff && isValidHandoffCode(trimmedHandoff)) {
-          try {
-            const res = await api.post<{ token?: string }>("/api/auth/exchange-handoff", {
-              handoff: trimmedHandoff,
-            });
-            const token =
-              typeof res.data?.token === "string" ? res.data.token.trim() : "";
-            if (isValidJwtFormat(token)) {
+        try {
+          const trimmedHandoff = handoff?.trim() ?? "";
+          if (trimmedHandoff && isValidHandoffCode(trimmedHandoff)) {
+            try {
+              const res = await api.post<{ token?: string }>("/api/auth/exchange-handoff", {
+                handoff: trimmedHandoff,
+              });
+              const token =
+                typeof res.data?.token === "string" ? res.data.token.trim() : "";
+              if (!isValidJwtFormat(token)) {
+                navigate("/login?error=session", { replace: true });
+                return;
+              }
               setAuthToken(token);
+              scrubCallbackSecretsFromUrl();
+            } catch {
+              navigate("/login?error=session", { replace: true });
+              return;
             }
-          } catch {
-            navigate("/login?error=session", { replace: true });
+          }
+
+          const user = await checkAuth();
+          if (!user) {
+            navigate("/login", { replace: true });
             return;
           }
-        }
 
-        const user = await checkAuth();
-        if (!user) {
-          navigate("/login", { replace: true });
-          return;
+          const returnPath = consumeReturnPath();
+          if (returnPath) {
+            navigate(returnPath, { replace: true });
+            return;
+          }
+
+          const dest =
+            user.alias?.trim() && user.name?.trim() ? "/tournaments" : "/information";
+          navigate(dest, { replace: true });
+        } catch {
+          navigate("/login?error=session", { replace: true });
         }
-        const dest = user.alias?.trim() && user.name?.trim() ? "/tournaments" : "/information";
-        navigate(dest, { replace: true });
       })();
       return;
     }

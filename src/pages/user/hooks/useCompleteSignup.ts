@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { parseISO } from "date-fns";
 import { api } from "@/lib/api";
-import { PENDING_SIGNUP_TOKEN_KEY, setAuthToken } from "@/lib/auth";
+import { isValidJwtFormat, PENDING_SIGNUP_TOKEN_KEY, setAuthToken } from "@/lib/auth";
 import { signupFormSchema, type SignupFormValues } from "@/lib/validation";
 
 /** Form data without pendingToken (injected from sessionStorage). */
@@ -89,7 +89,7 @@ export function useCompleteSignup({
         sessionStorage.removeItem(PENDING_SIGNUP_TOKEN_KEY);
         const token =
           typeof response.data?.token === "string" ? response.data.token.trim() : "";
-        if (token.split(".").length === 3) {
+        if (isValidJwtFormat(token)) {
           setAuthToken(token);
         }
         await onSuccessRef.current();

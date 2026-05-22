@@ -20,8 +20,8 @@ export function getAuthToken(): string | null {
   const storage = getBrowserStorage();
   if (!storage) return null;
   try {
-    const value = storage.getItem(AUTH_TOKEN_KEY);
-    return value?.trim() ? value : null;
+    const value = storage.getItem(AUTH_TOKEN_KEY)?.trim() ?? "";
+    return value.length > 0 ? value : null;
   } catch {
     return null;
   }
@@ -30,8 +30,10 @@ export function getAuthToken(): string | null {
 export function setAuthToken(token: string): void {
   const storage = getBrowserStorage();
   if (!storage) return;
+  const trimmed = token.trim();
+  if (!trimmed) return;
   try {
-    storage.setItem(AUTH_TOKEN_KEY, token);
+    storage.setItem(AUTH_TOKEN_KEY, trimmed);
   } catch {
     /* private mode / quota */
   }
