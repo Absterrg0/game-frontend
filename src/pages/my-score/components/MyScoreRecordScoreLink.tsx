@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PencilIcon } from "@/icons/figma-icons";
 import { cn } from "@/lib/utils";
 
 interface MyScoreRecordScoreLinkProps {
@@ -7,18 +8,20 @@ interface MyScoreRecordScoreLinkProps {
   className?: string;
 }
 
-/** Subtle inline action for matches that still need a score recorded. */
+/** Subtle inline icon action for matches that still need a score recorded. */
 export function MyScoreRecordScoreLink({ to, label, className }: MyScoreRecordScoreLinkProps) {
   return (
     <Link
       to={to}
+      aria-label={label}
+      title={label}
       onClick={(event) => event.stopPropagation()}
       className={cn(
-        "inline-flex items-center rounded-sm text-[11px] font-medium text-brand-primary/85 underline underline-offset-2 transition-colors hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40",
+        "inline-flex shrink-0 items-center justify-center rounded-sm text-brand-primary/85 transition-colors hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/40",
         className,
       )}
     >
-      {label}
+      <PencilIcon size={14} aria-hidden className="text-current" />
     </Link>
   );
 }

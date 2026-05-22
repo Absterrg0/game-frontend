@@ -90,21 +90,17 @@ export function MyScoreDesktopTable({
                     </div>
                   </TableCell>
                   <TableCell className="px-4 py-2">
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
-                        <PlayerNameText
-                          name={opponent}
-                          className="text-[12px] text-[#010a04]/85"
-                        />
-                      </div>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="h-5 w-5 shrink-0 rounded-full bg-[#cfd3d0]" />
+                      <PlayerNameText
+                        name={opponent}
+                        className="min-w-0 flex-1 truncate text-[12px] text-[#010a04]/85"
+                      />
                       {isActionable && recordPath ? (
-                        <div className="ml-7">
-                          <MyScoreRecordScoreLink
-                            to={recordPath}
-                            label={t("myScorePage.scheduled.recordScore")}
-                          />
-                        </div>
+                        <MyScoreRecordScoreLink
+                          to={recordPath}
+                          label={t("myScorePage.scheduled.recordScore")}
+                        />
                       ) : null}
                     </div>
                   </TableCell>
