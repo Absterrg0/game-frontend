@@ -8,6 +8,7 @@ export {
 export {
   RETURN_AFTER_LOGIN_KEY,
   consumeReturnPath,
+  isAppRelativeReturnPath,
   loginPathWithReturn,
   saveReturnPath,
 } from "./returnPath";

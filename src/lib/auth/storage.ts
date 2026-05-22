@@ -31,7 +31,10 @@ export function setAuthToken(token: string): void {
   const storage = getBrowserStorage();
   if (!storage) return;
   const trimmed = token.trim();
-  if (!trimmed) return;
+  if (!trimmed) {
+    clearAuthToken();
+    return;
+  }
   try {
     storage.setItem(AUTH_TOKEN_KEY, trimmed);
   } catch {

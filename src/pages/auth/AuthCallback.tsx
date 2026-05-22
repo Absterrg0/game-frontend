@@ -100,6 +100,10 @@ export default function AuthCallback() {
       void (async () => {
         try {
           const trimmedHandoff = handoff?.trim() ?? "";
+          if (trimmedHandoff && !isValidHandoffCode(trimmedHandoff)) {
+            navigate("/login?error=session", { replace: true });
+            return;
+          }
           if (trimmedHandoff && isValidHandoffCode(trimmedHandoff)) {
             try {
               const res = await api.post<{ token?: string }>("/api/auth/exchange-handoff", {

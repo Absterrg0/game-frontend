@@ -6,7 +6,7 @@ import Google from "@/assets/icons/Google";
 import Apple from "@/assets/icons/Apple";
 import { buttonVariants } from "@/components/ui/button-variants";
 import { getBackendUrl } from "@/lib/api";
-import { saveReturnPath } from "@/lib/auth/returnPath";
+import { isAppRelativeReturnPath, saveReturnPath } from "@/lib/auth/returnPath";
 import { cn } from "@/lib/utils";
 import InlineLoader from "@/components/shared/InlineLoader";
 
@@ -95,7 +95,7 @@ const Login = () => {
       (fromState?.pathname
         ? `${fromState.pathname}${fromState.search ?? ""}`
         : "");
-    if (returnPath.startsWith("/")) {
+    if (isAppRelativeReturnPath(returnPath)) {
       saveReturnPath(returnPath);
     }
 

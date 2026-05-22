@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { GLOBAL_PARAMETERS } from "@/constants/constants";
+import { buildMailtoHref } from "@/lib/mailto";
 import { getSafeLink } from "@/lib/url";
 import type { ClubPublic } from "@/pages/clubs/hooks";
 
@@ -12,6 +14,13 @@ interface ClubSponsorsAsideProps {
 export function ClubSponsorsAside({ club, sponsors, onRequireAuth }: ClubSponsorsAsideProps) {
   const { t } = useTranslation();
   const safeBookingLink = getSafeLink(club.bookingSystemUrl);
+  const safeWebsiteLink = getSafeLink(club.website);
+
+  const contactClubMailto = buildMailtoHref({
+    baseMailto: GLOBAL_PARAMETERS.CONTACT_US_MAILTO,
+    subject: `${t("clubs.requestTennisLesson")} — ${club.name}`,
+    body: club.address,
+  });
 
   return (
     <aside>
@@ -87,7 +96,8 @@ export function ClubSponsorsAside({ club, sponsors, onRequireAuth }: ClubSponsor
             variant="brand"
             className="w-full rounded-lg px-4 py-3"
             onClick={() => {
-              onRequireAuth();
+              if (!onRequireAuth()) return;
+              window.location.assign(contactClubMailto);
             }}
           >
             {t("clubs.requestTennisLesson")}
@@ -96,7 +106,12 @@ export function ClubSponsorsAside({ club, sponsors, onRequireAuth }: ClubSponsor
             type="button"
             className="text-center text-sm font-medium text-muted-foreground underline hover:text-foreground"
             onClick={() => {
-              onRequireAuth();
+              if (!onRequireAuth()) return;
+              if (safeWebsiteLink) {
+                window.open(safeWebsiteLink, "_blank", "noopener,noreferrer");
+              } else {
+                window.location.assign(contactClubMailto);
+              }
             }}
           >
             {t("clubs.becomeMember")}
