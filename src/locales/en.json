@@ -855,6 +855,7 @@
       "hint": "Your upcoming and in-progress tournament fixtures. Record scores here as soon as a match is played.",
       "loading": "Loading scheduled matches…",
       "recordScore": "Record score",
+      "recordScoreAriaLabel": "Record score for match against {{opponent}} in {{tournament}}",
       "columns": {
         "when": "When",
         "status": "Status",

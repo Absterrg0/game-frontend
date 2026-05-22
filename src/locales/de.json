@@ -829,6 +829,7 @@
       "hint": "Deine anstehenden und laufenden Turnierspiele. Trage Ergebnisse hier ein, sobald ein Match gespielt wurde.",
       "loading": "Geplante Spiele werden geladen…",
       "recordScore": "Ergebnis erfassen",
+      "recordScoreAriaLabel": "Ergebnis erfassen für das Match gegen {{opponent}} bei {{tournament}}",
       "columns": {
         "when": "Wann",
         "status": "Status",

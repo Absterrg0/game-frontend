@@ -99,7 +99,10 @@ export function MyScoreDesktopTable({
                       {isActionable && recordPath ? (
                         <MyScoreRecordScoreLink
                           to={recordPath}
-                          label={t("myScorePage.scheduled.recordScore")}
+                          label={t("myScorePage.scheduled.recordScoreAriaLabel", {
+                            opponent,
+                            tournament: match.tournament.name,
+                          })}
                         />
                       ) : null}
                     </div>
