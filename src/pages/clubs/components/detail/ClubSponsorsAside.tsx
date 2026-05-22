@@ -9,9 +9,15 @@ interface ClubSponsorsAsideProps {
   club: ClubPublic;
   sponsors: ClubPublic["sponsors"];
   onRequireAuth: () => boolean;
+  className?: string;
 }
 
-export function ClubSponsorsAside({ club, sponsors, onRequireAuth }: ClubSponsorsAsideProps) {
+export function ClubSponsorsAside({
+  club,
+  sponsors,
+  onRequireAuth,
+  className,
+}: ClubSponsorsAsideProps) {
   const { t } = useTranslation();
   const safeBookingLink = getSafeLink(club.bookingSystemUrl);
   const safeWebsiteLink = getSafeLink(club.website);
@@ -23,8 +29,8 @@ export function ClubSponsorsAside({ club, sponsors, onRequireAuth }: ClubSponsor
   });
 
   return (
-    <aside>
-      <div className="rounded-xl border border-border bg-white p-6 shadow-sm">
+    <aside className={className}>
+      <div className="rounded-xl border border-border bg-white p-4 shadow-sm sm:p-6">
         <h2 className="mb-4 text-lg font-semibold text-foreground">
           {t("clubs.ourSponsors")}
         </h2>

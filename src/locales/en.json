@@ -691,6 +691,7 @@
     "liveModalVersusOpponent": "vs {{opponent}}",
     "liveModalNoNextMatch": "No match scheduled yet",
     "liveModalNoNextMatchCourt": "Court will be assigned",
+    "liveModalNextMatchCourtValue": "Court {{court}}",
     "liveModalNoNextMatchTime": "TBD",
     "liveModalNoNextMatchHeadline": "No following match yet",
     "liveModalNoNextMatchBody": "When your next match is scheduled, time, court, and opponent will show up here.",

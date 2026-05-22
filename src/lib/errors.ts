@@ -50,6 +50,13 @@ export function getErrorMessage(err: unknown): string | null {
  * Safely extract an HTTP status code from an unknown error (e.g. axios error).
  * Returns the numeric status code or `undefined` if not available.
  */
+/** True when the API rejected the request because the user is not authenticated. */
+export function isUnauthorizedError(err: unknown): boolean {
+  if (getHttpStatus(err) === 401) return true;
+  const message = getErrorMessage(err)?.toLowerCase() ?? "";
+  return message.includes("authorization required");
+}
+
 export function getHttpStatus(err: unknown): number | undefined {
   if (err === null || typeof err !== "object") return undefined;
   const status = (err as { response?: { status?: unknown } }).response?.status;
