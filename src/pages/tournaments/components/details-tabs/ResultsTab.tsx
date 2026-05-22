@@ -57,10 +57,7 @@ export function ResultsTab({ tournament, currentUserId, onRequireAuth }: Results
         <ResultsHeader
           myScoreOnly={myScoreOnly}
           onMyScoreOnlyChange={(checked) => {
-            if (!currentUserId) {
-              onRequireAuth();
-              return;
-            }
+            if (!onRequireAuth()) return;
             setMyScoreOnly(checked);
           }}
           showSignInHint={!currentUserId}
