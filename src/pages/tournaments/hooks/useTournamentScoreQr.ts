@@ -377,11 +377,17 @@ export function useActiveTournamentScoreQrSession(
 // Score update (in-place)
 // ----------
 
+const scoreQrScoreValueSchema = z.union([z.number(), z.literal("wo"), z.null()]);
+
 async function updateTournamentScoreQrScores(
   requestId: string,
-  playerOneScores: Array<number | "wo">,
-  playerTwoScores: Array<number | "wo">,
-): Promise<{ requestId: string; playerOneScores: Array<number | "wo">; playerTwoScores: Array<number | "wo"> }> {
+  playerOneScores: Array<number | "wo" | null>,
+  playerTwoScores: Array<number | "wo" | null>,
+): Promise<{
+  requestId: string;
+  playerOneScores: Array<number | "wo" | null>;
+  playerTwoScores: Array<number | "wo" | null>;
+}> {
   const response = await api.patch(
     `/api/tournaments/score-qr/${encodeURIComponent(requestId)}/scores`,
     { playerOneScores, playerTwoScores },
@@ -389,8 +395,8 @@ async function updateTournamentScoreQrScores(
   return z
     .object({
       requestId: z.string(),
-      playerOneScores: z.array(z.union([z.number(), z.literal("wo")])),
-      playerTwoScores: z.array(z.union([z.number(), z.literal("wo")])),
+      playerOneScores: z.array(scoreQrScoreValueSchema),
+      playerTwoScores: z.array(scoreQrScoreValueSchema),
     })
     .parse(response.data);
 }
@@ -405,8 +411,8 @@ export function useUpdateScoreQrScores() {
       playerTwoScores,
     }: {
       requestId: string;
-      playerOneScores: Array<number | "wo">;
-      playerTwoScores: Array<number | "wo">;
+      playerOneScores: Array<number | "wo" | null>;
+      playerTwoScores: Array<number | "wo" | null>;
     }) => updateTournamentScoreQrScores(requestId, playerOneScores, playerTwoScores),
     onSuccess: async () => {
       // Refetch the active session so A's view refreshes to the new scores

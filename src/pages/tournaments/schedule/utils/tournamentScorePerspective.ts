@@ -1,8 +1,8 @@
 import type { TournamentMatchPlayer, TournamentScheduleMatch } from "@/models/tournament/types";
 
 export type TournamentScorePair = {
-  playerOneScores: Array<number | "wo">;
-  playerTwoScores: Array<number | "wo">;
+  playerOneScores: Array<number | "wo" | null>;
+  playerTwoScores: Array<number | "wo" | null>;
 };
 
 export function teamIncludesUserId(

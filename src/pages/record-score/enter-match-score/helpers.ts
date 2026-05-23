@@ -37,7 +37,10 @@ export function asSelectValue(value: string): string {
   return normalized.toUpperCase() === "WO" ? "WO" : normalized;
 }
 
-export function scoreValueToInput(value: number | "wo"): string {
+export function scoreValueToInput(value: number | "wo" | null): string {
+  if (value == null) {
+    return "";
+  }
   return typeof value === "number" ? String(value) : "WO";
 }
 

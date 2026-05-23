@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type { TournamentPlayMode, TournamentScheduleMatch } from "@/models/tournament/types";
 
 export type ScoreWinnerSide = "one" | "two" | null;
-export type MatchScoreValue = number | "wo";
+export type MatchScoreValue = number | "wo" | null;
 export type ScoreEditorSide = "playerOne" | "playerTwo";
 
 export interface ScoreEditorRow {
@@ -87,9 +87,9 @@ export function scoreColumns(match: TournamentScheduleMatch): ScoreColumn[] {
       } else if (playerTwo > playerOne) {
         winner = "two";
       }
-    } else if (playerOne === "wo" && playerTwo !== null) {
+    } else if (playerOne === "wo") {
       winner = "two";
-    } else if (playerTwo === "wo" && playerOne !== null) {
+    } else if (playerTwo === "wo") {
       winner = "one";
     }
 
@@ -133,6 +133,12 @@ export function winnerSideForScoreEditorSet(
 ): ScoreWinnerSide {
   const first = parseScoreInputValue(row.playerOne);
   const second = parseScoreInputValue(row.playerTwo);
+  if (first === "wo" && second !== "wo") {
+    return "two";
+  }
+  if (second === "wo" && first !== "wo") {
+    return "one";
+  }
   if (first == null || second == null) {
     return null;
   }
@@ -348,6 +354,29 @@ export function applyScoreInputChange(
   });
 }
 
+export function createScoreEditorRowsFromPersistedScores(
+  playerOneScores: MatchScoreValue[],
+  playerTwoScores: MatchScoreValue[],
+  playMode: TournamentPlayMode,
+  layout: "schedule" | "recordScore" = "schedule",
+): ScoreEditorRow[] {
+  const maxRows = Math.max(playerOneScores.length, playerTwoScores.length);
+  if (maxRows === 0) {
+    return [];
+  }
+
+  const baseRows = Array.from({ length: maxRows }, (_, index) => ({
+    id: `set-${index + 1}`,
+    playerOne: serializeScoreValue(playerOneScores[index] ?? null),
+    playerTwo: serializeScoreValue(playerTwoScores[index] ?? null),
+    lastEditedSide: null,
+  }));
+
+  return layout === "recordScore"
+    ? visibleScoreEditorRowsForRecordScore(baseRows, playMode)
+    : visibleScoreEditorRows(baseRows, playMode);
+}
+
 export function createScoreEditorRows(match: TournamentScheduleMatch): ScoreEditorRow[] {
   const columnCount = Math.max(
     requiredSetCountForPlayMode(match.playMode),
@@ -368,9 +397,30 @@ export function createScoreEditorRows(match: TournamentScheduleMatch): ScoreEdit
   return rows;
 }
 
+function isWalkoverSet(
+  first: MatchScoreValue | null,
+  second: MatchScoreValue | null,
+): boolean {
+  return (first === "wo" && second !== "wo") || (second === "wo" && first !== "wo");
+}
+
+/** Walkover set: loser is "wo", winner side stays null (-) unless a numeric score was entered. */
+function normalizeWalkoverSetScores(
+  first: MatchScoreValue | null,
+  second: MatchScoreValue | null,
+): [MatchScoreValue, MatchScoreValue] | null {
+  if (first === "wo" && second !== "wo") {
+    return ["wo", typeof second === "number" ? second : null];
+  }
+  if (second === "wo" && first !== "wo") {
+    return [typeof first === "number" ? first : null, "wo"];
+  }
+  return null;
+}
+
 function resolveSetWinnerFromValues(
-  first: MatchScoreValue,
-  second: MatchScoreValue,
+  first: Exclude<MatchScoreValue, null>,
+  second: Exclude<MatchScoreValue, null>,
   setRule: ScoreSetRule
 ): ScoreWinnerSide {
   if (first === "wo" && second !== "wo") {
@@ -400,10 +450,13 @@ export function visibleScoreEditorRows(
 
     const first = parseScoreInputValue(row.playerOne.trim());
     const second = parseScoreInputValue(row.playerTwo.trim());
-    if (first == null || second == null) {
+    if (first === "wo" && second === "wo") {
       return rows.slice(0, index + 1);
     }
-    if (first === "wo" && second === "wo") {
+    if (isWalkoverSet(first, second)) {
+      return rows.slice(0, index + 1);
+    }
+    if (first == null || second == null) {
       return rows.slice(0, index + 1);
     }
 
@@ -460,10 +513,10 @@ export function buildScorePayload(
   playMode: TournamentPlayMode,
   t: (key: string, options?: Record<string, unknown>) => string
 ): ScorePayloadBuildResult {
-  const requiredRows = requiredSetCountForPlayMode(playMode);
   const requiredSetWins = setsNeededToWin(playMode);
+  const editorRows = visibleScoreEditorRows(rows, playMode);
 
-  if (rows.length === 0 || requiredRows < 1) {
+  if (editorRows.length === 0) {
     return {
       ok: false,
       playerOneScores: [],
@@ -476,9 +529,10 @@ export function buildScorePayload(
   const playerTwoScores: MatchScoreValue[] = [];
   let playerOneSetWins = 0;
   let playerTwoSetWins = 0;
+  let matchCompleteByWalkover = false;
 
-  for (let index = 0; index < requiredRows; index += 1) {
-    const row = rows[index];
+  for (let index = 0; index < editorRows.length; index += 1) {
+    const row = editorRows[index];
     if (!row) {
       return {
         ok: false,
@@ -488,11 +542,8 @@ export function buildScorePayload(
       };
     }
 
-    const firstRaw = row.playerOne.trim();
-    const secondRaw = row.playerTwo.trim();
-
-    const first = parseScoreInputValue(firstRaw);
-    const second = parseScoreInputValue(secondRaw);
+    const first = parseScoreInputValue(row.playerOne.trim());
+    const second = parseScoreInputValue(row.playerTwo.trim());
     if (first === "wo" && second === "wo") {
       return {
         ok: false,
@@ -502,19 +553,16 @@ export function buildScorePayload(
       };
     }
 
-    const setRule = scoreRuleForSet(playMode, index);
+    const walkoverScores = normalizeWalkoverSetScores(first, second);
+    if (walkoverScores) {
+      const [playerOneScore, playerTwoScore] = walkoverScores;
+      playerOneScores.push(playerOneScore);
+      playerTwoScores.push(playerTwoScore);
+      matchCompleteByWalkover = true;
+      break;
+    }
 
     if (first === null || second === null) {
-      if (first === "wo" && second === null) {
-        playerOneScores.push("wo");
-        playerTwoScores.push(0);
-        continue;
-      }
-      if (first === null && second === "wo") {
-        playerOneScores.push(0);
-        playerTwoScores.push("wo");
-        continue;
-      }
       return {
         ok: false,
         playerOneScores: [],
@@ -523,7 +571,7 @@ export function buildScorePayload(
       };
     }
 
-    if (first === "wo" || second === "wo") {
+    if (typeof first !== "number" || typeof second !== "number") {
       return {
         ok: false,
         playerOneScores: [],
@@ -532,6 +580,7 @@ export function buildScorePayload(
       };
     }
 
+    const setRule = scoreRuleForSet(playMode, index);
     if (!normalizeNumericSetPair(setRule, first, second)) {
       return {
         ok: false,
@@ -565,7 +614,11 @@ export function buildScorePayload(
     };
   }
 
-  if (playerOneSetWins < requiredSetWins && playerTwoSetWins < requiredSetWins) {
+  if (
+    !matchCompleteByWalkover &&
+    playerOneSetWins < requiredSetWins &&
+    playerTwoSetWins < requiredSetWins
+  ) {
     return {
       ok: false,
       playerOneScores: [],

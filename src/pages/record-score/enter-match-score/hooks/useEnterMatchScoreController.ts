@@ -34,6 +34,7 @@ import {
 import {
   applyScoreInputChange,
   buildScorePayload,
+  createScoreEditorRowsFromPersistedScores,
   hasRecordedMatchScore,
   type ScoreEditorRow,
   type ScoreEditorSide,
@@ -64,7 +65,6 @@ import {
   pickDefaultEligibleTournamentOption,
   pickDefaultScorableTournamentOption,
   playerDisplayName,
-  scoreValueToInput,
 } from "../helpers";
 import { INDEPENDENT_MATCH_ID, type MatchOption } from "../types";
 import {
@@ -75,20 +75,17 @@ import {
 } from "../../scoreQrTokenSession";
 
 function createRowsFromScorePayload(
-  playerOneScores: Array<number | "wo">,
-  playerTwoScores: Array<number | "wo">,
+  playerOneScores: Array<number | "wo" | null>,
+  playerTwoScores: Array<number | "wo" | null>,
+  playMode: MatchOption["playMode"],
+  layout: "schedule" | "recordScore",
 ): ScoreEditorRow[] {
-  const maxRows = Math.max(playerOneScores.length, playerTwoScores.length);
-  if (maxRows === 0) return [];
-
-  return Array.from({ length: maxRows }, (_, index) => ({
-    id: `set-${index + 1}`,
-    playerOne:
-      index < playerOneScores.length ? scoreValueToInput(playerOneScores[index]) : "",
-    playerTwo:
-      index < playerTwoScores.length ? scoreValueToInput(playerTwoScores[index]) : "",
-    lastEditedSide: null,
-  }));
+  return createScoreEditorRowsFromPersistedScores(
+    playerOneScores,
+    playerTwoScores,
+    playMode,
+    layout,
+  );
 }
 
 function teamIncludesUser(
@@ -980,6 +977,8 @@ export function useEnterMatchScoreController({
     const restoredRows = createRowsFromScorePayload(
       displayScores.playerOneScores,
       displayScores.playerTwoScores,
+      hydratedMatchOption?.playMode ?? effectiveSelectedOption.playMode,
+      "recordScore",
     );
     if (restoredRows.length > 0) {
       return restoredRows;
@@ -1063,28 +1062,21 @@ export function useEnterMatchScoreController({
     validatedRequest,
   ]);
 
+  const confirmPlayMode = validatedRequest?.playMode ?? "TieBreak10";
   const effectiveRows =
     mode !== "confirm" || !validatedRequest || !confirmDisplayScores
       ? generateRows
-      : Array.from(
-          {
-            length: Math.max(
-              createRowsForPlayMode(validatedRequest.playMode ?? "TieBreak10").length,
-              confirmDisplayScores.playerOneScores.length,
-              confirmDisplayScores.playerTwoScores.length,
-            ),
-          },
-          (_, index) => {
-            const p1Scores = confirmDisplayScores.playerOneScores;
-            const p2Scores = confirmDisplayScores.playerTwoScores;
-            return {
-              id: `set-${index + 1}`,
-              playerOne: index < p1Scores.length ? scoreValueToInput(p1Scores[index]) : "",
-              playerTwo: index < p2Scores.length ? scoreValueToInput(p2Scores[index]) : "",
-              lastEditedSide: null,
-            };
-          },
-        );
+      : (() => {
+          const fromScores = createScoreEditorRowsFromPersistedScores(
+            confirmDisplayScores.playerOneScores,
+            confirmDisplayScores.playerTwoScores,
+            confirmPlayMode,
+            "schedule",
+          );
+          return fromScores.length > 0
+            ? fromScores
+            : createRowsForPlayMode(confirmPlayMode);
+        })();
 
   const isScoreFormValidForQr = buildScorePayload(
     effectiveRows,
