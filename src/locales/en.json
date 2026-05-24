@@ -850,6 +850,10 @@
     "paginationInfo": "Showing {{from}}–{{to}} of {{total}}",
     "pageAriaLabel": "Go to page {{page}}",
     "empty": "No matches found for the selected filters.",
+    "sections": {
+      "scheduledGames": "Scheduled games",
+      "registeredScores": "Registered scores"
+    },
     "scheduled": {
       "title": "Scheduled matches",
       "hint": "Your upcoming and in-progress tournament fixtures. Record scores here as soon as a match is played.",

@@ -824,6 +824,10 @@
     "paginationInfo": "{{from}}–{{to}} von {{total}}",
     "pageAriaLabel": "Gehe zu Seite {{page}}",
     "empty": "Keine Spiele für die ausgewählten Filter gefunden.",
+    "sections": {
+      "scheduledGames": "Geplante Spiele",
+      "registeredScores": "Eingetragene Ergebnisse"
+    },
     "scheduled": {
       "title": "Geplante Spiele",
       "hint": "Deine anstehenden und laufenden Turnierspiele. Trage Ergebnisse hier ein, sobald ein Match gespielt wurde.",
