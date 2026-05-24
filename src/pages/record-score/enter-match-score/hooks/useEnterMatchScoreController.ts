@@ -295,6 +295,10 @@ export function useEnterMatchScoreController({
 
   const urlTournamentName = searchParams.get("tournamentName")?.trim() ?? "";
 
+  const lastNonEmptyTournamentNameForConfirm = resolvedConfirmTournamentId
+    ? lastNonEmptyTournamentNameByTournamentIdRef.current.get(resolvedConfirmTournamentId)
+    : undefined;
+
   const resolvedConfirmTournamentName = useMemo(() => {
     const tournamentId = resolvedConfirmTournamentId;
     if (!tournamentId) return "";
@@ -305,7 +309,7 @@ export function useEnterMatchScoreController({
       urlTournamentName,
       eligibleTournaments.find((tournament) => tournament.id === tournamentId)?.name,
       inFlightMatches.find((match) => match.tournament.id === tournamentId)?.tournament.name,
-      lastNonEmptyTournamentNameByTournamentIdRef.current.get(tournamentId),
+      lastNonEmptyTournamentNameForConfirm,
     ];
 
     for (const raw of candidates) {
@@ -320,6 +324,7 @@ export function useEnterMatchScoreController({
     confirmTournamentDetailQuery.data?.tournament.name,
     eligibleTournaments,
     inFlightMatches,
+    lastNonEmptyTournamentNameForConfirm,
     resolvedConfirmTournamentId,
     urlTournamentName,
     validatedRequest?.tournamentName,

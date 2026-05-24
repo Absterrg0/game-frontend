@@ -734,6 +734,7 @@
     "scheduleDoubles": "Doppel",
     "scheduleDoublesArranging": "Doppelpaare werden zusammengestellt.",
     "schedulePairLabel": "Paar {{n}}",
+    "scheduleDoublesUnpaired": "Ohne Partner",
     "scheduleUnpairedList": "Ohne Partner: {{names}}",
     "scheduleGamesPerPlayer": "Spiele pro Spieler",
     "scheduleMatchesPerPlayer": "Anzahl der Matches in der Runde",
