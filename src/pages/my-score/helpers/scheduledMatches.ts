@@ -26,7 +26,7 @@ export function filterScheduledMatchesForMyScore(
   });
 }
 
-/** Warm highlight for upcoming fixtures (matches tournament schedule cards). */
+/** Warm highlight for upcoming matches (matches tournament schedule cards). */
 export const MY_SCORE_SCHEDULED_SURFACE_CLASS =
   "border-[#b45309]/25 bg-[#fffaf3]";
 

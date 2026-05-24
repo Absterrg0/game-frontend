@@ -856,7 +856,7 @@
     },
     "scheduled": {
       "title": "Scheduled matches",
-      "hint": "Your upcoming and in-progress tournament fixtures. Record scores here as soon as a match is played.",
+      "hint": "Your upcoming and in-progress tournament matches. Record scores here as soon as a match is played.",
       "loading": "Loading scheduled matches…",
       "recordScore": "Record score",
       "recordScoreAriaLabel": "Record score for match against {{opponent}} in {{tournament}}",
@@ -900,7 +900,7 @@
       },
       "enter": {
         "title": "Enter Score",
-        "description": "Manually submit your result for tournament fixtures or separate matches"
+        "description": "Manually submit your result for tournament matches or independent matches"
       }
     },
     "toasts": {
@@ -973,7 +973,7 @@
       "preparingQr": "Enter a valid score",
       "generatingQr": "Generating QR...",
       "qrGenerated": "QR and validation link are ready. Your opponent can scan the QR or open the shared link to confirm.",
-      "opponentConfirmedScore": "Your opponent confirmed the score. You can record a new match or pick another fixture.",
+      "opponentConfirmedScore": "Your opponent confirmed the score. You can record a new match or pick another match.",
       "qrGeneratedState": "QR Generated",
       "qrPreviewTapToEnlarge": "Tap to enlarge",
       "qrPreviewAlt": "Generated score validation QR code",

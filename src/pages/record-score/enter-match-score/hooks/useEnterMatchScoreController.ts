@@ -180,7 +180,7 @@ export function useEnterMatchScoreController({
   const skippedScoredMatchRef = useRef(false);
   /** Blocks auto-generate after the opponent consumes the QR (avoids regen on completed match). */
   const qrSessionConsumedRef = useRef(false);
-  /** Hides fixtures immediately after QR consumption until live-match refetch settles. */
+  /** Hides matches immediately after QR consumption until live-match refetch settles. */
   const [excludedEnterScoreMatchIds, setExcludedEnterScoreMatchIds] = useState(
     () => new Set<string>(),
   );
@@ -1683,7 +1683,7 @@ export function useEnterMatchScoreController({
         toast.success(
           t("recordScorePage.enter.opponentConfirmedScore", {
             defaultValue:
-              "Your opponent confirmed the score. You can record a new match or pick another fixture.",
+              "Your opponent confirmed the score. You can record a new match or pick another match.",
           }),
         );
       });
