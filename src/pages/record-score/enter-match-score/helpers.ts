@@ -37,7 +37,10 @@ export function asSelectValue(value: string): string {
   return normalized.toUpperCase() === "WO" ? "WO" : normalized;
 }
 
-export function scoreValueToInput(value: number | "wo"): string {
+export function scoreValueToInput(value: number | "wo" | null): string {
+  if (value == null) {
+    return "";
+  }
   return typeof value === "number" ? String(value) : "WO";
 }
 
@@ -113,25 +116,45 @@ export function matchRoundDisplayLabel(
     : t("tournaments.liveModalRoundPending");
 }
 
+export function resolveTournamentNameForLabel(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  tournamentName: string | null | undefined,
+): string {
+  return (
+    normalizeDisplayNameForLabel(tournamentName ?? "", 40) ||
+    t("recordScorePage.enter.validatedMatchFallback", {
+      defaultValue: "Validated match",
+    })
+  );
+}
+
+export function buildTournamentScopedMatchLabel(
+  t: (key: string, options?: Record<string, unknown>) => string,
+  tournamentName: string | null | undefined,
+  detailLabel: string,
+): string {
+  const resolvedDetail = detailLabel.trim();
+  const resolvedTournament = resolveTournamentNameForLabel(t, tournamentName);
+  if (!resolvedDetail) {
+    return resolvedTournament;
+  }
+  return `${resolvedTournament} · ${resolvedDetail}`;
+}
+
 export function buildMatchLabel(
   t: (key: string, options?: Record<string, unknown>) => string,
   match: TournamentLiveMatchItem,
 ) {
   const opponentTeam = formatLiveMatchTeamLabel(match.opponentTeam, t);
-
-  const tournamentName =
-    normalizeDisplayNameForLabel(match.tournament.name, 40) ||
-    t("recordScorePage.enter.validatedMatchFallback", {
-      defaultValue: "Validated match",
-    });
-  const base = `${tournamentName} · ${opponentTeam}`;
+  const base = buildTournamentScopedMatchLabel(t, match.tournament.name, opponentTeam);
   return match.status === "inProgress"
     ? `${base} (${String(t("tournaments.liveLabel")).toLowerCase()})`
     : base;
 }
 
 export function isScorableMatchOption(option: MatchOption): boolean {
-  return option.kind === "independent" || !option.hasRecordedScore;
+  if (option.kind === "independent") return true;
+  return Boolean(option.matchId) && !option.hasRecordedScore;
 }
 
 function toStartTimeMs(value: string | null | undefined): number | null {
@@ -204,44 +227,24 @@ export function pickDefaultScorableTournamentOption(
   );
 }
 
-/** Enrolled tournaments with no match rows yet — prefer today, then next tournament date. */
-export function pickDefaultEligibleTournamentOption(
+/** Most recent start time first; options without a time sort last. */
+export function sortTournamentMatchOptionsByStartTimeDesc(
   options: MatchOption[],
-  referenceDate = new Date(),
-): MatchOption | null {
-  const pending = options.filter(
-    (option) =>
-      option.kind === "tournament" &&
-      option.matchId == null &&
-      isScorableMatchOption(option),
-  );
-  if (pending.length === 0) return null;
+): MatchOption[] {
+  return [...options].sort((a, b) => {
+    if (a.isLive && !b.isLive) return -1;
+    if (!a.isLive && b.isLive) return 1;
+    if (a.isPendingScore && !b.isPendingScore) return -1;
+    if (!a.isPendingScore && b.isPendingScore) return 1;
 
-  const onToday = pending.filter((option) =>
-    isIsoOnCurrentLocalDay(option.startTime, referenceDate),
-  );
-  const earliestOnToday = pickEarliestByStartTime(onToday);
-  if (earliestOnToday) return earliestOnToday;
-
-  const nowMs = referenceDate.getTime();
-  const nextByDate = pickEarliestByStartTime(
-    pending.filter((option) => {
-      const ts = toStartTimeMs(option.startTime);
-      return ts != null && ts >= nowMs;
-    }),
-  );
-
-  return nextByDate ?? pending[0] ?? null;
-}
-
-export const PENDING_TOURNAMENT_OPTION_PREFIX = "pending-tournament-";
-
-export function pendingTournamentOptionId(tournamentId: string): string {
-  return `${PENDING_TOURNAMENT_OPTION_PREFIX}${tournamentId}`;
-}
-
-export function isPendingTournamentOptionId(optionId: string): boolean {
-  return optionId.startsWith(PENDING_TOURNAMENT_OPTION_PREFIX);
+    const aTs = toStartTimeMs(a.startTime);
+    const bTs = toStartTimeMs(b.startTime);
+    if (aTs == null && bTs == null) return a.label.localeCompare(b.label);
+    if (aTs == null) return 1;
+    if (bTs == null) return -1;
+    if (bTs !== aTs) return bTs - aTs;
+    return a.label.localeCompare(b.label);
+  });
 }
 
 export function formatExpiry(

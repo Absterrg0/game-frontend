@@ -17,14 +17,22 @@ export function filterScheduledMatchesForMyScore(
   });
 
   return [...filtered].sort((left, right) => {
-    const leftTime = left.startTime ? Date.parse(left.startTime) : Number.POSITIVE_INFINITY;
-    const rightTime = right.startTime ? Date.parse(right.startTime) : Number.POSITIVE_INFINITY;
+    const leftParsed = left.startTime ? Date.parse(left.startTime) : Number.NaN;
+    const rightParsed = right.startTime ? Date.parse(right.startTime) : Number.NaN;
+    const leftTime = Number.isNaN(leftParsed) ? Number.NEGATIVE_INFINITY : leftParsed;
+    const rightTime = Number.isNaN(rightParsed) ? Number.NEGATIVE_INFINITY : rightParsed;
     if (leftTime !== rightTime) {
-      return leftTime - rightTime;
+      return rightTime - leftTime;
     }
     return left.id.localeCompare(right.id);
   });
 }
+
+/** Warm highlight for upcoming matches (matches tournament schedule cards). */
+export const MY_SCORE_SCHEDULED_SURFACE_CLASS =
+  "border-[#b45309]/25 bg-[#fffaf3]";
+
+export const MY_SCORE_SCHEDULED_SURFACE_HOVER_CLASS = "hover:bg-[#fff6eb]";
 
 export function buildTournamentRecordScorePath(match: TournamentLiveMatchItem): string | null {
   const tournamentId = match.tournament.id?.trim();

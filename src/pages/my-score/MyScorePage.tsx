@@ -33,7 +33,6 @@ import {
   parseRangeFromSearch,
 } from "./helpers";
 import { filterScheduledMatchesForMyScore } from "./helpers/scheduledMatches";
-import { buildMyScoreDisplayRows } from "./helpers/myScoreRows";
 import { useMyScore } from "./hooks";
 import { useTournamentLiveMatch } from "@/pages/tournaments/hooks/useTournamentLiveMatch";
 
@@ -97,19 +96,11 @@ export default function MyScorePage() {
       ? page
       : Math.min(page, serverTotalPages === 0 ? 1 : serverTotalPages);
 
-  const displayRows = useMemo(
-    () =>
-      buildMyScoreDisplayRows(
-        myScoreQuery.data?.entries ?? [],
-        !isSharedView ? scheduledMatches : [],
-        effectivePage,
-      ),
-    [
-      effectivePage,
-      isSharedView,
-      myScoreQuery.data?.entries,
-      scheduledMatches,
-    ],
+  const scoreEntries = myScoreQuery.data?.entries ?? [];
+
+  const scheduledMatchesForDisplay = useMemo(
+    () => (!isSharedView && effectivePage === 1 ? scheduledMatches : []),
+    [effectivePage, isSharedView, scheduledMatches],
   );
 
   useEffect(() => {
@@ -235,7 +226,7 @@ export default function MyScorePage() {
   }
 
   const { summary } = myScoreQuery.data;
-  const hasRows = displayRows.length > 0;
+  const hasRows = scheduledMatchesForDisplay.length > 0 || scoreEntries.length > 0;
 
   return (
     <div className="min-h-screen bg-[#dfe2e0] px-4 pb-10 pt-7">
@@ -264,13 +255,15 @@ export default function MyScorePage() {
             {hasRows ? (
               <>
                 <MyScoreDesktopTable
-                  rows={displayRows}
+                  scheduledMatches={scheduledMatchesForDisplay}
+                  entries={scoreEntries}
                   formatPlayedAt={formatDateForMyScore}
                   formatScheduledAt={formatScheduledAt}
                   formatScore={formatScoreValue}
                 />
                 <MyScoreMobileCards
-                  rows={displayRows}
+                  scheduledMatches={scheduledMatchesForDisplay}
+                  entries={scoreEntries}
                   formatPlayedAt={formatDateForMyScore}
                   formatScheduledAt={formatScheduledAt}
                   formatScore={formatScoreValue}

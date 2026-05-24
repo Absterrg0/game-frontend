@@ -9,6 +9,7 @@ import {
   readScoreQrToken,
   storeScoreQrToken,
 } from "./scoreQrTokenSession";
+import { EnterMatchScorePageSkeleton } from "./components/EnterMatchScorePageSkeleton";
 import { usePromoteScoreQrTokenFromQuery } from "./hooks/usePromoteScoreQrTokenFromQuery";
 
 export default function ValidateScorePage() {
@@ -113,6 +114,9 @@ export default function ValidateScorePage() {
     const storedRef = storeScoreQrToken(effectiveToken);
     const encodedMatchId = encodeURIComponent(req.matchId);
     const encodedTournamentId = encodeURIComponent(req.tournamentId ?? "");
+    const encodedTournamentName = req.tournamentName?.trim()
+      ? encodeURIComponent(req.tournamentName.trim())
+      : "";
     const tokenSearchPart = storedRef
       ? `qrRef=${encodeURIComponent(storedRef)}`
       : `scoreQrToken=${encodeURIComponent(effectiveToken)}`;
@@ -121,6 +125,7 @@ export default function ValidateScorePage() {
       tokenSearchPart,
       `matchId=${encodedMatchId}`,
       `tournamentId=${encodedTournamentId}`,
+      encodedTournamentName ? `tournamentName=${encodedTournamentName}` : "",
     ]
       .filter(Boolean)
       .join("&");
@@ -139,10 +144,14 @@ export default function ValidateScorePage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#0f1210]">
-      <p className="text-sm text-white/70">
-        {t("recordScorePage.validate.validationLoadingHint", "Checking QR token…")}
-      </p>
+    <div className="relative min-h-[calc(100vh-56px)] bg-[#dfe2e0] px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-8 lg:min-h-[calc(100vh-60px)] lg:pt-9">
+      <EnterMatchScorePageSkeleton
+        variant="confirm"
+        statusMessage={t(
+          "recordScorePage.validate.validationLoadingHint",
+          "Checking QR token…",
+        )}
+      />
     </div>
   );
 }

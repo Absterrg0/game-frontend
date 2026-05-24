@@ -6,7 +6,7 @@ function participantDisplayName(name: string | null, alias: string | null, fallb
   return name || alias || fallback;
 }
 
-function getNumericScoreTotal(scores: Array<number | "wo">): number {
+function getNumericScoreTotal(scores: Array<number | "wo" | null>): number {
   return scores.reduce<number>(
     (sum, value) => (typeof value === "number" ? sum + value : sum),
     0
@@ -14,13 +14,9 @@ function getNumericScoreTotal(scores: Array<number | "wo">): number {
 }
 
 function compareSetScore(
-  playerOne: number | "wo" | undefined,
-  playerTwo: number | "wo" | undefined
+  playerOne: number | "wo" | null | undefined,
+  playerTwo: number | "wo" | null | undefined,
 ): number {
-  if (playerOne == null || playerTwo == null) {
-    return 0;
-  }
-
   if (playerOne === "wo" && playerTwo === "wo") {
     return 0;
   }
@@ -31,6 +27,10 @@ function compareSetScore(
 
   if (playerTwo === "wo") {
     return 1;
+  }
+
+  if (playerOne == null || playerTwo == null) {
+    return 0;
   }
 
   if (playerOne === playerTwo) {
@@ -93,11 +93,18 @@ function resolveWinnerIds(match: TournamentScheduleMatch): string[] | null {
   let playerTwoSetWins = 0;
 
   for (let index = 0; index < setCount; index += 1) {
-    const setResult = compareSetScore(playerOneScores[index], playerTwoScores[index]);
+    const one = playerOneScores[index];
+    const two = playerTwoScores[index];
+    const setResult = compareSetScore(one, two);
     if (setResult > 0) {
       playerOneSetWins += 1;
     } else if (setResult < 0) {
       playerTwoSetWins += 1;
+    }
+
+    if (one === "wo" || two === "wo") {
+      if (setResult > 0) return sideOneIds;
+      if (setResult < 0) return sideTwoIds;
     }
   }
 

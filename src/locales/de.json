@@ -727,12 +727,14 @@
     "schedulePairsGenerated": "Doppel-Paare wurden generiert.",
     "schedulePairsError": "Doppel-Paare konnten nicht generiert werden.",
     "scheduleParticipantsTitle": "Turnierteilnehmer",
+    "scheduleCustomOrderHint": "Die Listenreihenfolge beeinflusst die Paarungen. Die Glicko-Wertung jedes Spielers bleibt unverändert.",
     "schedulePlayingMode": "Spielmodus",
     "schedulePlayingModeDoublesHint": "Für Doppel sind mindestens zwei Teilnehmende nötig.",
     "scheduleSingles": "Einzel",
     "scheduleDoubles": "Doppel",
     "scheduleDoublesArranging": "Doppelpaare werden zusammengestellt.",
     "schedulePairLabel": "Paar {{n}}",
+    "scheduleDoublesUnpaired": "Ohne Partner",
     "scheduleUnpairedList": "Ohne Partner: {{names}}",
     "scheduleGamesPerPlayer": "Spiele pro Spieler",
     "scheduleMatchesPerPlayer": "Anzahl der Matches in der Runde",
@@ -824,6 +826,10 @@
     "paginationInfo": "{{from}}–{{to}} von {{total}}",
     "pageAriaLabel": "Gehe zu Seite {{page}}",
     "empty": "Keine Spiele für die ausgewählten Filter gefunden.",
+    "sections": {
+      "scheduledGames": "Geplante Spiele",
+      "registeredScores": "Eingetragene Ergebnisse"
+    },
     "scheduled": {
       "title": "Geplante Spiele",
       "hint": "Deine anstehenden und laufenden Turnierspiele. Trage Ergebnisse hier ein, sobald ein Match gespielt wurde.",
@@ -870,7 +876,7 @@
       },
       "enter": {
         "title": "Punktzahl eingeben",
-        "description": "Erfassen Sie Ihr Ergebnis manuell für Turnierbegegnungen oder separate Matches"
+        "description": "Erfassen Sie Ihr Ergebnis manuell für Turnierbegegnungen oder eigenständige Matches"
       }
     },
     "toasts": {
@@ -943,6 +949,7 @@
       "preparingQr": "Gültiges Ergebnis eingeben",
       "generatingQr": "QR wird generiert...",
       "qrGenerated": "QR-Code und Validierungslink sind bereit. Der Gegner kann den QR scannen oder den geteilten Link öffnen, um zu bestätigen.",
+      "opponentConfirmedScore": "Dein Gegner hat das Ergebnis bestätigt. Du kannst ein neues Match erfassen oder ein anderes Spiel wählen.",
       "qrPreviewAlt": "Generierter QR-Code zur Ergebnisvalidierung",
       "qrPreviewEmptyFallback": "Noch kein QR generiert",
       "qrPreviewLargeAlt": "Großer QR-Code zur Ergebnisvalidierung",
@@ -963,6 +970,7 @@
       "validationLinkCopyFailed": "Link konnte nicht kopiert werden. Prüfen Sie die Browserberechtigungen oder verwenden Sie die Teilen-Funktion.",
       "qrExpiresAt": "QR läuft ab um: {{expiresAt}}",
       "sessionLoading": "QR für dieses Match wird geladen…",
+      "confirmContextLoading": "Matchdetails werden geladen…",
       "prefilledScheduleLoading": "{{tournament}} · Match wird geladen…",
       "prefilledScheduleLoadingShort": "Match wird aus deinem Spielplan geladen…",
       "liveMatchDetected": "Live-Match in {{tournament}} erkannt.",

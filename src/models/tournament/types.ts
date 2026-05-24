@@ -156,6 +156,7 @@ export const tournamentMatchCourtSchema = z.object({
 export const tournamentMatchScoreValueSchema = z.union([
   z.number().int().min(0),
   z.literal("wo"),
+  z.null(),
 ]);
 
 export const tournamentMatchScoreSchema = z.object({
@@ -208,7 +209,37 @@ export const recordTournamentMatchScoreInputSchema = z
         "playerOneScores and playerTwoScores must have the same number of sets",
       path: ["playerTwoScores"],
     },
-  );
+  )
+  .superRefine((value, ctx) => {
+    for (let index = 0; index < value.playerOneScores.length; index += 1) {
+      const one = value.playerOneScores[index];
+      const two = value.playerTwoScores[index];
+
+      if (one === "wo" && two === "wo") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Both sides cannot be "wo" in the same set',
+          path: ["playerTwoScores", index],
+        });
+      }
+
+      if (one === "wo" && two !== null && two !== "wo") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Walkover opponent score must be empty",
+          path: ["playerTwoScores", index],
+        });
+      }
+
+      if (two === "wo" && one !== null && one !== "wo") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Walkover opponent score must be empty",
+          path: ["playerOneScores", index],
+        });
+      }
+    }
+  });
 
 export const recordTournamentMatchScoreResponseSchema = z.object({
   message: z.string(),
@@ -255,6 +286,7 @@ export const validateTournamentScoreQrResponseSchema = z.object({
       id: z.string(),
       flow: z.enum(["tournament", "independent"]).optional(),
       tournamentId: wireJsonNullableString(),
+      tournamentName: wireJsonNullableString(),
       matchId: z.string(),
       requestByUserId: z.string(),
       opponentUserId: wireJsonNullableString(),

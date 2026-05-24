@@ -733,6 +733,7 @@
     "schedulePairsGenerated": "Doubles pairs generated.",
     "schedulePairsError": "Failed to generate doubles pairs.",
     "scheduleParticipantsTitle": "Tournament Participants",
+    "scheduleCustomOrderHint": "List order affects match pairings. Each player's Glicko rating is unchanged.",
     "scheduleUnpairedMembersCount": "Unpaired members: {{count}}",
     "schedulePlayingMode": "Playing Mode",
     "schedulePlayingModeDoublesHint": "Add at least two participants to use doubles.",
@@ -850,9 +851,13 @@
     "paginationInfo": "Showing {{from}}–{{to}} of {{total}}",
     "pageAriaLabel": "Go to page {{page}}",
     "empty": "No matches found for the selected filters.",
+    "sections": {
+      "scheduledGames": "Scheduled games",
+      "registeredScores": "Registered scores"
+    },
     "scheduled": {
       "title": "Scheduled matches",
-      "hint": "Your upcoming and in-progress tournament fixtures. Record scores here as soon as a match is played.",
+      "hint": "Your upcoming and in-progress tournament matches. Record scores here as soon as a match is played.",
       "loading": "Loading scheduled matches…",
       "recordScore": "Record score",
       "recordScoreAriaLabel": "Record score for match against {{opponent}} in {{tournament}}",
@@ -896,7 +901,7 @@
       },
       "enter": {
         "title": "Enter Score",
-        "description": "Manually submit your result for tournament fixtures or separate matches"
+        "description": "Manually submit your result for tournament matches or independent matches"
       }
     },
     "toasts": {
@@ -969,6 +974,7 @@
       "preparingQr": "Enter a valid score",
       "generatingQr": "Generating QR...",
       "qrGenerated": "QR and validation link are ready. Your opponent can scan the QR or open the shared link to confirm.",
+      "opponentConfirmedScore": "Your opponent confirmed the score. You can record a new match or pick another match.",
       "qrGeneratedState": "QR Generated",
       "qrPreviewTapToEnlarge": "Tap to enlarge",
       "qrPreviewAlt": "Generated score validation QR code",
@@ -992,6 +998,7 @@
       "validationLinkCopyFailed": "Could not copy the link. Check browser permissions or copy it from your device share sheet.",
       "qrExpiresAt": "QR expires at: {{expiresAt}}",
       "sessionLoading": "Loading saved QR for this match…",
+      "confirmContextLoading": "Loading match details…",
       "prefilledScheduleLoading": "{{tournament}} · Loading match…",
       "prefilledScheduleLoadingShort": "Loading match from your schedule…",
       "liveMatchDetected": "Live match detected in {{tournament}}.",

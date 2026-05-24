@@ -22,6 +22,7 @@ import {
   playModeTranslationKey,
 } from "./enter-match-score/helpers";
 import { useEnterMatchScoreController } from "./enter-match-score/hooks/useEnterMatchScoreController";
+import { EnterMatchScorePageSkeleton } from "./components/EnterMatchScorePageSkeleton";
 import { cn } from "@/lib/utils";
 
 export default function EnterMatchScorePage() {
@@ -38,7 +39,6 @@ export default function EnterMatchScorePage() {
     filteredMatchOptions,
     effectiveSelectedOption,
     isConfirmLocked,
-    isValidatedContextOk,
     shouldRedirectInvalidConfirm,
     confirmRedirectReason,
     onGoBack,
@@ -58,7 +58,6 @@ export default function EnterMatchScorePage() {
     hasValidationLink,
     isPrimaryGenerateDisabled,
     hasActiveIndependentSession,
-    manualPrefillSummaryLabel,
   } = useEnterMatchScoreController({
     t,
     language: i18n.language,
@@ -78,6 +77,15 @@ export default function EnterMatchScorePage() {
         t(
           "recordScorePage.enter.errors.confirmLinkWrongUser",
           "This validation link is not valid for your account.",
+        ),
+      );
+      return;
+    }
+    if (confirmRedirectReason === "load-failed") {
+      toast.error(
+        t(
+          "recordScorePage.enter.errors.confirmDetailsUnavailable",
+          "Could not load match details. Try scanning the QR again.",
         ),
       );
       return;
@@ -102,60 +110,14 @@ export default function EnterMatchScorePage() {
     <>
       <div className="relative min-h-[calc(100vh-56px)] bg-[#dfe2e0] px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-8 lg:min-h-[calc(100vh-60px)] lg:pt-9">
         {shouldShowLoadingSkeleton ? (
-          <div
-            className="min-h-[calc(100vh-56px)] px-0 pb-10 pt-0 sm:px-0 sm:pt-0 lg:min-h-[calc(100vh-60px)] lg:pt-0"
-            aria-busy="true"
-            aria-live="polite"
-          >
-            <span className="sr-only" role="status">
-              {t("recordScorePage.enter.sessionLoading")}
-            </span>
-            <div className="mx-auto w-full max-w-[992px]">
-              <div className="mx-auto w-full max-w-[784px]">
-                {mode !== "confirm" ? (
-                  <div className="h-4 w-20 animate-skeleton-soft rounded bg-[#010a04]/10" />
-                ) : null}
-              </div>
-
-              <section className="mx-auto mt-3 w-full max-w-[784px] rounded-[12px] border border-[rgba(1,10,4,0.08)] bg-white p-4 shadow-[0_3px_7.5px_rgba(0,0,0,0.06)] sm:p-[18px]">
-                <div className="mt-2 flex min-w-0 flex-row flex-wrap items-center gap-2">
-                  <div className="h-7 w-52 shrink-0 animate-skeleton-soft rounded bg-[#010a04]/10 sm:h-8 sm:w-64" />
-                  <div className="h-7 w-36 shrink-0 animate-skeleton-soft rounded-full bg-[#010a04]/8 sm:h-8" />
-                </div>
-
-                <div className="mt-4 flex flex-col gap-4">
-                  <div className="mx-auto aspect-square w-full max-w-[min(560px,100%)] animate-skeleton-soft rounded-[8px] bg-[#010a04]/8" />
-
-                  <div className="min-w-0 flex-1 space-y-3">
-                    <div className="h-[34px] w-full animate-skeleton-soft rounded-[8px] bg-[#010a04]/8" />
-                    <div className="h-4 w-[78%] animate-skeleton-soft rounded bg-[#010a04]/8" />
-                    <div className="h-7 w-40 animate-skeleton-soft rounded bg-[#010a04]/10" />
-
-                    <div className="space-y-3 sm:space-y-2.5">
-                      {Array.from({ length: 2 }).map((_, rowIndex) => (
-                        <div
-                          key={`score-skeleton-row-${rowIndex}`}
-                          className="rounded-[12px] border border-[#010a04]/[0.06] bg-[#f4f6f5] p-3 sm:grid sm:grid-cols-[140px_minmax(0,1fr)] sm:items-center sm:gap-3 sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0"
-                        >
-                          <div className="h-4 w-24 animate-skeleton-soft rounded bg-[#010a04]/8 sm:h-4" />
-                          <div className="mt-2 grid grid-cols-3 gap-2.5 sm:mt-0 sm:gap-2">
-                            {Array.from({ length: 3 }).map((__, colIndex) => (
-                              <div
-                                key={`score-skeleton-cell-${rowIndex}-${colIndex}`}
-                                className="h-[44px] animate-skeleton-soft rounded-[10px] bg-[#010a04]/8 sm:h-[34px] sm:rounded-[8px]"
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 h-[34px] w-full animate-skeleton-soft rounded-[10px] bg-[#010a04]/10" />
-              </section>
-            </div>
-          </div>
+          <EnterMatchScorePageSkeleton
+            variant={mode === "confirm" ? "confirm" : "generate"}
+            statusMessage={
+              mode === "confirm"
+                ? t("recordScorePage.enter.confirmContextLoading", "Loading match details…")
+                : t("recordScorePage.enter.sessionLoading")
+            }
+          />
         ) : (
           <div className="mx-auto w-full max-w-[992px]">
             <div className="mx-auto w-full max-w-[784px]">
@@ -195,14 +157,6 @@ export default function EnterMatchScorePage() {
                       ? t("recordScorePage.enter.validateTitle")
                       : t("recordScorePage.enter.title")}
                   </h1>
-                  {mode === "generate" && manualPrefillSummaryLabel ? (
-                    <p
-                      className="mt-2 max-w-full rounded-[10px] border border-[#010a04]/[0.08] bg-[#f8fbf8] px-3 py-2 text-[12px] font-medium leading-snug text-[#010a04]/85 sm:text-[13px]"
-                      role="status"
-                    >
-                      {manualPrefillSummaryLabel}
-                    </p>
-                  ) : null}
                 </div>
                 {expiresAtLabel ? (
                   <p className="text-[12px] leading-[1.35] text-[#010a04]/65 sm:pt-1 sm:text-right">
@@ -296,11 +250,6 @@ export default function EnterMatchScorePage() {
                           : t("recordScorePage.enter.tournamentHint")}
                     </p>
 
-                    {mode === "confirm" && !isValidatedContextOk ? (
-                      <p className="text-[12px] leading-[1.35] text-[#a33d3d]">
-                        {t("recordScorePage.enter.validatedMatchOnlyHint")}
-                      </p>
-                    ) : null}
                   </div>
 
                   <div className="relative pt-1">

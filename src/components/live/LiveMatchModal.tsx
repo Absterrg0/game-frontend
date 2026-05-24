@@ -16,7 +16,10 @@ import LiveModalXIcon from "@/assets/icons/figma/lucide/x.svg?react";
 import LiveModalClockIcon from "@/assets/icons/figma/vuesax/linear/clock.svg?react";
 import LiveModalUserIcon from "@/assets/icons/figma/vuesax/linear/user.svg?react";
 import { getDateFnsLocale } from "@/lib/dateFnsLocale";
-import type { TournamentLiveMatchItem } from "@/models/tournament/types";
+import {
+  formatLiveMatchTeamLabel,
+  normalizeDisplayNameForLabel,
+} from "@/pages/record-score/enter-match-score/helpers";
 import { useTournamentLiveMatch, useTournamentMatches } from "@/pages/tournaments/hooks";
 import { parseIsoDateSafely } from "@/utils/date";
 
@@ -24,15 +27,6 @@ const LIVE_MATCH_IDLE_REOPEN_MS = 10_000;
 
 function shouldSuppressLiveMatchModal(pathname: string): boolean {
   return pathname === "/record-score" || pathname.startsWith("/record-score/");
-}
-
-function playerDisplayName(
-  player: { name: string | null; alias: string | null },
-  fallback: string
-) {
-  const hasName = player.name?.trim();
-  const hasAlias = player.alias?.trim();
-  return hasName ? player.name! : hasAlias ? player.alias! : fallback;
 }
 
 function formatMatchTime(startTime: string | null, language: string, fallback: string) {
@@ -52,21 +46,6 @@ function formatMatchTime(startTime: string | null, language: string, fallback: s
   return `${dateLabel} · ${timeLabel}`;
 }
 
-function matchTeamNames(match: TournamentLiveMatchItem, fallback: string) {
-  const myTeamNames = match.myTeam
-    .map((player, index) => playerDisplayName(player, `${fallback} ${index + 1}`))
-    .join(" / ");
-
-  const opponentNames = match.opponentTeam
-    .map((player, index) => playerDisplayName(player, `${fallback} ${index + 1}`))
-    .join(" / ");
-
-  return {
-    myTeamNames: myTeamNames || fallback,
-    opponentNames: opponentNames || fallback,
-  };
-}
-
 type MatchMetaRowProps = {
   label: string;
   value: string;
@@ -75,11 +54,11 @@ type MatchMetaRowProps = {
 
 function MatchMetaRow({ label, value, icon }: MatchMetaRowProps) {
   return (
-    <article className="flex items-start gap-3.5 rounded-[10px] border border-[#e8edf0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+    <article className="flex min-w-0 max-w-full items-start gap-3.5 overflow-hidden rounded-[10px] border border-[#e8edf0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
       <span className="inline-flex size-[22px] shrink-0 items-center justify-center text-[#94a3b8] [&_svg]:size-[22px]">
         {icon}
       </span>
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 overflow-hidden">
         <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">{label}</p>
         <PlayerNameText
           name={value}
@@ -221,13 +200,13 @@ export function LiveMatchModal() {
     return null;
   }
 
-  const liveTeams = matchTeamNames(liveMatch, t("tournaments.playerFallback"));
-  const nextTeams = nextMatch
-    ? matchTeamNames(nextMatch, t("tournaments.playerFallback"))
-    : {
-        myTeamNames: "",
-        opponentNames: "",
-      };
+  const liveOpponentLabel = formatLiveMatchTeamLabel(
+    liveMatch.opponentTeam,
+    t,
+  );
+  const nextOpponentLabel = nextMatch
+    ? formatLiveMatchTeamLabel(nextMatch.opponentTeam, t)
+    : "";
 
   const nextMatchTimeDisplay = nextMatch
     ? nextTimeLabel
@@ -237,13 +216,21 @@ export function LiveMatchModal() {
     : t("tournaments.liveModalNoNextMatchCourt");
   const nextMatchOpponentLabel = nextMatch
     ? t("tournaments.liveModalVersusOpponent", {
-        opponent: nextTeams.opponentNames,
+        opponent: nextOpponentLabel,
       })
     : t("tournaments.liveModalNoNextMatch");
+  const tournamentNameLabel = normalizeDisplayNameForLabel(
+    liveMatch.tournament.name,
+    40,
+  );
   const liveRoundTournamentLabel =
     liveRound != null
-      ? `${t("tournaments.roundNumber", { round: liveRound })} · ${liveMatch.tournament.name}`
-      : liveMatch.tournament.name;
+      ? `${t("tournaments.roundNumber", { round: liveRound })} · ${tournamentNameLabel}`
+      : tournamentNameLabel;
+  const liveCourtLabel = normalizeDisplayNameForLabel(
+    liveMatch.court.name ?? t("tournaments.courtTBD"),
+    24,
+  );
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
@@ -256,7 +243,7 @@ export function LiveMatchModal() {
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="w-[calc(100vw-1.5rem)] max-w-[416px] gap-0 overflow-hidden rounded-[14px] border border-[#e2e8f0] bg-white p-0 shadow-lg"
+        className="w-[calc(100vw-1.5rem)] max-w-[416px] min-w-0 gap-0 overflow-hidden rounded-[14px] border border-[#e2e8f0] bg-white p-0 shadow-lg"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{t("tournaments.liveModalTitle")}</DialogTitle>
@@ -283,13 +270,15 @@ export function LiveMatchModal() {
           </Button>
         </div>
 
-        <div className="bg-[#fafbfc] px-4 py-5 sm:px-5">
-          <div className="space-y-6">
-            <div className="space-y-3">
-              <p className="text-xl font-semibold leading-none tracking-tight text-[#0f172a]">
-                {liveRoundTournamentLabel}
-              </p>
-              <div className="space-y-2.5">
+        <div className="min-w-0 overflow-hidden bg-[#fafbfc] px-4 py-5 sm:px-5">
+          <div className="min-w-0 space-y-6">
+            <div className="min-w-0 space-y-3">
+              <PlayerNameText
+                name={liveRoundTournamentLabel}
+                className="text-xl font-semibold leading-snug tracking-tight text-[#0f172a]"
+                focusable
+              />
+              <div className="min-w-0 space-y-2.5">
                 <MatchMetaRow
                   label={t("tournaments.liveModalDate")}
                   value={liveTimeLabel}
@@ -297,12 +286,12 @@ export function LiveMatchModal() {
                 />
                 <MatchMetaRow
                   label={t("tournaments.liveModalCourtLabel")}
-                  value={liveMatch.court.name ?? t("tournaments.courtTBD")}
+                  value={liveCourtLabel}
                   icon={<LiveModalCourtIcon className="size-full" />}
                 />
                 <MatchMetaRow
                   label={t("tournaments.liveModalOpponent")}
-                  value={liveTeams.opponentNames}
+                  value={liveOpponentLabel}
                   icon={<LiveModalUserIcon className="size-full" />}
                 />
               </div>
@@ -316,15 +305,17 @@ export function LiveMatchModal() {
             />
 
             {nextMatch ? (
-              <section className="rounded-[10px] border border-[#e2e8f0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-                <div className="flex items-baseline justify-between gap-3 border-b border-[#f1f5f9] pb-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">
+              <section className="min-w-0 max-w-full overflow-hidden rounded-[10px] border border-[#e2e8f0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+                <div className="flex min-w-0 items-baseline justify-between gap-3 border-b border-[#f1f5f9] pb-3">
+                  <p className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">
                     {t("tournaments.liveModalNextMatch")}
                   </p>
-                  <p className="text-[13px] font-medium tabular-nums text-[#0f172a]">{nextMatchTimeDisplay}</p>
+                  <p className="min-w-0 truncate text-[13px] font-medium tabular-nums text-[#0f172a]">
+                    {nextMatchTimeDisplay}
+                  </p>
                 </div>
-                <div className="mt-3 flex items-start gap-3">
-                  <div className="min-w-0 flex-1 space-y-1">
+                <div className="mt-3 flex min-w-0 items-start gap-3 overflow-hidden">
+                  <div className="min-w-0 flex-1 space-y-1 overflow-hidden">
                     <PlayerNameText
                       name={nextMatchCourtLabel}
                       className="text-[13px] leading-snug text-[#64748b]"
