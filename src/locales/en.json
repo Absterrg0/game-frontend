@@ -997,6 +997,7 @@
       "validationLinkCopyFailed": "Could not copy the link. Check browser permissions or copy it from your device share sheet.",
       "qrExpiresAt": "QR expires at: {{expiresAt}}",
       "sessionLoading": "Loading saved QR for this match…",
+      "confirmContextLoading": "Loading match details…",
       "prefilledScheduleLoading": "{{tournament}} · Loading match…",
       "prefilledScheduleLoadingShort": "Loading match from your schedule…",
       "liveMatchDetected": "Live match detected in {{tournament}}.",

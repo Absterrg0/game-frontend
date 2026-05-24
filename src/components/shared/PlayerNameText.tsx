@@ -13,7 +13,7 @@ export function PlayerNameText({ name, className, focusable = false }: PlayerNam
 
   return (
     <span
-      className={cn("block min-w-0 truncate", className)}
+      className={cn("block max-w-full min-w-0 overflow-hidden truncate", className)}
       title={value}
       aria-label={value}
       tabIndex={focusable ? 0 : undefined}

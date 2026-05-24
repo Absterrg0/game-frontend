@@ -9,6 +9,7 @@ import {
   readScoreQrToken,
   storeScoreQrToken,
 } from "./scoreQrTokenSession";
+import { ScoreQrLoadingSpinner } from "./components/ScoreQrLoadingSpinner";
 import { usePromoteScoreQrTokenFromQuery } from "./hooks/usePromoteScoreQrTokenFromQuery";
 
 export default function ValidateScorePage() {
@@ -143,10 +144,14 @@ export default function ValidateScorePage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#0f1210]">
-      <p className="text-sm text-white/70">
-        {t("recordScorePage.validate.validationLoadingHint", "Checking QR token…")}
-      </p>
+    <div className="flex min-h-dvh items-center justify-center bg-[#0f1210] px-6">
+      <ScoreQrLoadingSpinner
+        variant="dark"
+        message={t(
+          "recordScorePage.validate.validationLoadingHint",
+          "Checking QR token…",
+        )}
+      />
     </div>
   );
 }

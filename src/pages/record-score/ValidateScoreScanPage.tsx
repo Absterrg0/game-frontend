@@ -11,34 +11,8 @@ import {
   unlockScoreQrScanSound,
 } from "@/lib/scoreQrScanSound";
 import { useScoreQrScanner } from "./hooks/useScoreQrScanner";
+import { ScoreQrLoadingSpinner } from "./components/ScoreQrLoadingSpinner";
 import { storeScoreQrToken } from "./scoreQrTokenSession";
-
-function ScanPageSpinner() {
-  const { t } = useTranslation();
-  return (
-    <div role="status" aria-live="polite" className="flex items-center justify-center gap-2 py-8">
-      <span className="sr-only">{t("common.loading", "Loading...")}</span>
-      <div className="flex gap-1" aria-hidden="true">
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-2 w-2 rounded-full bg-white/60"
-            style={{
-              animation: `bounce 1.4s infinite ease-in-out`,
-              animationDelay: `${i * 0.16}s`,
-            }}
-          />
-        ))}
-      </div>
-      <style>{`
-        @keyframes bounce {
-          0%, 80%, 100% { opacity: 0.4; transform: scale(1); }
-          40% { opacity: 1; transform: scale(1.1); }
-        }
-      `}</style>
-    </div>
-  );
-}
 
 export default function ValidateScoreScanPage() {
   const { t } = useTranslation();
@@ -124,7 +98,7 @@ export default function ValidateScoreScanPage() {
       <div className={pageShellClass}>
         {backButton}
         <div className="flex min-h-0 flex-1 items-center justify-center">
-          <ScanPageSpinner />
+          <ScoreQrLoadingSpinner variant="dark" />
         </div>
       </div>
     );
@@ -135,7 +109,7 @@ export default function ValidateScoreScanPage() {
       {backButton}
       {scanEnvironment === "checking" ? (
         <div className="flex min-h-0 flex-1 items-center justify-center bg-[#0f1210]">
-          <ScanPageSpinner />
+          <ScoreQrLoadingSpinner variant="dark" />
         </div>
       ) : scanEnvironment === "ready" ? (
         <div
