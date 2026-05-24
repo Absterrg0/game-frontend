@@ -57,14 +57,12 @@ import {
   createRowsForPlayMode,
   formatExpiry,
   formatLiveMatchTeamLabel,
-  isPendingTournamentOptionId,
   isScorableMatchOption,
   normalizeDisplayName,
   normalizeDisplayNameForLabel,
-  pendingTournamentOptionId,
-  pickDefaultEligibleTournamentOption,
   pickDefaultScorableTournamentOption,
   playerDisplayName,
+  sortTournamentMatchOptionsByStartTimeDesc,
 } from "../helpers";
 import { INDEPENDENT_MATCH_ID, type MatchOption } from "../types";
 import {
@@ -180,7 +178,6 @@ export function useEnterMatchScoreController({
   /** Prevents the auto-generate effect from scheduling duplicate attempts for the same request key after a failed mutation. */
   const attemptedAutoQrKeyRef = useRef<string | null>(null);
   const skippedScoredMatchRef = useRef(false);
-  const resolvedPendingTournamentRef = useRef<string | null>(null);
   /** Keeps the last non-empty tournament title per match across live-match refetches (API can briefly omit names). */
   const lastNonEmptyTournamentNameByMatchIdRef = useRef(new Map<string, string>());
   /** Keeps the last non-empty tournament title per tournament id (confirm / validate flows). */
@@ -215,15 +212,6 @@ export function useEnterMatchScoreController({
   const resolvedConfirmMatchId = forcedMatchId || validatedRequest?.matchId || "";
   const resolvedConfirmTournamentId =
     forcedTournamentId || validatedRequest?.tournamentId || "";
-  const scheduleMatchesTournamentId =
-    resolvedConfirmTournamentId ||
-    (mode === "generate"
-      ? preferredGenerateTournamentId || searchParams.get("tournamentId")?.trim() || ""
-      : "");
-  const tournamentScheduleMatchesQuery = useTournamentMatches(
-    scheduleMatchesTournamentId || null,
-    Boolean(scheduleMatchesTournamentId),
-  );
   const confirmTournamentDetailQuery = useTournamentById(
     resolvedConfirmTournamentId || null,
     mode === "confirm" && Boolean(resolvedConfirmTournamentId),
@@ -272,6 +260,31 @@ export function useEnterMatchScoreController({
   const eligibleTournaments = useMemo(
     () => liveMatchQuery.data?.eligibleTournaments ?? [],
     [liveMatchQuery.data?.eligibleTournaments],
+  );
+
+  const prefillMatchInLiveList = useMemo(() => {
+    if (!preferredGenerateMatchId) return true;
+    return inFlightMatches.some((match) => match.id === preferredGenerateMatchId);
+  }, [inFlightMatches, preferredGenerateMatchId]);
+
+  const needsScheduleForDeepLink =
+    mode === "generate" &&
+    hasManualPrefill &&
+    liveMatchQuery.isSuccess &&
+    !prefillMatchInLiveList &&
+    Boolean(preferredGenerateTournamentId);
+
+  const confirmScheduleTournamentId =
+    mode === "confirm" && resolvedConfirmTournamentId
+      ? resolvedConfirmTournamentId
+      : null;
+  const deepLinkScheduleTournamentId = needsScheduleForDeepLink
+    ? preferredGenerateTournamentId
+    : null;
+
+  const tournamentScheduleMatchesQuery = useTournamentMatches(
+    confirmScheduleTournamentId ?? deepLinkScheduleTournamentId,
+    Boolean(confirmScheduleTournamentId ?? deepLinkScheduleTournamentId),
   );
 
   const urlTournamentName = searchParams.get("tournamentName")?.trim() ?? "";
@@ -332,7 +345,7 @@ export function useEnterMatchScoreController({
 
   const tournamentMatchOptions = useMemo<MatchOption[]>(() => {
     const normalizedLiveMatchId = liveMatch?.id ?? null;
-    return inFlightMatches
+    const options = inFlightMatches
       .filter((match) => match.tournament.id != null)
       .filter((match) => {
         if (!userId) return true;
@@ -363,52 +376,13 @@ export function useEnterMatchScoreController({
           hasRecordedScore: match.status === "completed",
           scoreRowPerspective: "viewer",
         }),
-      )
-      .sort((a, b) => {
-        if (a.isLive && !b.isLive) return -1;
-        if (!a.isLive && b.isLive) return 1;
-        if (a.isPendingScore && !b.isPendingScore) return -1;
-        if (!a.isPendingScore && b.isPendingScore) return 1;
-        return a.label.localeCompare(b.label);
-      });
+      );
+
+    return sortTournamentMatchOptionsByStartTimeDesc(options);
   }, [inFlightMatches, liveMatch?.id, mergeStableTournamentNameForLabel, t, userId]);
 
-  const eligibleTournamentMatchOptions = useMemo<MatchOption[]>(() => {
-    return eligibleTournaments.map((tournament) => {
-      const tournamentName =
-        normalizeDisplayNameForLabel(tournament.name, 40) ||
-        t("recordScorePage.enter.validatedMatchFallback", {
-          defaultValue: "Selected tournament",
-        });
-      const awaitingLabel = t("recordScorePage.enter.awaitingMatch", {
-        defaultValue: "Awaiting match",
-      });
-
-      return {
-        id: pendingTournamentOptionId(tournament.id),
-        label: `${tournamentName} · ${awaitingLabel}`,
-        startTime: tournament.date,
-        playMode: tournament.playMode,
-        mode: "singles",
-        kind: "tournament",
-        tournamentId: tournament.id,
-        matchId: null,
-        round: null,
-        playerOneRowLabel: user
-          ? playerDisplayName(user, t("recordScorePage.enter.myScore"), false)
-          : t("recordScorePage.enter.myScore"),
-        playerTwoRowLabel: t("recordScorePage.enter.opponentScore"),
-        playerOneAvatarUrl: user?.profilePictureUrl ?? null,
-        playerTwoAvatarUrl: null,
-        isLive: false,
-        isPendingScore: false,
-        hasRecordedScore: false,
-      };
-    });
-  }, [eligibleTournaments, t, user]);
-
-  const forcedScheduleMatchOption = useMemo<MatchOption | null>(() => {
-    if (!hasManualPrefill || !preferredGenerateMatchId || !preferredGenerateTournamentId) {
+  const deepLinkScheduleMatchOption = useMemo<MatchOption | null>(() => {
+    if (!needsScheduleForDeepLink || !preferredGenerateMatchId) {
       return null;
     }
 
@@ -455,43 +429,27 @@ export function useEnterMatchScoreController({
     };
   }, [
     tournamentScheduleMatchesQuery.data?.matches,
-    hasManualPrefill,
     manualPrefillTournamentName,
+    needsScheduleForDeepLink,
     preferredGenerateMatchId,
     preferredGenerateTournamentId,
     t,
     userId,
   ]);
 
-  const matchOptions = useMemo(
-    () => {
-      const existingForcedOption = forcedScheduleMatchOption
-        ? tournamentMatchOptions.some(
-            (option) =>
-              option.kind === "tournament" &&
-              option.matchId === forcedScheduleMatchOption.matchId &&
-              (option.tournamentId ?? "") ===
-                (forcedScheduleMatchOption.tournamentId ?? ""),
-          )
-        : false;
-      return [
-        ...(forcedScheduleMatchOption &&
-        !existingForcedOption &&
-        !forcedScheduleMatchOption.hasRecordedScore
-          ? [forcedScheduleMatchOption]
-          : []),
-        ...tournamentMatchOptions,
-        ...eligibleTournamentMatchOptions,
-        independentOption,
-      ];
-    },
-    [
-      eligibleTournamentMatchOptions,
-      forcedScheduleMatchOption,
-      independentOption,
-      tournamentMatchOptions,
-    ],
-  );
+  const matchOptions = useMemo(() => {
+    const tournamentRows = [...tournamentMatchOptions];
+    if (
+      deepLinkScheduleMatchOption &&
+      !deepLinkScheduleMatchOption.hasRecordedScore &&
+      !tournamentRows.some(
+        (option) => option.matchId === deepLinkScheduleMatchOption.matchId,
+      )
+    ) {
+      tournamentRows.unshift(deepLinkScheduleMatchOption);
+    }
+    return [...tournamentRows, independentOption];
+  }, [deepLinkScheduleMatchOption, independentOption, tournamentMatchOptions]);
 
   const forcedOption = useMemo(() => {
     if (mode !== "confirm") return null;
@@ -648,15 +606,9 @@ export function useEnterMatchScoreController({
     return (
       forcedOption ??
       pickDefaultScorableTournamentOption(tournamentMatchOptions) ??
-      pickDefaultEligibleTournamentOption(eligibleTournamentMatchOptions) ??
       independentOption
     );
-  }, [
-    eligibleTournamentMatchOptions,
-    forcedOption,
-    independentOption,
-    tournamentMatchOptions,
-  ]);
+  }, [forcedOption, independentOption, tournamentMatchOptions]);
 
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const preferredGenerateOption = useMemo(() => {
@@ -668,26 +620,8 @@ export function useEnterMatchScoreController({
       (!preferredGenerateTournamentId ||
         (option.tournamentId ?? "") === preferredGenerateTournamentId);
 
-    const fromList = matchOptions.find(matchesPrefill) ?? null;
-    if (fromList) return fromList;
-
-    if (
-      forcedScheduleMatchOption &&
-      forcedScheduleMatchOption.matchId === preferredGenerateMatchId &&
-      (!preferredGenerateTournamentId ||
-        (forcedScheduleMatchOption.tournamentId ?? "") ===
-          preferredGenerateTournamentId)
-    ) {
-      return forcedScheduleMatchOption;
-    }
-
-    return null;
-  }, [
-    forcedScheduleMatchOption,
-    matchOptions,
-    preferredGenerateMatchId,
-    preferredGenerateTournamentId,
-  ]);
+    return matchOptions.find(matchesPrefill) ?? null;
+  }, [matchOptions, preferredGenerateMatchId, preferredGenerateTournamentId]);
   const manualPrefillSummaryLabel = useMemo(() => {
     if (!hasManualPrefill) return "";
     if (preferredGenerateOption?.kind === "tournament") {
@@ -783,6 +717,28 @@ export function useEnterMatchScoreController({
     mode === "generate" && (hasLocalGeneratedQr || Boolean(activeSessionQueryInput))
       ? 3_000
       : 8_000,
+  );
+  const hydrationScheduleTournamentId =
+    mode === "generate" &&
+    activeSessionQueryInput?.flow === "tournament" &&
+    activeSessionQueryInput.tournamentId &&
+    !confirmScheduleTournamentId &&
+    !deepLinkScheduleTournamentId
+      ? activeSessionQueryInput.tournamentId
+      : null;
+  const hydrationScheduleMatchesQuery = useTournamentMatches(
+    hydrationScheduleTournamentId,
+    Boolean(hydrationScheduleTournamentId),
+  );
+  const scheduleMatchesForPerspective = useMemo(
+    () =>
+      tournamentScheduleMatchesQuery.data?.matches ??
+      hydrationScheduleMatchesQuery.data?.matches ??
+      [],
+    [
+      hydrationScheduleMatchesQuery.data?.matches,
+      tournamentScheduleMatchesQuery.data?.matches,
+    ],
   );
   const hydratedQrSession = activeSessionQuery.data?.session ?? null;
 
@@ -948,14 +904,14 @@ export function useEnterMatchScoreController({
       return null;
     }
     return (
-      tournamentScheduleMatchesQuery.data?.matches.find(
+      scheduleMatchesForPerspective.find(
         (item) => item.id === effectiveSelectedOption.matchId,
       ) ?? null
     );
   }, [
     effectiveSelectedOption.kind,
     effectiveSelectedOption.matchId,
-    tournamentScheduleMatchesQuery.data?.matches,
+    scheduleMatchesForPerspective,
   ]);
 
   const hydratedRows = useMemo(() => {
@@ -1009,7 +965,7 @@ export function useEnterMatchScoreController({
 
   const shouldShowLoadingSkeleton =
     areMatchOptionsResolving ||
-    (hasManualPrefill &&
+    (needsScheduleForDeepLink &&
       tournamentScheduleMatchesQuery.isPending &&
       preferredGenerateOption == null) ||
     (mode === "confirm" &&
@@ -1169,28 +1125,11 @@ export function useEnterMatchScoreController({
     if (next.kind === "tournament" && next.matchId && next.tournamentId) {
       nextSearchParams.set("matchId", next.matchId);
       nextSearchParams.set("tournamentId", next.tournamentId);
-      resolvedPendingTournamentRef.current = null;
-    } else if (
-      next.kind === "tournament" &&
-      next.tournamentId &&
-      isPendingTournamentOptionId(next.id)
-    ) {
-      nextSearchParams.set("tournamentId", next.tournamentId);
-      nextSearchParams.delete("matchId");
-      const tournamentName = eligibleTournaments.find(
-        (tournament) => tournament.id === next.tournamentId,
-      )?.name;
-      if (tournamentName?.trim()) {
-        nextSearchParams.set("tournamentName", tournamentName.trim());
-      } else {
-        nextSearchParams.delete("tournamentName");
-      }
-      resolvedPendingTournamentRef.current = null;
+      nextSearchParams.delete("tournamentName");
     } else {
       nextSearchParams.delete("matchId");
       nextSearchParams.delete("tournamentId");
       nextSearchParams.delete("tournamentName");
-      resolvedPendingTournamentRef.current = null;
     }
     const queryString = nextSearchParams.toString();
     navigate(
@@ -1215,59 +1154,6 @@ export function useEnterMatchScoreController({
     setMatchSearch("");
   };
 
-  const pendingTournamentIdForResolve = useMemo(() => {
-    if (mode !== "generate") return null;
-    if (!effectiveSelectedOption.tournamentId) return null;
-    if (effectiveSelectedOption.matchId) return null;
-    if (!isPendingTournamentOptionId(effectiveSelectedOption.id)) return null;
-    return effectiveSelectedOption.tournamentId;
-  }, [effectiveSelectedOption, mode]);
-
-  const pendingTournamentMatchesQuery = useTournamentMatches(
-    pendingTournamentIdForResolve,
-    Boolean(pendingTournamentIdForResolve),
-  );
-
-  // When the user picks an enrolled tournament without live-match rows yet, load schedule and select the first scorable fixture.
-  useEffect(() => {
-    if (!pendingTournamentIdForResolve) return;
-    if (pendingTournamentMatchesQuery.isPending) return;
-    if (resolvedPendingTournamentRef.current === pendingTournamentIdForResolve) return;
-
-    resolvedPendingTournamentRef.current = pendingTournamentIdForResolve;
-
-    const scheduleMatches = pendingTournamentMatchesQuery.data?.matches ?? [];
-    const firstScorable = scheduleMatches.find((match) => {
-      if (hasRecordedMatchScore(match)) return false;
-      return teamIncludesUser(match.side1, userId) || teamIncludesUser(match.side2, userId);
-    });
-
-    if (!firstScorable) return;
-
-    const nextSearchParams = new URLSearchParams(searchParams);
-    nextSearchParams.set("tournamentId", pendingTournamentIdForResolve);
-    nextSearchParams.set("matchId", firstScorable.id);
-    const tournamentName = eligibleTournaments.find(
-      (tournament) => tournament.id === pendingTournamentIdForResolve,
-    )?.name;
-    if (tournamentName?.trim()) {
-      nextSearchParams.set("tournamentName", tournamentName.trim());
-    }
-    navigate(
-      { search: `?${nextSearchParams.toString()}` },
-      { replace: true },
-    );
-    setSelectedMatchId(firstScorable.id);
-  }, [
-    eligibleTournaments,
-    navigate,
-    pendingTournamentIdForResolve,
-    pendingTournamentMatchesQuery.data?.matches,
-    pendingTournamentMatchesQuery.isPending,
-    searchParams,
-    userId,
-  ]);
-
   // Keep URL and selection off completed matches (e.g. deep link after score was recorded).
   useEffect(() => {
     if (mode !== "generate") return;
@@ -1285,9 +1171,7 @@ export function useEnterMatchScoreController({
     if (skippedScoredMatchRef.current) return;
 
     const target =
-      pickDefaultScorableTournamentOption(tournamentMatchOptions) ??
-      pickDefaultEligibleTournamentOption(eligibleTournamentMatchOptions) ??
-      independentOption;
+      pickDefaultScorableTournamentOption(tournamentMatchOptions) ?? independentOption;
 
     if (!isScorableMatchOption(target)) {
       skippedScoredMatchRef.current = true;
@@ -1320,7 +1204,6 @@ export function useEnterMatchScoreController({
     selectedMatchId,
     shouldShowLoadingSkeleton,
     t,
-    eligibleTournamentMatchOptions,
     tournamentMatchOptions,
   ]);
 
