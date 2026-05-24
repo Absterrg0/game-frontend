@@ -1,15 +1,17 @@
 import {
   closestCenter,
   DndContext,
+  DragOverlay,
   KeyboardSensor,
   MouseSensor,
   TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragStartEvent,
   type UniqueIdentifier,
 } from "@dnd-kit/core";
-import { useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import {
   SortableContext,
@@ -17,18 +19,10 @@ import {
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { CSS, type Transform } from "@dnd-kit/utilities";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { PlayerNameText } from "@/components/shared/PlayerNameText";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   DragDropVerticalIcon,
   Delete01Icon,
@@ -39,7 +33,10 @@ import type {
   GenerateTournamentDoublesPairsResponse,
   TournamentScheduleMode,
 } from "@/models/tournament/types";
-import type { ScheduleParticipantRow } from "../helpers/scheduleParticipants";
+import {
+  hasCustomSchedulingOrder,
+  type ScheduleParticipantRow,
+} from "../helpers/scheduleParticipants";
 import { avatarToneClass, initialsFromName } from "../utils/avatarUtils";
 
 interface ScheduleParticipantsTableProps {
@@ -105,6 +102,24 @@ function DoublesPairPlayerAvatar({
       )}
     </div>
   );
+}
+
+const DESKTOP_ROW_GRID =
+  "grid grid-cols-[2.5rem_minmax(0,1fr)_11.25rem_13.75rem] items-center gap-x-3";
+
+function sortableRowMotionStyle(
+  transform: Transform | null,
+  transition: string | undefined,
+  isDragging: boolean
+): CSSProperties {
+  if (isDragging) {
+    return { opacity: 0.35, transition };
+  }
+
+  return {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 }
 
 function glickoSkillLevel(participant: ScheduleParticipantRow) {
@@ -173,46 +188,43 @@ function ParticipantRowActions({
   );
 }
 
-interface SortableParticipantsMobileRowProps {
+interface ParticipantsMobileRowContentProps {
   participant: ScheduleParticipantRow;
-  onRemoveParticipant: (id: string) => void;
+  dragHandleProps?: {
+    setActivatorNodeRef: (element: HTMLElement | null) => void;
+    attributes: Record<string, unknown>;
+    listeners: Record<string, unknown> | undefined;
+  };
+  onRemoveParticipant?: (id: string) => void;
 }
 
-function SortableParticipantsMobileRow({
+function ParticipantsMobileRowContent({
   participant,
+  dragHandleProps,
   onRemoveParticipant,
-}: SortableParticipantsMobileRowProps) {
+}: ParticipantsMobileRowContentProps) {
   const { t } = useTranslation();
   const displayName = participant.alias ?? participant.name ?? t("tournaments.unknownPlayer");
-  const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: participant.id });
 
   return (
-    <div
-      ref={setNodeRef}
-      className={cn(
-        "flex items-center justify-between gap-3 border-b border-[#010a04]/10 bg-[#010a04]/[0.04] px-[15px] py-3 last:border-b-0",
-        "transition-opacity",
-        isDragging && "z-10 opacity-75"
-      )}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
-    >
+    <div className="flex items-center justify-between gap-3 border-b border-[#010a04]/10 bg-[#010a04]/[0.04] px-[15px] py-3 last:border-b-0">
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <button
-          ref={setActivatorNodeRef}
-          {...attributes}
-          {...listeners}
-          type="button"
-          className="touch-none text-[#010a04]/45 transition-colors cursor-grab hover:text-[#010a04]/70 active:cursor-grabbing"
-          aria-label={t("tournaments.scheduleDragParticipantWithName", {
-            name: displayName,
-          })}
-        >
-          <DragDropVerticalIcon size={18} />
-        </button>
+        {dragHandleProps ? (
+          <button
+            ref={dragHandleProps.setActivatorNodeRef}
+            {...dragHandleProps.attributes}
+            {...dragHandleProps.listeners}
+            type="button"
+            className="touch-none text-[#010a04]/45 transition-colors cursor-grab hover:text-[#010a04]/70 active:cursor-grabbing"
+            aria-label={t("tournaments.scheduleDragParticipantWithName", {
+              name: displayName,
+            })}
+          >
+            <DragDropVerticalIcon size={18} />
+          </button>
+        ) : (
+          <span className="w-[18px] shrink-0" aria-hidden />
+        )}
         <span
           className={`flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
             participant
@@ -232,11 +244,40 @@ function SortableParticipantsMobileRow({
         </div>
       </div>
 
-      <ParticipantRowActions
+      {onRemoveParticipant ? (
+        <ParticipantRowActions
+          participant={participant}
+          displayName={displayName}
+          onRemoveParticipant={onRemoveParticipant}
+          compact
+        />
+      ) : null}
+    </div>
+  );
+}
+
+interface SortableParticipantsMobileRowProps {
+  participant: ScheduleParticipantRow;
+  onRemoveParticipant: (id: string) => void;
+}
+
+function SortableParticipantsMobileRow({
+  participant,
+  onRemoveParticipant,
+}: SortableParticipantsMobileRowProps) {
+  const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: participant.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(isDragging && "relative z-0")}
+      style={sortableRowMotionStyle(transform, transition, isDragging)}
+    >
+      <ParticipantsMobileRowContent
         participant={participant}
-        displayName={displayName}
+        dragHandleProps={{ setActivatorNodeRef, attributes, listeners }}
         onRemoveParticipant={onRemoveParticipant}
-        compact
       />
     </div>
   );
@@ -248,32 +289,43 @@ interface SortableParticipantsDesktopRowProps {
   onRemoveParticipant: (id: string) => void;
 }
 
-function SortableParticipantsDesktopRow({
+interface ParticipantsDesktopRowContentProps {
+  participant: ScheduleParticipantRow;
+  index: number;
+  dragHandleProps?: {
+    setActivatorNodeRef: (element: HTMLElement | null) => void;
+    attributes: Record<string, unknown>;
+    listeners: Record<string, unknown> | undefined;
+  };
+  onRemoveParticipant?: (id: string) => void;
+  overlay?: boolean;
+}
+
+function ParticipantsDesktopRowContent({
   participant,
   index,
+  dragHandleProps,
   onRemoveParticipant,
-}: SortableParticipantsDesktopRowProps) {
+  overlay = false,
+}: ParticipantsDesktopRowContentProps) {
   const { t } = useTranslation();
   const displayName = participant.alias ?? participant.name ?? t("tournaments.unknownPlayer");
-  const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: participant.id });
 
   return (
-    <TableRow
-      ref={setNodeRef}
-      className={cn(isDragging && "bg-[#010a04]/[0.03]")}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-      }}
+    <div
+      className={cn(
+        DESKTOP_ROW_GRID,
+        "border-b border-[#010a04]/10 bg-[#010a04]/[0.04] px-4 py-3 last:border-b-0",
+        overlay && "rounded-[10px] border border-[rgba(0,0,0,0.12)] bg-white shadow-[0_8px_24px_rgba(1,10,4,0.12)]"
+      )}
     >
-      <TableCell className="text-[13px] text-[#010a04]/75">{index + 1}</TableCell>
-      <TableCell>
-        <div className="flex items-center gap-2.5">
+      <span className="text-[13px] text-[#010a04]/75">{index + 1}</span>
+      <div className="flex min-w-0 items-center gap-2.5">
+        {dragHandleProps ? (
           <button
-            ref={setActivatorNodeRef}
-            {...attributes}
-            {...listeners}
+            ref={dragHandleProps.setActivatorNodeRef}
+            {...dragHandleProps.attributes}
+            {...dragHandleProps.listeners}
             type="button"
             className="touch-none text-[#010a04]/45 transition-colors cursor-grab hover:text-[#010a04]/70 active:cursor-grabbing"
             aria-label={t("tournaments.scheduleDragParticipantWithName", {
@@ -282,29 +334,57 @@ function SortableParticipantsDesktopRow({
           >
             <DragDropVerticalIcon size={16} />
           </button>
-          <span
-            className={`flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
-              participant
-            )} text-[9px] font-semibold text-[#010a04]/80`}
-          >
-            <ScheduleParticipantAvatar
-              profilePictureUrl={participant.profilePictureUrl}
-              displayName={displayName}
-              wrapperClassName="contents"
-            />
-          </span>
-          <PlayerNameText name={displayName} className="text-[14px] text-[#010a04]" focusable />
-        </div>
-      </TableCell>
-      <TableCell className="text-[14px] text-[#010a04]/85">{glickoSkillLevel(participant)}</TableCell>
-      <TableCell>
+        ) : (
+          <span className="w-4 shrink-0" aria-hidden />
+        )}
+        <span
+          className={`flex h-[24px] w-[24px] shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${participantToneClass(
+            participant
+          )} text-[9px] font-semibold text-[#010a04]/80`}
+        >
+          <ScheduleParticipantAvatar
+            profilePictureUrl={participant.profilePictureUrl}
+            displayName={displayName}
+            wrapperClassName="contents"
+          />
+        </span>
+        <PlayerNameText name={displayName} className="min-w-0 text-[14px] text-[#010a04]" focusable />
+      </div>
+      <span className="text-[14px] text-[#010a04]/85">{glickoSkillLevel(participant)}</span>
+      {onRemoveParticipant ? (
         <ParticipantRowActions
           participant={participant}
           displayName={displayName}
           onRemoveParticipant={onRemoveParticipant}
         />
-      </TableCell>
-    </TableRow>
+      ) : (
+        <span />
+      )}
+    </div>
+  );
+}
+
+function SortableParticipantsDesktopRow({
+  participant,
+  index,
+  onRemoveParticipant,
+}: SortableParticipantsDesktopRowProps) {
+  const { attributes, listeners, setActivatorNodeRef, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: participant.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(isDragging && "relative z-0")}
+      style={sortableRowMotionStyle(transform, transition, isDragging)}
+    >
+      <ParticipantsDesktopRowContent
+        participant={participant}
+        index={index}
+        dragHandleProps={{ setActivatorNodeRef, attributes, listeners }}
+        onRemoveParticipant={onRemoveParticipant}
+      />
+    </div>
   );
 }
 
@@ -317,6 +397,7 @@ export function ScheduleParticipantsTable({
   onReorderParticipant,
 }: ScheduleParticipantsTableProps) {
   const { t } = useTranslation();
+  const usesCustomListOrder = useMemo(() => hasCustomSchedulingOrder(participants), [participants]);
   const sensors = useSensors(
     useSensor(MouseSensor),
     useSensor(TouchSensor),
@@ -325,14 +406,33 @@ export function ScheduleParticipantsTable({
     })
   );
   const participantIds: UniqueIdentifier[] = participants.map((participant) => participant.id);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+  const activeDragParticipant = useMemo(
+    () => participants.find((participant) => participant.id === activeDragId) ?? null,
+    [activeDragId, participants]
+  );
+  const activeDragIndex = activeDragParticipant
+    ? participants.findIndex((participant) => participant.id === activeDragParticipant.id)
+    : -1;
+
+  const handleDragStart = ({ active }: DragStartEvent) => {
+    setActiveDragId(String(active.id));
+  };
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    setActiveDragId(null);
     if (!over || active.id === over.id) {
       return;
     }
 
     onReorderParticipant(String(active.id), String(over.id));
   };
+
+  const handleDragCancel = () => {
+    setActiveDragId(null);
+  };
+
+  const dndModifiers = [restrictToVerticalAxis];
 
   const doublesRows =
     mode === "doubles" && doublesPairs
@@ -449,8 +549,10 @@ export function ScheduleParticipantsTable({
     <div className="md:hidden">
       <DndContext
         collisionDetection={closestCenter}
-        modifiers={[restrictToVerticalAxis]}
+        modifiers={dndModifiers}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
         sensors={sensors}
       >
         <SortableContext items={participantIds} strategy={verticalListSortingStrategy}>
@@ -464,44 +566,71 @@ export function ScheduleParticipantsTable({
             ))}
           </div>
         </SortableContext>
+        <DragOverlay dropAnimation={null}>
+          {activeDragParticipant ? (
+            <div className="rounded-[10px] border border-[rgba(0,0,0,0.12)] bg-white shadow-[0_8px_24px_rgba(1,10,4,0.12)]">
+              <ParticipantsMobileRowContent
+                participant={activeDragParticipant}
+                onRemoveParticipant={onRemoveParticipant}
+              />
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );
 
   return (
     <>
+      {usesCustomListOrder ? (
+        <p className="mb-3 text-[12px] leading-relaxed text-[#010a04]/60 md:mb-4">
+          {t("tournaments.scheduleCustomOrderHint")}
+        </p>
+      ) : null}
       {mobileSinglesRows}
 
       <div className="hidden md:block">
         <DndContext
           collisionDetection={closestCenter}
-          modifiers={[restrictToVerticalAxis]}
+          modifiers={dndModifiers}
+          onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
           sensors={sensors}
         >
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-[#010a04]/[0.04] hover:bg-[#010a04]/[0.04]">
-                <TableHead className="w-10 text-[12px] font-normal text-[#010a04]/70">#</TableHead>
-                <TableHead className="text-[12px] font-normal text-[#010a04]/70">{t("tournaments.players")}</TableHead>
-                <TableHead className="w-[180px] text-[12px] font-normal text-[#010a04]/70">{t("tournaments.skillLevel")}</TableHead>
-                <TableHead className="w-[220px] text-[12px] font-normal text-[#010a04]/70">{t("tournaments.actions")}</TableHead>
-              </TableRow>
-            </TableHeader>
-
-            <TableBody>
-              <SortableContext items={participantIds} strategy={verticalListSortingStrategy}>
-                {participants.map((participant, index) => (
-                  <SortableParticipantsDesktopRow
-                    key={participant.id}
-                    participant={participant}
-                    index={index}
-                    onRemoveParticipant={onRemoveParticipant}
-                  />
-                ))}
-              </SortableContext>
-            </TableBody>
-          </Table>
+          <div className="overflow-hidden rounded-[10px] border border-[rgba(0,0,0,0.08)]">
+            <div
+              className={cn(
+                DESKTOP_ROW_GRID,
+                "border-b border-[#010a04]/10 bg-[#010a04]/[0.04] px-4 py-2 text-[12px] font-normal text-[#010a04]/70"
+              )}
+            >
+              <span>#</span>
+              <span>{t("tournaments.players")}</span>
+              <span>{t("tournaments.skillLevel")}</span>
+              <span>{t("tournaments.actions")}</span>
+            </div>
+            <SortableContext items={participantIds} strategy={verticalListSortingStrategy}>
+              {participants.map((participant, index) => (
+                <SortableParticipantsDesktopRow
+                  key={participant.id}
+                  participant={participant}
+                  index={index}
+                  onRemoveParticipant={onRemoveParticipant}
+                />
+              ))}
+            </SortableContext>
+          </div>
+          <DragOverlay dropAnimation={null}>
+            {activeDragParticipant && activeDragIndex >= 0 ? (
+              <ParticipantsDesktopRowContent
+                participant={activeDragParticipant}
+                index={activeDragIndex}
+                onRemoveParticipant={onRemoveParticipant}
+                overlay
+              />
+            ) : null}
+          </DragOverlay>
         </DndContext>
       </div>
     </>

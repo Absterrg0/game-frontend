@@ -733,6 +733,7 @@
     "schedulePairsGenerated": "Doubles pairs generated.",
     "schedulePairsError": "Failed to generate doubles pairs.",
     "scheduleParticipantsTitle": "Tournament Participants",
+    "scheduleCustomOrderHint": "List order affects match pairings. Each player's Glicko rating is unchanged.",
     "scheduleUnpairedMembersCount": "Unpaired members: {{count}}",
     "schedulePlayingMode": "Playing Mode",
     "schedulePlayingModeDoublesHint": "Add at least two participants to use doubles.",

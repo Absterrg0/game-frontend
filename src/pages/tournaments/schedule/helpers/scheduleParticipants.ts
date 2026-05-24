@@ -90,6 +90,28 @@ export function participantOrderIds(rows: ScheduleParticipantRow[]): string[] {
     .map((participant) => participant.id);
 }
 
+/** True when list order differs from descending real rating order. */
+export function hasCustomSchedulingOrder(rows: ScheduleParticipantRow[]): boolean {
+  if (rows.length < 2) {
+    return false;
+  }
+
+  const ratingSortedIds = [...rows]
+    .sort((left, right) => {
+      const leftRating = Number.isFinite(left.rating) ? left.rating : 1500;
+      const rightRating = Number.isFinite(right.rating) ? right.rating : 1500;
+      if (leftRating !== rightRating) {
+        return rightRating - leftRating;
+      }
+
+      return left.id.localeCompare(right.id);
+    })
+    .map((participant) => participant.id);
+
+  const currentOrder = participantOrderIds(rows);
+  return currentOrder.some((id, index) => id !== ratingSortedIds[index]);
+}
+
 export function canGenerateSchedule(mode: TournamentScheduleMode, participantsCount: number): boolean {
   if (mode === "singles") {
     return participantsCount >= 2;

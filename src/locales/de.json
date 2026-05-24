@@ -727,6 +727,7 @@
     "schedulePairsGenerated": "Doppel-Paare wurden generiert.",
     "schedulePairsError": "Doppel-Paare konnten nicht generiert werden.",
     "scheduleParticipantsTitle": "Turnierteilnehmer",
+    "scheduleCustomOrderHint": "Die Listenreihenfolge beeinflusst die Paarungen. Die Glicko-Wertung jedes Spielers bleibt unverändert.",
     "schedulePlayingMode": "Spielmodus",
     "schedulePlayingModeDoublesHint": "Für Doppel sind mindestens zwei Teilnehmende nötig.",
     "scheduleSingles": "Einzel",
