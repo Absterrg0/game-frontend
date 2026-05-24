@@ -17,8 +17,10 @@ export function filterScheduledMatchesForMyScore(
   });
 
   return [...filtered].sort((left, right) => {
-    const leftTime = left.startTime ? Date.parse(left.startTime) : Number.NEGATIVE_INFINITY;
-    const rightTime = right.startTime ? Date.parse(right.startTime) : Number.NEGATIVE_INFINITY;
+    const leftParsed = left.startTime ? Date.parse(left.startTime) : Number.NaN;
+    const rightParsed = right.startTime ? Date.parse(right.startTime) : Number.NaN;
+    const leftTime = Number.isNaN(leftParsed) ? Number.NEGATIVE_INFINITY : leftParsed;
+    const rightTime = Number.isNaN(rightParsed) ? Number.NEGATIVE_INFINITY : rightParsed;
     if (leftTime !== rightTime) {
       return rightTime - leftTime;
     }

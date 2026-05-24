@@ -311,7 +311,6 @@ export function useEnterMatchScoreController({
     for (const raw of candidates) {
       const trimmed = normalizeDisplayName(raw ?? "");
       if (trimmed) {
-        lastNonEmptyTournamentNameByTournamentIdRef.current.set(tournamentId, trimmed);
         return trimmed;
       }
     }
@@ -325,6 +324,13 @@ export function useEnterMatchScoreController({
     urlTournamentName,
     validatedRequest?.tournamentName,
   ]);
+
+  useEffect(() => {
+    const tournamentId = resolvedConfirmTournamentId;
+    const trimmed = normalizeDisplayName(resolvedConfirmTournamentName);
+    if (!tournamentId || !trimmed) return;
+    lastNonEmptyTournamentNameByTournamentIdRef.current.set(tournamentId, trimmed);
+  }, [resolvedConfirmTournamentId, resolvedConfirmTournamentName]);
 
   const independentOption = useMemo<MatchOption>(
     () => ({

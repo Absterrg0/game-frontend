@@ -17,10 +17,6 @@ function compareSetScore(
   playerOne: number | "wo" | null | undefined,
   playerTwo: number | "wo" | null | undefined,
 ): number {
-  if (playerOne == null || playerTwo == null) {
-    return 0;
-  }
-
   if (playerOne === "wo" && playerTwo === "wo") {
     return 0;
   }
@@ -31,6 +27,10 @@ function compareSetScore(
 
   if (playerTwo === "wo") {
     return 1;
+  }
+
+  if (playerOne == null || playerTwo == null) {
+    return 0;
   }
 
   if (playerOne === playerTwo) {
