@@ -9,7 +9,7 @@ import {
   readScoreQrToken,
   storeScoreQrToken,
 } from "./scoreQrTokenSession";
-import { ScoreQrLoadingSpinner } from "./components/ScoreQrLoadingSpinner";
+import { EnterMatchScorePageSkeleton } from "./components/EnterMatchScorePageSkeleton";
 import { usePromoteScoreQrTokenFromQuery } from "./hooks/usePromoteScoreQrTokenFromQuery";
 
 export default function ValidateScorePage() {
@@ -144,10 +144,10 @@ export default function ValidateScorePage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#0f1210] px-6">
-      <ScoreQrLoadingSpinner
-        variant="dark"
-        message={t(
+    <div className="relative min-h-[calc(100vh-56px)] bg-[#dfe2e0] px-4 pb-8 pt-4 sm:px-6 sm:pb-10 sm:pt-8 lg:min-h-[calc(100vh-60px)] lg:pt-9">
+      <EnterMatchScorePageSkeleton
+        variant="confirm"
+        statusMessage={t(
           "recordScorePage.validate.validationLoadingHint",
           "Checking QR token…",
         )}
