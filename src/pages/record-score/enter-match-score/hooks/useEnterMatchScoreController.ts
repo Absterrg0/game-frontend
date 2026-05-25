@@ -983,8 +983,7 @@ export function useEnterMatchScoreController({
 
   const isConfirmDisplayReady = useMemo(() => {
     if (mode !== "confirm" || !confirmedToken) return true;
-    if (validatedScoreQuery.isPending) return false;
-    if (validatedScoreQuery.isFetching && !validatedRequest) return false;
+    if (validatedScoreQuery.isPending && !validatedRequest) return false;
     if (!validatedRequest) return false;
 
     if (validatedRequest.flow === "independent") {

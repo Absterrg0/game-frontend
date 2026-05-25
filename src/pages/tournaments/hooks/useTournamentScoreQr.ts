@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   keepPreviousData,
   useMutation,
@@ -51,6 +51,38 @@ function scoreQrConfirmContextQueryKey(token: string) {
     "confirm-context",
     scoreQrTokenOpaqueKeyPart(token),
   ] as const;
+}
+
+const scoreQrScoreValueSchema = z.union([z.number(), z.literal("wo"), z.null()]);
+
+const scoreQrScoresUpdatedSsePayloadSchema = z.object({
+  requestId: z.string().optional(),
+  playerOneScores: z.array(scoreQrScoreValueSchema).optional(),
+  playerTwoScores: z.array(scoreQrScoreValueSchema).optional(),
+});
+
+function applyConfirmContextScoresFromSse(
+  queryClient: QueryClient,
+  token: string,
+  playerOneScores: Array<number | "wo" | null>,
+  playerTwoScores: Array<number | "wo" | null>,
+) {
+  queryClient.setQueryData<ValidateTournamentScoreQrConfirmContextResponse>(
+    scoreQrConfirmContextQueryKey(token),
+    (previous) => {
+      if (!previous?.valid || !previous.request) {
+        return previous;
+      }
+      return {
+        ...previous,
+        request: {
+          ...previous.request,
+          playerOneScores,
+          playerTwoScores,
+        },
+      };
+    },
+  );
 }
 
 // Backward-compatible schema: tolerate missing `request` in validate response.
@@ -268,8 +300,8 @@ export function useValidateTournamentScoreQrConfirmContext(
     queryKey: scoreQrConfirmContextQueryKey(normalized),
     queryFn: () => validateTournamentScoreQrConfirmContext(normalized),
     enabled: enabled && normalized.length > 0,
-    // SSE below pushes updates immediately; this is only a safety net if the stream drops.
-    refetchInterval: 30_000,
+    // SSE pushes score updates; polling is only a long-interval safety net if the stream drops.
+    refetchInterval: enabled && normalized.length > 0 ? 120_000 : false,
     retry: false,
   });
 }
@@ -285,8 +317,13 @@ export function useScoreQrRequesterSessionEvents(
 ) {
   const queryClient = useQueryClient();
   const normalized = (token ?? "").trim();
-  const onScoresUpdated = handlers?.onScoresUpdated;
-  const onRequestConsumed = handlers?.onRequestConsumed;
+  const onScoresUpdatedRef = useRef(handlers?.onScoresUpdated);
+  const onRequestConsumedRef = useRef(handlers?.onRequestConsumed);
+
+  useEffect(() => {
+    onScoresUpdatedRef.current = handlers?.onScoresUpdated;
+    onRequestConsumedRef.current = handlers?.onRequestConsumed;
+  });
 
   useEffect(() => {
     if (!enabled || !normalized || typeof EventSource === "undefined") return;
@@ -307,13 +344,49 @@ export function useScoreQrRequesterSessionEvents(
       });
     };
 
-    const handleScoresUpdated = () => {
-      refetchActiveSession();
-      onScoresUpdated?.();
+    const patchActiveSessionScoresFromSse = (event: MessageEvent<string>) => {
+      try {
+        const parsed = scoreQrScoresUpdatedSsePayloadSchema.safeParse(
+          JSON.parse(event.data),
+        );
+        if (
+          !parsed.success ||
+          parsed.data.playerOneScores === undefined ||
+          parsed.data.playerTwoScores === undefined
+        ) {
+          return false;
+        }
+        queryClient.setQueriesData<ActiveTournamentScoreQrSessionResponse>(
+          { queryKey: [...queryKeys.tournament.all, "score-qr", "active"] },
+          (previous) => {
+            if (!previous?.session) {
+              return previous;
+            }
+            return {
+              ...previous,
+              session: {
+                ...previous.session,
+                playerOneScores: parsed.data.playerOneScores!,
+                playerTwoScores: parsed.data.playerTwoScores!,
+              },
+            };
+          },
+        );
+        return true;
+      } catch {
+        return false;
+      }
+    };
+
+    const handleScoresUpdated = (event: MessageEvent<string>) => {
+      if (!patchActiveSessionScoresFromSse(event)) {
+        refetchActiveSession();
+      }
+      onScoresUpdatedRef.current?.();
     };
 
     const handleRequestConsumed = () => {
-      onRequestConsumed?.();
+      onRequestConsumedRef.current?.();
       refetchActiveSession();
     };
 
@@ -325,7 +398,7 @@ export function useScoreQrRequesterSessionEvents(
       source.removeEventListener("request-consumed", handleRequestConsumed);
       source.close();
     };
-  }, [enabled, normalized, onRequestConsumed, onScoresUpdated, queryClient]);
+  }, [enabled, normalized, queryClient]);
 }
 
 export function useScoreQrConfirmContextEvents(
@@ -348,17 +421,41 @@ export function useScoreQrConfirmContextEvents(
     const source = new EventSource(url, { withCredentials: true });
 
     const refetchConfirmContext = () => {
-      void queryClient.invalidateQueries({
+      void queryClient.refetchQueries({
         queryKey: scoreQrConfirmContextQueryKey(normalized),
-        refetchType: "active",
+        type: "active",
       });
     };
 
-    source.addEventListener("scores-updated", refetchConfirmContext);
+    const handleScoresUpdated = (event: MessageEvent<string>) => {
+      try {
+        const parsed = scoreQrScoresUpdatedSsePayloadSchema.safeParse(
+          JSON.parse(event.data),
+        );
+        if (
+          parsed.success &&
+          parsed.data.playerOneScores !== undefined &&
+          parsed.data.playerTwoScores !== undefined
+        ) {
+          applyConfirmContextScoresFromSse(
+            queryClient,
+            normalized,
+            parsed.data.playerOneScores,
+            parsed.data.playerTwoScores,
+          );
+          return;
+        }
+      } catch {
+        // Fall through to network refetch if payload is missing or malformed.
+      }
+      refetchConfirmContext();
+    };
+
+    source.addEventListener("scores-updated", handleScoresUpdated);
     source.addEventListener("request-consumed", refetchConfirmContext);
 
     return () => {
-      source.removeEventListener("scores-updated", refetchConfirmContext);
+      source.removeEventListener("scores-updated", handleScoresUpdated);
       source.removeEventListener("request-consumed", refetchConfirmContext);
       source.close();
     };
@@ -443,8 +540,6 @@ export function useActiveTournamentScoreQrSession(
 // ----------
 // Score update (in-place)
 // ----------
-
-const scoreQrScoreValueSchema = z.union([z.number(), z.literal("wo"), z.null()]);
 
 async function updateTournamentScoreQrScores(
   requestId: string,
