@@ -99,14 +99,18 @@ export function scoreColumns(match: TournamentScheduleMatch): ScoreColumn[] {
   return columns;
 }
 
+export function scoreCellHasDisplayValue(value: number | "wo" | null): boolean {
+  return value != null;
+}
+
 export function formatScoreCellValue(value: number | "wo" | null): string {
-  if (value == null) {
-    return "-";
-  }
   if (value === "wo") {
     return "WO";
   }
-  return String(value);
+  if (value != null) {
+    return String(value);
+  }
+  return "-";
 }
 
 export function scoreCellClass(
@@ -156,8 +160,9 @@ export function scoreEditorSelectTriggerClassName(
   side: "one" | "two",
 ): string {
   const raw = side === "one" ? row.playerOne : row.playerTwo;
-  const hasValue = parseScoreInputValue(raw) != null;
+  const parsed = parseScoreInputValue(raw);
   const winner = winnerSideForScoreEditorSet(row, setIndex, playMode);
+  const hasValue = scoreCellHasDisplayValue(parsed);
   return cn(
     "h-8 w-8 min-h-8 min-w-8 max-w-8 shrink-0 justify-center gap-0 rounded-[6px] p-0 shadow-none",
     "*:data-[slot=select-value]:min-w-0 *:data-[slot=select-value]:flex-none *:data-[slot=select-value]:justify-center *:data-[slot=select-value]:truncate *:data-[slot=select-value]:text-center",
@@ -176,7 +181,7 @@ function serializeScoreValue(value: MatchScoreValue | null): string {
   return String(value);
 }
 
-function parseScoreInputValue(raw: string): MatchScoreValue | null {
+export function parseScoreInputValue(raw: string): MatchScoreValue | null {
   const normalized = raw.trim();
   if (normalized === "" || normalized === "-" || normalized === SCORE_SELECT_EMPTY_VALUE) {
     return null;

@@ -286,6 +286,7 @@ export function MatchScheduleCard({
                     {editableRowsToRender.map((row, rowIndex) => {
                       const value = sideKey === "playerOne" ? row.playerOne : row.playerTwo;
                       const options = getScoreSelectOptions(row, sideKey, match.playMode, rowIndex);
+                      const editorSide = sideKey === "playerOne" ? "one" : "two";
                       return (
                         <Select
                           key={`${row.id}-${sideKey}-${rowIndex}`}
@@ -300,7 +301,7 @@ export function MatchScheduleCard({
                                 row,
                                 rowIndex,
                                 match.playMode,
-                                sideKey === "playerOne" ? "one" : "two",
+                                editorSide,
                               ),
                               "data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground",
                             )}
