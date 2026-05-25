@@ -114,23 +114,11 @@ export function MatchCardReadOnlyRows({ matchId, tone, columns, rows }: Props) {
                       scoreCellClass(
                         column.winner,
                         row.side,
-                        scoreCellHasDisplayValue(
-                          value,
-                          column.playerOne,
-                          column.playerTwo,
-                          column.winner,
-                          row.side,
-                        ),
+                        scoreCellHasDisplayValue(value),
                       )
                     )}
                   >
-                    {formatScoreCellValue(
-                      value,
-                      column.playerOne,
-                      column.playerTwo,
-                      column.winner,
-                      row.side,
-                    )}
+                    {formatScoreCellValue(value)}
                   </span>
                 );
               })}

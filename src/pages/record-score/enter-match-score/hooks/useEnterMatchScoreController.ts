@@ -1287,61 +1287,6 @@ export function useEnterMatchScoreController({
     setMatchSearch("");
   };
 
-  // Keep URL and selection off completed matches (e.g. deep link after score was recorded).
-  useEffect(() => {
-    if (mode !== "generate") return;
-    if (shouldShowLoadingSkeleton) return;
-
-    const scoredPrefill = Boolean(
-      forcedMatchId && preferredGenerateOption?.hasRecordedScore,
-    );
-    const scoredSelection = Boolean(
-      selectedMatchId &&
-        matchOptions.find((option) => option.id === selectedMatchId)?.hasRecordedScore,
-    );
-
-    if (!scoredPrefill && !scoredSelection) return;
-    if (skippedScoredMatchRef.current) return;
-
-    const target =
-      pickDefaultScorableTournamentOption(tournamentMatchOptions) ?? independentOption;
-
-    if (!isScorableMatchOption(target)) {
-      skippedScoredMatchRef.current = true;
-      navigate("/record-score", { replace: true });
-      toast.error(
-        t(
-          "recordScorePage.enter.errors.matchAlreadyScored",
-          "This match already has a recorded score.",
-        ),
-      );
-      return;
-    }
-
-    skippedScoredMatchRef.current = true;
-    onMatchChange(target.id);
-    if (!qrSessionConsumedRef.current) {
-      toast.info(
-        t(
-          "recordScorePage.enter.matchAlreadyScoredSwitch",
-          "That match is already scored. Switched to your next available match.",
-        ),
-      );
-    }
-  }, [
-    forcedMatchId,
-    independentOption,
-    matchOptions,
-    mode,
-    navigate,
-    onMatchChange,
-    preferredGenerateOption?.hasRecordedScore,
-    selectedMatchId,
-    shouldShowLoadingSkeleton,
-    t,
-    tournamentMatchOptions,
-  ]);
-
   const onScoreChange = (
     rowId: string,
     side: ScoreEditorSide,
@@ -1748,6 +1693,78 @@ export function useEnterMatchScoreController({
     t,
   ]);
 
+  // Keep URL and selection off completed matches (e.g. deep link after score was recorded).
+  // Runs after QR-consumed handling so requesters do not get a duplicate "already scored" toast
+  // when the opponent confirms via QR.
+  useEffect(() => {
+    if (mode !== "generate") return;
+    if (shouldShowLoadingSkeleton) return;
+
+    const activeSessionSettled =
+      !activeSessionQuery.isPending && !activeSessionQuery.isFetching;
+    const opponentJustConfirmed =
+      hadPendingQrSessionRef.current && !hasPendingQrSession && activeSessionSettled;
+
+    const scoredPrefill = Boolean(
+      forcedMatchId && preferredGenerateOption?.hasRecordedScore,
+    );
+    const scoredSelection = Boolean(
+      selectedMatchId &&
+        matchOptions.find((option) => option.id === selectedMatchId)?.hasRecordedScore,
+    );
+
+    if (!scoredPrefill && !scoredSelection) return;
+    if (skippedScoredMatchRef.current) return;
+
+    const target =
+      pickDefaultScorableTournamentOption(tournamentMatchOptions) ?? independentOption;
+
+    if (opponentJustConfirmed || qrSessionConsumedRef.current) {
+      skippedScoredMatchRef.current = true;
+      if (isScorableMatchOption(target) && target.id !== resolvedSelectedMatchId) {
+        onMatchChange(target.id);
+      }
+      return;
+    }
+
+    if (!isScorableMatchOption(target)) {
+      skippedScoredMatchRef.current = true;
+      navigate("/record-score", { replace: true });
+      toast.error(
+        t(
+          "recordScorePage.enter.errors.matchAlreadyScored",
+          "This match already has a recorded score.",
+        ),
+      );
+      return;
+    }
+
+    skippedScoredMatchRef.current = true;
+    onMatchChange(target.id);
+    toast.info(
+      t(
+        "recordScorePage.enter.matchAlreadyScoredSwitch",
+        "That match is already scored. Switched to your next available match.",
+      ),
+    );
+  }, [
+    activeSessionQuery.isFetching,
+    activeSessionQuery.isPending,
+    forcedMatchId,
+    hasPendingQrSession,
+    independentOption,
+    matchOptions,
+    mode,
+    navigate,
+    onMatchChange,
+    preferredGenerateOption?.hasRecordedScore,
+    resolvedSelectedMatchId,
+    selectedMatchId,
+    shouldShowLoadingSkeleton,
+    t,
+    tournamentMatchOptions,
+  ]);
+
   useEffect(() => {
     if (mode !== "generate") return;
     if (excludedEnterScoreMatchIds.size === 0) return;
@@ -1898,8 +1915,14 @@ export function useEnterMatchScoreController({
         token: confirmedToken,
       });
       clearScoreQrToken(confirmedTokenRef);
-      toast.success(t("recordScorePage.enter.success"));
-      navigate("/record-score", { replace: true });
+      toast.success(
+        t("recordScorePage.validate.success", {
+          defaultValue: "Score confirmed successfully.",
+        }),
+      );
+      window.setTimeout(() => {
+        navigate("/record-score", { replace: true });
+      }, 0);
       void invalidateQueriesAfterTournamentScoreConfirm(
         queryClient,
         response.match.tournamentId,
