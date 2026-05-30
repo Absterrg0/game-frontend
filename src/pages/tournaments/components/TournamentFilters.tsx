@@ -21,7 +21,7 @@ export interface TournamentFiltersChangePayload {
   distance: string;
   clubId?: string;
   clubScope?: "favorites";
-  participation?: "joined" | "notJoined";
+  participation?: "joined" | "notJoined" | "organisedByMe";
 }
 
 interface TournamentFiltersProps {
@@ -32,7 +32,7 @@ interface TournamentFiltersProps {
     distance?: string;
     clubId?: string;
     clubScope?: "favorites";
-    participation?: "joined" | "notJoined";
+    participation?: "joined" | "notJoined" | "organisedByMe";
   };
   onFiltersChange: (next: TournamentFiltersChangePayload) => void;
   /** Logged-in user's home club id (for Home club pill). */
@@ -144,7 +144,9 @@ export function TournamentFilters({
   const [draftDistance, setDraftDistance] = useState(normalizeDistanceForDraft(distance));
   const [draftClubId, setDraftClubId] = useState<string | undefined>(clubId);
   const [draftClubScope, setDraftClubScope] = useState<"favorites" | undefined>(clubScope);
-  const [draftParticipation, setDraftParticipation] = useState<"joined" | "notJoined" | "all">(participation ?? "all");
+  const [draftParticipation, setDraftParticipation] = useState<
+    "joined" | "notJoined" | "organisedByMe" | "all"
+  >(participation ?? "all");
   const [selectedClubState, setSelectedClubState] = useState<{ id: string; name: string } | null>(null);
   const clubOptionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const clubSearchComboboxRef = useRef<HTMLDivElement>(null);
@@ -366,10 +368,18 @@ export function TournamentFilters({
                 options={[
                   { value: "joined", label: t("tournaments.filterParticipationJoined") },
                   { value: "notJoined", label: t("tournaments.filterParticipationNotJoined") },
+                  {
+                    value: "organisedByMe",
+                    label: t("tournaments.filterParticipationOrganisedByMe"),
+                  },
                   { value: "all", label: t("tournaments.filterParticipationAll") },
                 ]}
                 value={draftParticipation}
-                onChange={(v) => setDraftParticipation(v as "joined" | "notJoined" | "all")}
+                onChange={(v) =>
+                  setDraftParticipation(
+                    v as "joined" | "notJoined" | "organisedByMe" | "all",
+                  )
+                }
               />
             </div>
           )}

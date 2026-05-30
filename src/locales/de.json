@@ -522,6 +522,7 @@
     "filterParticipation": "Teilnahme",
     "filterParticipationJoined": "Angemeldet",
     "filterParticipationNotJoined": "Nicht angemeldet",
+    "filterParticipationOrganisedByMe": "Von mir organisiert",
     "filterParticipationAll": "Alle",
     "allStatuses": "Alle Status",
     "allClubs": "Alle Vereine",
