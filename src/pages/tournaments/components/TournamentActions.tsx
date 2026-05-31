@@ -14,7 +14,7 @@ interface TournamentActionsProps {
   distance?: string;
   clubId?: string;
   clubScope?: "favorites";
-  participation?: "joined" | "notJoined";
+  participation?: "joined" | "notJoined" | "organisedByMe";
   homeClubId?: string | null;
   favoriteClubsCount?: number;
   isAuthenticated?: boolean;

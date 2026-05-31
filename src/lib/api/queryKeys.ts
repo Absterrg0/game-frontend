@@ -75,7 +75,7 @@ export const queryKeys = {
       distance?: "under50" | "between50And80" | "over80";
       clubId?: string;
       clubScope?: "favorites";
-      participation?: "joined" | "notJoined";
+      participation?: "joined" | "notJoined" | "organisedByMe";
     }) => {
       const f = filters ?? {};
       const normalizedFilters: Record<string, string | number> = {};
