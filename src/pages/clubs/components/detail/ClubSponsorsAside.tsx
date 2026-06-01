@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { buildMailtoHref } from "@/lib/mailto";
 import { getSafeLink } from "@/lib/url";
+import { useAuth } from "@/pages/auth/hooks";
 import type { ClubPublic } from "@/pages/clubs/hooks";
 
 interface ClubSponsorsAsideProps {
@@ -18,20 +19,23 @@ export function ClubSponsorsAside({
   className,
 }: ClubSponsorsAsideProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const safeBookingLink = getSafeLink(club.bookingSystemUrl);
+  const userName = user?.alias?.trim() || user?.name?.trim() || "";
+  const mailtoInterpolation = { clubName: club.name, userName };
 
   const tennisLessonMailto = club.tennisLessonRequestEmail
     ? buildMailtoHref({
         baseMailto: `mailto:${club.tennisLessonRequestEmail}`,
-        subject: `${t("clubs.requestTennisLesson")} — ${club.name}`,
-        body: t("clubs.requestTennisLessonBody", { clubName: club.name }),
+        subject: `${t("clubs.requestTennisLesson")} - ${club.name}`,
+        body: t("clubs.requestTennisLessonBody", mailtoInterpolation),
       })
     : null;
   const membershipMailto = club.membershipRequestEmail
     ? buildMailtoHref({
         baseMailto: `mailto:${club.membershipRequestEmail}`,
-        subject: `${t("clubs.becomeMember")} — ${club.name}`,
-        body: t("clubs.becomeMemberBody", { clubName: club.name }),
+        subject: `${t("clubs.becomeMember")} - ${club.name}`,
+        body: t("clubs.becomeMemberBody", mailtoInterpolation),
       })
     : null;
 
