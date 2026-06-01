@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { GLOBAL_PARAMETERS } from "@/constants/constants";
 import { buildMailtoHref } from "@/lib/mailto";
 import { getSafeLink } from "@/lib/url";
+import { useAuth } from "@/pages/auth/hooks";
 import type { ClubPublic } from "@/pages/clubs/hooks";
 
 interface ClubSponsorsAsideProps {
@@ -19,14 +19,25 @@ export function ClubSponsorsAside({
   className,
 }: ClubSponsorsAsideProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const safeBookingLink = getSafeLink(club.bookingSystemUrl);
-  const safeWebsiteLink = getSafeLink(club.website);
+  const userName = user?.alias?.trim() || user?.name?.trim() || "";
+  const mailtoInterpolation = { clubName: club.name, userName };
 
-  const contactClubMailto = buildMailtoHref({
-    baseMailto: GLOBAL_PARAMETERS.CONTACT_US_MAILTO,
-    subject: `${t("clubs.requestTennisLesson")} — ${club.name}`,
-    body: club.address,
-  });
+  const tennisLessonMailto = club.tennisLessonRequestEmail
+    ? buildMailtoHref({
+        baseMailto: `mailto:${club.tennisLessonRequestEmail}`,
+        subject: `${t("clubs.requestTennisLesson")} - ${club.name}`,
+        body: t("clubs.requestTennisLessonBody", mailtoInterpolation),
+      })
+    : null;
+  const membershipMailto = club.membershipRequestEmail
+    ? buildMailtoHref({
+        baseMailto: `mailto:${club.membershipRequestEmail}`,
+        subject: `${t("clubs.becomeMember")} - ${club.name}`,
+        body: t("clubs.becomeMemberBody", mailtoInterpolation),
+      })
+    : null;
 
   return (
     <aside className={className}>
@@ -101,27 +112,28 @@ export function ClubSponsorsAside({
             type="button"
             variant="brand"
             className="w-full rounded-lg px-4 py-3"
+            disabled={!tennisLessonMailto}
             onClick={() => {
+              if (!tennisLessonMailto) return;
               if (!onRequireAuth()) return;
-              window.location.assign(contactClubMailto);
+              window.location.assign(tennisLessonMailto);
             }}
           >
             {t("clubs.requestTennisLesson")}
           </Button>
-          <button
+          <Button
             type="button"
-            className="text-center text-sm font-medium text-muted-foreground underline hover:text-foreground"
+            variant="outline"
+            className="w-full rounded-lg px-4 py-3"
+            disabled={!membershipMailto}
             onClick={() => {
+              if (!membershipMailto) return;
               if (!onRequireAuth()) return;
-              if (safeWebsiteLink) {
-                window.open(safeWebsiteLink, "_blank", "noopener,noreferrer");
-              } else {
-                window.location.assign(contactClubMailto);
-              }
+              window.location.assign(membershipMailto);
             }}
           >
             {t("clubs.becomeMember")}
-          </button>
+          </Button>
         </div>
       </div>
     </aside>

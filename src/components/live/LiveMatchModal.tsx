@@ -205,6 +205,7 @@ export function LiveMatchModal() {
   const isOnCourtNow = liveMatch.status === "inProgress";
 
   const liveOpponentLabel = formatLiveMatchTeamLabel(liveMatch.opponentTeam, t);
+  const hasNextMatch = nextMatch != null && nextMatch.id !== liveMatch.id;
   const nextOpponentLabel = nextMatch
     ? formatLiveMatchTeamLabel(nextMatch.opponentTeam, t)
     : "";
@@ -249,13 +250,13 @@ export function LiveMatchModal() {
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="w-[calc(100vw-1.5rem)] max-w-[416px] min-w-0 gap-0 overflow-hidden rounded-[14px] border border-[#e2e8f0] bg-white p-0 shadow-lg"
+        className="flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1.5rem)] max-w-[416px] min-w-0 flex-col gap-0 overflow-hidden rounded-[14px] border border-[#e2e8f0] bg-white p-0 shadow-lg sm:max-h-[calc(100dvh-2rem)]"
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{t("tournaments.liveModalTitle")}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-start justify-between border-b border-[#dbeafe] bg-[#eef2ff] px-4 py-4 sm:px-5">
+        <div className="flex shrink-0 items-start justify-between border-b border-[#dbeafe] bg-[#eef2ff] px-4 py-4 sm:px-5">
           <div className="min-w-0 flex-1 pr-3 text-left">
             <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#64748b]">
               {t("tournaments.liveModalTitle")}
@@ -289,8 +290,8 @@ export function LiveMatchModal() {
           </Button>
         </div>
 
-        <div className="min-w-0 overflow-hidden bg-[#fafbfc] px-4 py-5 sm:px-5">
-          <div className="min-w-0 space-y-6">
+        <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain bg-[#fafbfc] px-4 py-4 [scrollbar-color:#cfd6dc_transparent] [scrollbar-width:thin] sm:px-5 sm:py-5 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-[#cfd6dc] [&::-webkit-scrollbar-track]:bg-transparent">
+          <div className="min-w-0 space-y-4 sm:space-y-6">
             <div className="min-w-0 space-y-3">
               <PlayerNameText
                 name={liveRoundTournamentLabel}
@@ -316,22 +317,20 @@ export function LiveMatchModal() {
               </div>
             </div>
 
-            {isOnCourtNow ? (
-              <LiveMatchEnterScoreButton
-                enterScoreLabel={t("tournaments.liveModalEnterScore")}
-                matchId={liveMatch.id}
-                tournamentId={liveTournamentId}
-                onNavigateAway={() => handleOpenChange(false)}
-              />
-            ) : null}
+            <LiveMatchEnterScoreButton
+              enterScoreLabel={t("tournaments.liveModalEnterScore")}
+              matchId={liveMatch.id}
+              tournamentId={liveTournamentId}
+              onNavigateAway={() => handleOpenChange(false)}
+            />
 
-            {nextMatch && nextMatch.id !== liveMatch.id ? (
+            {hasNextMatch ? (
               <section className="min-w-0 max-w-full overflow-hidden rounded-[10px] border border-[#e2e8f0] bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-                <div className="flex min-w-0 items-center justify-between gap-3 border-b border-[#f1f5f9] pb-3">
+                <div className="flex min-w-0 flex-col gap-2 border-b border-[#f1f5f9] pb-3 min-[380px]:flex-row min-[380px]:items-center min-[380px]:justify-between min-[380px]:gap-3">
                   <p className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">
                     {t("tournaments.liveModalNextMatch")}
                   </p>
-                  <div className="flex min-w-0 shrink items-center gap-3 text-[13px] font-medium text-[#0f172a]">
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 text-[13px] font-medium text-[#0f172a]">
                     <span className="inline-flex min-w-0 items-center gap-1 truncate">
                       <LiveModalCourtIcon className="size-3.5 shrink-0 text-[#94a3b8]" aria-hidden />
                       <span className="truncate">{nextMatchCourtLabel}</span>
@@ -350,7 +349,7 @@ export function LiveMatchModal() {
                   />
                 </div>
               </section>
-            ) : !isOnCourtNow ? null : (
+            ) : (
               <section className="rounded-[10px] border border-dashed border-[#cbd5e1] bg-white px-4 py-5 text-center sm:text-left">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#64748b]">
                   {t("tournaments.liveModalNextMatch")}
