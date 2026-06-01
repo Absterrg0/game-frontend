@@ -9,8 +9,6 @@ export interface ClubListItem {
   address: string;
   logoUrl: string | null;
   website: string | null;
-  tennisLessonRequestEmail: string | null;
-  membershipRequestEmail: string | null;
 }
 
 export interface ClubsPagination {

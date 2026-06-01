@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "audit:locales": "node scripts/audit-locales.mjs",
     "preview": "vite preview",
     "shadcn": "shadcn"
   },

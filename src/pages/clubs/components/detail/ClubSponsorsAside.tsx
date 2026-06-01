@@ -20,16 +20,20 @@ export function ClubSponsorsAside({
   const { t } = useTranslation();
   const safeBookingLink = getSafeLink(club.bookingSystemUrl);
 
-  const tennisLessonMailto = club.tennisLessonRequestEmail ? buildMailtoHref({
-    baseMailto: `mailto:${club.tennisLessonRequestEmail}`,
-    subject: `${t("clubs.requestTennisLesson")} — ${club.name}`,
-    body: `Hi, ${club.name}\nI found you in the TB10 app and would like to receive tennis lessons from your trainers.\nBest regards,`,
-  }) : null;
-  const membershipMailto = club.membershipRequestEmail ? buildMailtoHref({
-    baseMailto: `mailto:${club.membershipRequestEmail}`,
-    subject: `${t("clubs.becomeMember")} — ${club.name}`,
-    body: `Hi, ${club.name}\nI found you in the TB10 app and would like to become a member.\nBest regards,`,
-  }) : null;
+  const tennisLessonMailto = club.tennisLessonRequestEmail
+    ? buildMailtoHref({
+        baseMailto: `mailto:${club.tennisLessonRequestEmail}`,
+        subject: `${t("clubs.requestTennisLesson")} — ${club.name}`,
+        body: t("clubs.requestTennisLessonBody", { clubName: club.name }),
+      })
+    : null;
+  const membershipMailto = club.membershipRequestEmail
+    ? buildMailtoHref({
+        baseMailto: `mailto:${club.membershipRequestEmail}`,
+        subject: `${t("clubs.becomeMember")} — ${club.name}`,
+        body: t("clubs.becomeMemberBody", { clubName: club.name }),
+      })
+    : null;
 
   return (
     <aside className={className}>
