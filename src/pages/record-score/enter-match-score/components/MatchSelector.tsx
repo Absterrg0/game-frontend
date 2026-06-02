@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,18 +34,6 @@ export function MatchSelector({
   onMatchChange,
   t,
 }: MatchSelectorProps) {
-  const popoverRef = useRef<HTMLDivElement>(null);
-  /**
-   * Mirrors popoverRef.current after the first DOM commit so that
-   * PopoverContent receives a non-null container value on open.
-   *
-   * `container` is read from props when the portal mounts (i.e. when the
-   * popover opens). On the initial render popoverRef.current is still null,
-   * so we need the state-driven re-render that fires after the div is
-   * attached to the DOM to give Radix the real element. This extra render
-   * only happens once (the first time the wrapper div mounts).
-   */
-  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null);
   const selectedLabel =
     effectiveSelectedOption.label ||
     t("recordScorePage.enter.selectPlaceholder");
@@ -57,16 +45,8 @@ export function MatchSelector({
     );
 
   return (
-    <div
-      ref={(node) => {
-        popoverRef.current = node;
-        // One-time update: populate portalContainer after initial DOM commit
-        // so the Radix portal has a non-null container when the popover first opens.
-        if (node && !portalContainer) setPortalContainer(node);
-      }}
-    >
-      <Popover
-        modal
+    <Popover
+      modal
       open={isMatchPopoverOpen}
       onOpenChange={(nextOpen) => {
         if (nextOpen && isConfirmLocked) return;
@@ -75,115 +55,113 @@ export function MatchSelector({
           setMatchSearch("");
         }
       }}
-      >
-        <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            disabled={isConfirmLocked}
-            className="min-h-[44px] h-auto min-w-0 w-full justify-between rounded-[10px] border-[#010a04]/10 bg-[#f2f4f3] px-3 py-2.5 text-left text-[14px] font-normal text-[#010a04] hover:bg-[#edf0ef] sm:h-[34px] sm:min-h-[34px] sm:rounded-[8px] sm:py-0"
-            title={selectedLabel}
-          >
-            <span className="min-w-0 truncate">{selectedLabel}</span>
-            <IconChevronDown size={14} className="ml-2 shrink-0 text-[#010a04]/55" />
-          </Button>
-        </PopoverTrigger>
-
-        <PopoverContent
-          container={portalContainer}
-          align="start"
-          side="bottom"
-          sideOffset={6}
-          collisionPadding={16}
-          onOpenAutoFocus={(event) => event.preventDefault()}
-          className="w-[min(var(--radix-popover-trigger-width),calc(100vw-2rem))] max-w-[calc(100vw-2rem)] rounded-[10px] border-[#010a04]/10 p-2"
+    >
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isConfirmLocked}
+          className="min-h-[44px] h-auto min-w-0 w-full justify-between rounded-[10px] border-[#010a04]/10 bg-[#f2f4f3] px-3 py-2.5 text-left text-[14px] font-normal text-[#010a04] hover:bg-[#edf0ef] sm:h-[34px] sm:min-h-[34px] sm:rounded-[8px] sm:py-0"
+          title={selectedLabel}
         >
-          <Input
-            value={matchSearch}
-            onChange={(event) => setMatchSearch(event.target.value)}
-            placeholder={t("recordScorePage.enter.selectPlaceholder")}
-            className="mb-2 h-8 rounded-[8px] border-[#010a04]/12 bg-white text-[13px]"
-            inputMode="search"
-          />
+          <span className="min-w-0 truncate">{selectedLabel}</span>
+          <IconChevronDown size={14} className="ml-2 shrink-0 text-[#010a04]/55" />
+        </Button>
+      </PopoverTrigger>
 
-          <div
-            data-pwa-ptr-ignore="true"
-            className="thin-scrollbar max-h-64 overflow-y-auto overscroll-contain rounded-[8px] border border-[#010a04]/8 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
-          >
-            {filteredMatchOptions.length === 0 ? (
-              <p className="px-3 py-2 text-[12px] text-[#010a04]/55">
-                {t("recordScorePage.enter.noMatchesFound")}
-              </p>
-            ) : (
-              <>
-                {independentOptions.length > 0 ? (
-                  <div className="pt-0.5">
-                    {independentOptions.map((option) => {
-                      const isActive = option.id === effectiveSelectedOption.id;
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => {
-                            onMatchChange(option.id);
-                            setIsMatchPopoverOpen(false);
-                            setMatchSearch("");
-                          }}
-                          className={cn(
-                            "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left text-[14px] last:border-b-0",
-                            isActive
-                              ? "bg-[#067429]/12 font-extrabold text-[#067429]"
-                              : "font-bold text-[#067429] hover:bg-[#067429]/[0.06]",
-                          )}
-                          title={option.label}
-                        >
-                          <span className="block truncate">{option.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
+      <PopoverContent
+        align="start"
+        side="bottom"
+        sideOffset={6}
+        collisionPadding={16}
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        className="w-[min(var(--radix-popover-trigger-width),calc(100vw-2rem))] max-w-[calc(100vw-2rem)] rounded-[10px] border-[#010a04]/10 p-2"
+      >
+        <Input
+          value={matchSearch}
+          onChange={(event) => setMatchSearch(event.target.value)}
+          placeholder={t("recordScorePage.enter.selectPlaceholder")}
+          className="mb-2 h-8 rounded-[8px] border-[#010a04]/12 bg-white text-[13px]"
+          inputMode="search"
+        />
 
-                {independentOptions.length > 0 && tournamentOptions.length > 0 ? (
-                  <div
-                    className="mx-3 border-t border-[#010a04]/10"
-                    role="separator"
-                    aria-hidden
-                  />
-                ) : null}
+        <div
+          data-pwa-ptr-ignore="true"
+          className="thin-scrollbar max-h-64 overflow-y-auto overscroll-contain rounded-[8px] border border-[#010a04]/8 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
+        >
+          {filteredMatchOptions.length === 0 ? (
+            <p className="px-3 py-2 text-[12px] text-[#010a04]/55">
+              {t("recordScorePage.enter.noMatchesFound")}
+            </p>
+          ) : (
+            <>
+              {independentOptions.length > 0 ? (
+                <div className="pt-0.5">
+                  {independentOptions.map((option) => {
+                    const isActive = option.id === effectiveSelectedOption.id;
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          onMatchChange(option.id);
+                          setIsMatchPopoverOpen(false);
+                          setMatchSearch("");
+                        }}
+                        className={cn(
+                          "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left text-[14px] last:border-b-0",
+                          isActive
+                            ? "bg-[#067429]/12 font-extrabold text-[#067429]"
+                            : "font-bold text-[#067429] hover:bg-[#067429]/[0.06]",
+                        )}
+                        title={option.label}
+                      >
+                        <span className="block truncate">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
 
-                {tournamentOptions.length > 0 ? (
-                  <div className={independentOptions.length > 0 ? "pt-0.5" : undefined}>
-                    {tournamentOptions.map((option) => {
-                      const isActive = option.id === effectiveSelectedOption.id;
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => {
-                            onMatchChange(option.id);
-                            setIsMatchPopoverOpen(false);
-                            setMatchSearch("");
-                          }}
-                          className={cn(
-                            "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left text-[13px] last:border-b-0",
-                            isActive
-                              ? "bg-[#067429]/10 font-medium text-[#067429]"
-                              : "text-[#010a04] hover:bg-[#010a04]/[0.035]",
-                          )}
-                          title={option.label}
-                        >
-                          <span className="block truncate">{option.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-    </div>
+              {independentOptions.length > 0 && tournamentOptions.length > 0 ? (
+                <div
+                  className="mx-3 border-t border-[#010a04]/10"
+                  role="separator"
+                  aria-hidden
+                />
+              ) : null}
+
+              {tournamentOptions.length > 0 ? (
+                <div className={independentOptions.length > 0 ? "pt-0.5" : undefined}>
+                  {tournamentOptions.map((option) => {
+                    const isActive = option.id === effectiveSelectedOption.id;
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => {
+                          onMatchChange(option.id);
+                          setIsMatchPopoverOpen(false);
+                          setMatchSearch("");
+                        }}
+                        className={cn(
+                          "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left text-[13px] last:border-b-0",
+                          isActive
+                            ? "bg-[#067429]/10 font-medium text-[#067429]"
+                            : "text-[#010a04] hover:bg-[#010a04]/[0.035]",
+                        )}
+                        title={option.label}
+                      >
+                        <span className="block truncate">{option.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }
