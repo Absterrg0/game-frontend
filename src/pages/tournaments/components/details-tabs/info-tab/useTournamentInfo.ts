@@ -17,7 +17,7 @@ interface UseTournamentInfoArgs {
 export function useTournamentInfo({ tournament, t, language, isDescriptionExpanded }: UseTournamentInfoArgs) {
   return useMemo(() => {
     const entryFee = Number.isFinite(tournament.entryFee) ? tournament.entryFee : 0;
-    const feeText = entryFee > 0 ? formatEntryFeeEuro(entryFee) : t("tournaments.entryFeeFree");
+    const feeText = entryFee > 0 ? formatEntryFeeEuro(entryFee, language) : t("tournaments.entryFeeFree");
 
     const foodInfoTrimmed = tournament.foodInfo?.trim() ?? "";
     const hasFoodInfo = foodInfoTrimmed.length > 0;

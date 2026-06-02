@@ -90,7 +90,7 @@ function buildTournamentRowViewModel(
 ) {
   const isUnscheduled = !tournament.date;
   const isLive = tournament.status === "active" && tournament.isLive;
-  const isPast = Boolean(tournament.isPast);
+  const isPast = tournament.isPast;
   const shouldShowInactiveDot =
     tournament.status === "active" && !isLive && !isUnscheduled && (isPast || tournament.isFull);
   const statusDotClass = isLive
