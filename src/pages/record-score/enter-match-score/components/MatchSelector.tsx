@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,6 +35,17 @@ export function MatchSelector({
   t,
 }: MatchSelectorProps) {
   const popoverRef = useRef<HTMLDivElement>(null);
+  /**
+   * Mirrors popoverRef.current after the first DOM commit so that
+   * PopoverContent receives a non-null container value on open.
+   *
+   * `container` is read from props when the portal mounts (i.e. when the
+   * popover opens). On the initial render popoverRef.current is still null,
+   * so we need the state-driven re-render that fires after the div is
+   * attached to the DOM to give Radix the real element. This extra render
+   * only happens once (the first time the wrapper div mounts).
+   */
+  const [portalContainer, setPortalContainer] = useState<HTMLDivElement | null>(null);
   const selectedLabel =
     effectiveSelectedOption.label ||
     t("recordScorePage.enter.selectPlaceholder");
@@ -46,7 +57,14 @@ export function MatchSelector({
     );
 
   return (
-    <div ref={popoverRef}>
+    <div
+      ref={(node) => {
+        popoverRef.current = node;
+        // One-time update: populate portalContainer after initial DOM commit
+        // so the Radix portal has a non-null container when the popover first opens.
+        if (node && !portalContainer) setPortalContainer(node);
+      }}
+    >
       <Popover
         modal
       open={isMatchPopoverOpen}
@@ -72,7 +90,7 @@ export function MatchSelector({
         </PopoverTrigger>
 
         <PopoverContent
-          container={popoverRef.current}
+          container={portalContainer}
           align="start"
           side="bottom"
           sideOffset={6}
