@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,7 +34,8 @@ export function MatchSelector({
   onMatchChange,
   t,
 }: MatchSelectorProps) {
-  const popoverContainerRef = useRef<HTMLDivElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement | null>(null);
+  const [popoverContainer, setPopoverContainer] = useState<HTMLElement | null>(null);
   const selectedLabel =
     effectiveSelectedOption.label ||
     t("recordScorePage.enter.selectPlaceholder");
@@ -83,20 +84,51 @@ export function MatchSelector({
       setMatchSearch("");
     };
 
+    const isEventInsidePopover = (event: Event): boolean => {
+      const current = popoverRef.current;
+      if (!current) return false;
+      const path = event.composedPath?.();
+      if (Array.isArray(path) && path.includes(current)) return true;
+      const target = event.target;
+      return target instanceof Node ? current.contains(target) : false;
+    };
+
+    const isActiveElementInsidePopover = (): boolean => {
+      const current = popoverRef.current;
+      const active = document.activeElement;
+      if (!current || !active) return false;
+      return current.contains(active);
+    };
+
+    const handleScroll = (event: Event) => {
+      if (isEventInsidePopover(event)) return;
+      closePopover();
+    };
+
+    const handleViewportChange = () => {
+      if (isActiveElementInsidePopover()) return;
+      closePopover();
+    };
+
     // iOS Safari can keep portalled popovers visually detached while viewport scrolls.
-    window.addEventListener("scroll", closePopover, { passive: true, capture: true });
-    window.addEventListener("resize", closePopover, { passive: true });
-    window.addEventListener("orientationchange", closePopover, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
+    window.addEventListener("resize", handleViewportChange, { passive: true });
+    window.addEventListener("orientationchange", handleViewportChange, { passive: true });
 
     return () => {
-      window.removeEventListener("scroll", closePopover, true);
-      window.removeEventListener("resize", closePopover);
-      window.removeEventListener("orientationchange", closePopover);
+      window.removeEventListener("scroll", handleScroll, true);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("orientationchange", handleViewportChange);
     };
   }, [isMatchPopoverOpen, setIsMatchPopoverOpen, setMatchSearch]);
 
+  const setPopoverRootRef = useCallback((element: HTMLDivElement | null) => {
+    popoverRef.current = element;
+    setPopoverContainer((prev) => (prev === element ? prev : element));
+  }, []);
+
   return (
-    <div ref={popoverContainerRef}>
+    <div ref={setPopoverRootRef}>
       <Popover
         modal
       open={isMatchPopoverOpen}
@@ -122,7 +154,7 @@ export function MatchSelector({
         </PopoverTrigger>
 
         <PopoverContent
-          container={popoverContainerRef.current}
+          container={popoverContainer}
           align="start"
           side="bottom"
           sideOffset={6}

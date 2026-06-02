@@ -90,23 +90,26 @@ function buildTournamentRowViewModel(
 ) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const isUnscheduled = !tournament.date;
   const tournamentDate = tournament.date ? new Date(`${tournament.date}T00:00:00`) : null;
   const isPast = Boolean(tournamentDate && tournamentDate < today);
   const isLive = tournament.status === "active" && tournament.isLive;
   const shouldShowInactiveDot =
-    tournament.status === "active" && !isLive && (isPast || tournament.isFull);
+    tournament.status === "active" && !isLive && !isUnscheduled && (isPast || tournament.isFull);
   const statusDotClass = isLive
     ? LIVE_STATUS_DOT
     : shouldShowInactiveDot
       ? INACTIVE_STATUS_DOT
       : STATUS_DOTS[tournament.status];
+  const derivedStatus: TournamentStatus =
+    statusDotClass === STATUS_DOTS.draft ? "draft" : "active";
 
   const clubName = tournament.club?.name ?? "-";
 
   return {
     id: tournament.id,
     name: tournament.name,
-    statusLabel: getStatusLabel(tournament.status, t),
+    statusLabel: getStatusLabel(derivedStatus, t),
     statusDotClass,
     isLive,
     rowPath: `/tournaments/${tournament.id}`,
