@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -34,8 +34,7 @@ export function MatchSelector({
   onMatchChange,
   t,
 }: MatchSelectorProps) {
-  const popoverRef = useRef<HTMLDivElement | null>(null);
-  const [popoverContainer, setPopoverContainer] = useState<HTMLElement | null>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const selectedLabel =
     effectiveSelectedOption.label ||
     t("recordScorePage.enter.selectPlaceholder");
@@ -46,89 +45,8 @@ export function MatchSelector({
       [filteredMatchOptions],
     );
 
-  const renderOption = (option: MatchOption, isIndependent: boolean) => {
-    const isActive = option.id === effectiveSelectedOption.id;
-
-    return (
-      <button
-        key={option.id}
-        type="button"
-        onClick={() => {
-          onMatchChange(option.id);
-          setIsMatchPopoverOpen(false);
-          setMatchSearch("");
-        }}
-        className={cn(
-          "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left last:border-b-0",
-          isIndependent ? "text-[14px]" : "text-[13px]",
-          isIndependent
-            ? isActive
-              ? "bg-[#067429]/12 font-extrabold text-[#067429]"
-              : "font-bold text-[#067429] hover:bg-[#067429]/[0.06]"
-            : isActive
-              ? "bg-[#067429]/10 font-medium text-[#067429]"
-              : "text-[#010a04] hover:bg-[#010a04]/[0.035]",
-        )}
-        title={option.label}
-      >
-        <span className="block truncate">{option.label}</span>
-      </button>
-    );
-  };
-
-  useEffect(() => {
-    if (!isMatchPopoverOpen) return;
-
-    const closePopover = () => {
-      setIsMatchPopoverOpen(false);
-      setMatchSearch("");
-    };
-
-    const isEventInsidePopover = (event: Event): boolean => {
-      const current = popoverRef.current;
-      if (!current) return false;
-      const path = event.composedPath?.();
-      if (Array.isArray(path) && path.includes(current)) return true;
-      const target = event.target;
-      return target instanceof Node ? current.contains(target) : false;
-    };
-
-    const isActiveElementInsidePopover = (): boolean => {
-      const current = popoverRef.current;
-      const active = document.activeElement;
-      if (!current || !active) return false;
-      return current.contains(active);
-    };
-
-    const handleScroll = (event: Event) => {
-      if (isEventInsidePopover(event)) return;
-      closePopover();
-    };
-
-    const handleViewportChange = () => {
-      if (isActiveElementInsidePopover()) return;
-      closePopover();
-    };
-
-    // iOS Safari can keep portalled popovers visually detached while viewport scrolls.
-    window.addEventListener("scroll", handleScroll, { passive: true, capture: true });
-    window.addEventListener("resize", handleViewportChange, { passive: true });
-    window.addEventListener("orientationchange", handleViewportChange, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll, true);
-      window.removeEventListener("resize", handleViewportChange);
-      window.removeEventListener("orientationchange", handleViewportChange);
-    };
-  }, [isMatchPopoverOpen, setIsMatchPopoverOpen, setMatchSearch]);
-
-  const setPopoverRootRef = useCallback((element: HTMLDivElement | null) => {
-    popoverRef.current = element;
-    setPopoverContainer((prev) => (prev === element ? prev : element));
-  }, []);
-
   return (
-    <div ref={setPopoverRootRef}>
+    <div ref={popoverRef}>
       <Popover
         modal
       open={isMatchPopoverOpen}
@@ -154,7 +72,7 @@ export function MatchSelector({
         </PopoverTrigger>
 
         <PopoverContent
-          container={popoverContainer}
+          container={popoverRef.current}
           align="start"
           side="bottom"
           sideOffset={6}
@@ -170,7 +88,10 @@ export function MatchSelector({
             inputMode="search"
           />
 
-          <div className="thin-scrollbar max-h-64 overflow-y-auto overscroll-contain rounded-[8px] border border-[#010a04]/8 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
+          <div
+            data-pwa-ptr-ignore="true"
+            className="thin-scrollbar max-h-64 overflow-y-auto overscroll-contain rounded-[8px] border border-[#010a04]/8 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
+          >
             {filteredMatchOptions.length === 0 ? (
               <p className="px-3 py-2 text-[12px] text-[#010a04]/55">
                 {t("recordScorePage.enter.noMatchesFound")}
@@ -179,7 +100,29 @@ export function MatchSelector({
               <>
                 {independentOptions.length > 0 ? (
                   <div className="pt-0.5">
-                    {independentOptions.map((option) => renderOption(option, true))}
+                    {independentOptions.map((option) => {
+                      const isActive = option.id === effectiveSelectedOption.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            onMatchChange(option.id);
+                            setIsMatchPopoverOpen(false);
+                            setMatchSearch("");
+                          }}
+                          className={cn(
+                            "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left text-[14px] last:border-b-0",
+                            isActive
+                              ? "bg-[#067429]/12 font-extrabold text-[#067429]"
+                              : "font-bold text-[#067429] hover:bg-[#067429]/[0.06]",
+                          )}
+                          title={option.label}
+                        >
+                          <span className="block truncate">{option.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : null}
 
@@ -193,7 +136,29 @@ export function MatchSelector({
 
                 {tournamentOptions.length > 0 ? (
                   <div className={independentOptions.length > 0 ? "pt-0.5" : undefined}>
-                    {tournamentOptions.map((option) => renderOption(option, false))}
+                    {tournamentOptions.map((option) => {
+                      const isActive = option.id === effectiveSelectedOption.id;
+                      return (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => {
+                            onMatchChange(option.id);
+                            setIsMatchPopoverOpen(false);
+                            setMatchSearch("");
+                          }}
+                          className={cn(
+                            "block w-full border-b border-[#010a04]/8 px-3 py-2 text-left text-[13px] last:border-b-0",
+                            isActive
+                              ? "bg-[#067429]/10 font-medium text-[#067429]"
+                              : "text-[#010a04] hover:bg-[#010a04]/[0.035]",
+                          )}
+                          title={option.label}
+                        >
+                          <span className="block truncate">{option.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 ) : null}
               </>
