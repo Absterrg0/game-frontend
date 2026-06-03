@@ -52,7 +52,12 @@ function PillRow({
   onChange,
   onDisabledClick,
 }: {
-  options: { value: string; label: string; disabled?: boolean }[];
+  options: {
+    value: string;
+    label: string;
+    disabled?: boolean;
+    disabledReason?: string;
+  }[];
   value: string;
   onChange: (v: string) => void;
   onDisabledClick?: (value: string) => void;
@@ -61,12 +66,19 @@ function PillRow({
     <div className="flex flex-wrap gap-2">
       {options.map((opt) => {
         const active = !opt.disabled && value === opt.value;
+        const accessibleLabel =
+          opt.disabled && opt.disabledReason
+            ? `${opt.label}. ${opt.disabledReason}`
+            : opt.label;
+
         return (
           <button
             key={opt.value}
             type="button"
             aria-pressed={active}
             aria-disabled={opt.disabled || undefined}
+            aria-label={accessibleLabel}
+            title={accessibleLabel}
             tabIndex={opt.disabled ? -1 : undefined}
             onClick={() => {
               if (opt.disabled) {
@@ -79,7 +91,11 @@ function PillRow({
               "shrink-0 rounded-full px-3.5 py-1.5 text-left text-[12.5px] font-medium transition-colors duration-150 select-none",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#006B2B]/45",
               "text-white",
-              opt.disabled ? "cursor-not-allowed" : active ? "shadow-sm" : undefined,
+              opt.disabled
+                ? "cursor-not-allowed border border-white/30 opacity-50"
+                : active
+                  ? "shadow-sm"
+                  : undefined,
             )}
             style={{
               backgroundColor: !opt.disabled && active ? FILTER_GREEN : PILL_GREY,
@@ -258,16 +274,20 @@ export function TournamentFilters({
     { value: "all", label: t("tournaments.filterWhenListAll") },
   ];
 
+  const distanceDisabledReason = t("tournaments.filterDistanceRequiresHome");
+
   const distanceOptions = [
     {
       value: "under50",
       label: t("tournaments.filterDistanceUnder50"),
       disabled: !hasHomeClub,
+      disabledReason: !hasHomeClub ? distanceDisabledReason : undefined,
     },
     {
       value: "between50And80",
       label: t("tournaments.filterDistance50To80"),
       disabled: !hasHomeClub,
+      disabledReason: !hasHomeClub ? distanceDisabledReason : undefined,
     },
     { value: "all", label: t("tournaments.filterDistanceAll") },
   ];
