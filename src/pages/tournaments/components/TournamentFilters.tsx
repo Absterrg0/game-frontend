@@ -76,10 +76,9 @@ function PillRow({
             key={opt.value}
             type="button"
             aria-pressed={active}
-            aria-disabled={opt.disabled || undefined}
+            aria-disabled={opt.disabled}
             aria-label={accessibleLabel}
             title={accessibleLabel}
-            tabIndex={opt.disabled ? -1 : undefined}
             onClick={() => {
               if (opt.disabled) {
                 onDisabledClick?.(opt.value);
