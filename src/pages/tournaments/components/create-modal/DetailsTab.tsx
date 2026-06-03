@@ -153,7 +153,7 @@ export function DetailsTab({ form, update, formScopeKey }: DetailsTabProps) {
           </Label>
           <div className="flex h-[38px] items-center gap-2 rounded-[10px] border border-[#e1e3e8] bg-[#f9fafc] px-3 sm:h-[46px] sm:rounded-[12px] sm:px-[15px]">
             <span className="text-[16px] leading-none text-[#010a04]/40 sm:text-[22px]">
-              $
+              €
             </span>
             <Input
               id={entryFeeId}
@@ -161,10 +161,14 @@ export function DetailsTab({ form, update, formScopeKey }: DetailsTabProps) {
               min={0}
               step="0.01"
               placeholder="00"
-              value={form.entryFee}
+              value={form.entryFee === 0 ? "" : form.entryFee}
               onChange={(e) => {
                 const v = e.target.value;
-                const n = v === "" ? 0 : Number(v);
+                if (v === "") {
+                  update({ entryFee: 0 });
+                  return;
+                }
+                const n = Number(v);
                 update({ entryFee: Number.isFinite(n) ? n : 0 });
               }}
               className="h-auto border-0 bg-transparent p-0 text-[13px] font-normal text-[#010a04] shadow-none focus-visible:ring-0 sm:text-[16px]"
