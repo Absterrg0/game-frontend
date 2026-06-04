@@ -167,6 +167,7 @@ export function TournamentFilters({
   const { t } = useTranslation();
   const clubFilterLabelId = useId();
   const clubOptionIdPrefix = useId();
+  const filterSheetContentId = useId();
   const [clubSearch, setClubSearch] = useState("");
   const [clubSearchOpen, setClubSearchOpen] = useState(false);
   const [activeClubOptionIndex, setActiveClubOptionIndex] = useState(-1);
@@ -417,6 +418,13 @@ export function TournamentFilters({
         "h-9 gap-2",
         activeFilterCount > 0 && "border-brand-primary/40 text-brand-primary",
       )}
+      {...(variant === "bottom-sheet"
+        ? {
+            "aria-haspopup": "dialog" as const,
+            "aria-expanded": open,
+            "aria-controls": filterSheetContentId,
+          }
+        : {})}
       onClick={
         variant === "bottom-sheet" ? () => handlePopoverOpenChange(true) : undefined
       }
@@ -664,6 +672,7 @@ export function TournamentFilters({
         {filterTriggerButton}
         <Sheet open={open} onOpenChange={handlePopoverOpenChange}>
           <SheetContent
+            id={filterSheetContentId}
             side="bottom"
             showCloseButton={false}
             onPointerDown={handleFilterPanelPointerDown}
